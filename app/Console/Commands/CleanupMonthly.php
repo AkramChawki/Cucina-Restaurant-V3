@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CuisinierOrder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
-use App\Models\CuisinierOrder; // Replace with your actual model
 
 class CleanupMonthly extends Command
 {
@@ -14,17 +14,23 @@ class CleanupMonthly extends Command
 
     public function handle()
     {
-        // Delete files
-        $filesDeleted = Storage::deleteDirectory('public/documents');
+        $directory = 'public/documents';
 
-        if ($filesDeleted) {
-            $this->info('Files in public/documents deleted successfully.');
-        } else {
-            $this->error('Failed to delete files in public/documents.');
+        $files = Storage::allFiles($directory);
+        $directories = Storage::allDirectories($directory);
+
+        // Delete all files
+        foreach ($files as $file) {
+            Storage::delete($file);
         }
 
-        // Delete database records
-        CuisinierOrder::where('created_at', '<', now()->startOfMonth()->subMonth())->delete(); // Adjust based on your database structure
+        foreach ($directories as $dir) {
+            Storage::deleteDirectory($dir);
+        }
+
+        $this->info('Files and directories inside public/documents deleted successfully.');
+
+        CuisinierOrder::where('created_at', '<', now()->startOfMonth()->subMonth())->delete();
            
         $this->info('Monthly cleanup completed successfully.');
     }
