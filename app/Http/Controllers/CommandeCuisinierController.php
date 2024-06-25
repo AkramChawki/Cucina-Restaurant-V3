@@ -43,7 +43,7 @@ class CommandeCuisinierController extends Controller
 
         generate_pdf_and_save("pdf.order-summary", ["order" => $order], $pdf_name, "documents");
         Mail::to("admin@cucinanapoli.com")->send(new OrderSummary($order, $pdf_name));
-        Mail::to("sabrin@cucinanapoli.com")->send(new OrderSummary($order, $pdf_name));
+        Mail::to("tayeb@cucinanapoli.com")->send(new OrderSummary($order, $pdf_name));
 
         $order->pdf = $pdf_name;
         $order->save();
