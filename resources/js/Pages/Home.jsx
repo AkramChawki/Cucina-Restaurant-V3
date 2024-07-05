@@ -53,32 +53,31 @@ function Home({ rubriques }) {
                     </div>
                 </main>
             </div>
-            <div
-                className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-3"
-                id="restaurants"
-            >
+            <div className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-3" id="restaurants">
                 {rubriques.map((rubrique, id) => (
-                    auth.user.role.includes(rubrique.title) &&
-                    <div className="relative flex" key={id}>
-                        <img
-                            src="/images/restau/white.jpeg"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-center object-cover"
-                        />
-                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                            <a href="#" className="my-2 text-5xl font-bold text-black">
-                                {rubrique.title}
-                            </a>
-                            <Link
-                                href={`/rubrique/${rubrique.title}`}
-                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                            >
-                                Accéder
-                            </Link>
+                    auth.user.role.includes(rubrique.title) && (
+                        <div className="relative flex flex-col items-center" key={id}>
+                            <img
+                                src="/images/restau/white.jpeg"
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-center object-cover"
+                            />
+                            <div className="relative w-full flex flex-col items-center justify-center text-center py-20">
+                                <a href="#" className="my-2 text-5xl font-bold text-black">
+                                    {rubrique.title}
+                                </a>
+                                <Link
+                                    href={`/rubrique/${rubrique.title}`}
+                                    className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                                >
+                                    Accéder
+                                </Link>
+                            </div>
                         </div>
-                    </div>
+                    )
                 ))}
             </div>
+
             <>
                 {/* This example requires Tailwind CSS v2.0+ */}
                 <footer className="bg-white">

@@ -3,9 +3,12 @@
 use App\Models\CuisinierCategory;
 use App\Models\Fiche;
 use App\Models\Number;
+use App\Models\Product;
 use App\Models\Restaurant;
 use App\Models\Rubrique;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -32,16 +35,16 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/commande-cuisinier', function () {
-        
+
         $restaurants = Restaurant::all();
         $ficheId = request("ficheId");
         $exception = Fiche::with('rubrique')
-                  ->where('id', $ficheId)
-                  ->where(function ($query) {
-                      $query->where('name', 'like', '%labo%')
-                            ->orWhere('name', 'like', '%magasin%');
-                  })
-                  ->first();
+            ->where('id', $ficheId)
+            ->where(function ($query) {
+                $query->where('name', 'like', '%labo%')
+                    ->orWhere('name', 'like', '%magasin%');
+            })
+            ->first();
         if ($exception) {
             $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
             $categories = collect([]);
@@ -86,12 +89,12 @@ Route::middleware('auth')->group(function () {
         $restaurants = Restaurant::all();
         $ficheId = request("ficheId");
         $exception = Fiche::with('rubrique')
-                  ->where('id', $ficheId)
-                  ->where(function ($query) {
-                      $query->where('name', 'like', '%labo%')
-                            ->orWhere('name', 'like', '%magasin%');
-                  })
-                  ->first();
+            ->where('id', $ficheId)
+            ->where(function ($query) {
+                $query->where('name', 'like', '%labo%')
+                    ->orWhere('name', 'like', '%magasin%');
+            })
+            ->first();
         if ($exception) {
             $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
             $categories = collect([]);
@@ -151,6 +154,58 @@ Route::middleware('auth')->group(function () {
         return redirect("/");
     });
 
+    Route::get('/restaurants', function () {
+
+        $restaurants = Restaurant::all();
+        return Inertia::render('Restaurants/Restaurants', ["restaurants" => $restaurants]);
+    });
+
+    Route::get('/restaurant', function () {
+        $restau = request("restau");
+        $restaurant = Restaurant::where("name", "like", "%$restau%")->firstOrFail();
+        $products = Product::all();
+        return Inertia::render('Restaurants/Restaurant', ["restaurant" => $restaurant, "products" => $products]);
+    });
+
+    Route::post('/restaurant/{id}/toggle-visibility', function (Request $request, $id) {
+        $restaurant = Restaurant::findOrFail($id);
+        $restaurant->visible = !$restaurant->visible;
+        $restaurant->save();
+
+        return back()->with('success', 'Visibility updated successfully.');
+    })->name('restaurant.toggleVisibility');
+
+    Route::post('/product/{id}/toggle-restaurant', function (Request $request, $id) {
+        $product = Product::findOrFail($id);
+
+        $restaurantName = $request->input('restaurant_name');
+        $addRestaurant = $request->input('add_restaurant');
+
+        if (is_array($product->restaurant)) {
+            $currentRestaurants = $product->restaurant;
+        } else {
+            $currentRestaurants = json_decode($product->restaurant, true);
+            if (!is_array($currentRestaurants)) {
+                $currentRestaurants = []; 
+            }
+        }
+
+        if ($addRestaurant) {
+            // Add restaurant if not already in the list
+            if (!in_array($restaurantName, $currentRestaurants)) {
+                $currentRestaurants[] = $restaurantName;
+            }
+        } else {
+            // Remove restaurant if it exists in the list
+            $currentRestaurants = array_values(array_diff($currentRestaurants, [$restaurantName]));
+        }
+
+        // Assign the array directly
+        $product->restaurant = $currentRestaurants;
+        $product->save();
+
+        return back()->with('success', 'Product updated successfully.');
+    })->name('product.toggleRestaurant');
 });
 
 require __DIR__ . '/auth.php';
