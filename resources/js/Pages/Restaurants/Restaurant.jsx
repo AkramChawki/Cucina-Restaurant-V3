@@ -20,6 +20,7 @@ function classNames(...classes) {
 
 
 export default function Restaurant({ restaurant, products }) {
+    const restau = restaurant.name.toLowerCase();
     const [Renabled, setREnabled] = useState(restaurant.visible);
     const { post } = useForm();
 
@@ -36,7 +37,7 @@ export default function Restaurant({ restaurant, products }) {
 
     const toggleRestaurant = (productId, enabled) => {
         router.post(`/product/${productId}/toggle-restaurant`, {
-            restaurant_name: restaurant.name,
+            restaurant_name: restau,
             add_restaurant: enabled,
         }, {
             onSuccess: () => {
@@ -58,8 +59,8 @@ export default function Restaurant({ restaurant, products }) {
                             checked={Renabled}
                             onChange={toggleVisibility}
                             className={classNames(
-                                Renabled ? 'bg-indigo-600' : 'bg-gray-200',
-                                'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                                Renabled ? 'bg-green-600' : 'bg-gray-200',
+                                'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
                             )}
                         >
                             <span className="sr-only">Use setting</span>
@@ -93,7 +94,7 @@ export default function Restaurant({ restaurant, products }) {
                                     )}
                                     aria-hidden="true"
                                 >
-                                    <svg className="h-3 w-3 text-indigo-600" fill="currentColor" viewBox="0 0 12 12">
+                                    <svg className="h-3 w-3 text-green-600" fill="currentColor" viewBox="0 0 12 12">
                                         <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
                                     </svg>
                                 </span>
@@ -134,7 +135,7 @@ export default function Restaurant({ restaurant, products }) {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {products.map((product) => {
-                                        const isEnabled = Array.isArray(product.restaurant) && product.restaurant.includes(restaurant.name);
+                                        const isEnabled = Array.isArray(product.restaurant) && product.restaurant.includes(restau);
                                         const [Penabled, setPEnabled] = useState(isEnabled);
 
                                         const handleToggle = async () => {
@@ -165,8 +166,8 @@ export default function Restaurant({ restaurant, products }) {
                                                         checked={Penabled}
                                                         onChange={handleToggle}
                                                         className={classNames(
-                                                            Penabled ? 'bg-indigo-600' : 'bg-gray-200',
-                                                            'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                                                            Penabled ? 'bg-green-600' : 'bg-gray-200',
+                                                            'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
                                                         )}
                                                     >
                                                         <span className="sr-only">Use setting</span>
@@ -200,7 +201,7 @@ export default function Restaurant({ restaurant, products }) {
                                                                 )}
                                                                 aria-hidden="true"
                                                             >
-                                                                <svg className="h-3 w-3 text-indigo-600" fill="currentColor" viewBox="0 0 12 12">
+                                                                <svg className="h-3 w-3 text-green-600" fill="currentColor" viewBox="0 0 12 12">
                                                                     <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414z" />
                                                                 </svg>
                                                             </span>
