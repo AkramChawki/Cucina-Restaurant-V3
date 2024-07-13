@@ -169,9 +169,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/restaurant/{id}/toggle-visibility', function (Request $request, $id) {
         $restaurant = Restaurant::findOrFail($id);
-        $restaurant->visible = !$restaurant->visible;
+        $restaurant->visible = $restaurant->visible == 1 ? 0 : 1;
         $restaurant->save();
-
+    
         return back()->with('success', 'Visibility updated successfully.');
     })->name('restaurant.toggleVisibility');
 
