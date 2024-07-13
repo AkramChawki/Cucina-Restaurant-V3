@@ -171,8 +171,8 @@ Route::middleware('auth')->group(function () {
         $restaurant = Restaurant::findOrFail($id);
         $restaurant->visible = $restaurant->visible == 1 ? 0 : 1;
         $restaurant->save();
-
-        return response()->json(['visible' => $restaurant->visible]);
+    
+        return back()->with('success', 'Visibility updated successfully.');
     })->name('restaurant.toggleVisibility');
 
     Route::post('/product/{id}/toggle-restaurant', function (Request $request, $id) {
@@ -186,7 +186,7 @@ Route::middleware('auth')->group(function () {
         } else {
             $currentRestaurants = json_decode($product->restaurant, true);
             if (!is_array($currentRestaurants)) {
-                $currentRestaurants = [];
+                $currentRestaurants = []; 
             }
         }
 

@@ -17,9 +17,11 @@ export default function Restaurant({ restaurant, products }) {
     }, [restaurant.visible]);
 
     const toggleVisibility = () => {
-        post(`/restaurant/${restaurant.id}/toggle-visibility`, {
-            onSuccess: (response) => {
-                setREnabled(response.visible);
+        post(`/restaurant/${restaurant.id}/toggle-visibility`, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                setREnabled(page.props.restaurant.visible);
             },
             onError: (errors) => {
                 console.error(errors);
