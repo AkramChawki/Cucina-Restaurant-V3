@@ -17,14 +17,21 @@ export default function Restaurant({ restaurant, products }) {
     }, [restaurant.visible]);
 
     const toggleVisibility = () => {
+        const newVisibility = Renabled == 1 ? 0 : 1;
+        setREnabled(newVisibility);  // Immediately update local state
+    
         post(`/restaurant/${restaurant.id}/toggle-visibility`, {}, {
             preserveState: true,
             preserveScroll: true,
             onSuccess: (page) => {
-                setREnabled(page.props.restaurant.visible);
+                // Optionally verify the server state matches our local state
+                if (page.props.restaurant.visible != newVisibility) {
+                    setREnabled(page.props.restaurant.visible);
+                }
             },
             onError: (errors) => {
                 console.error(errors);
+                setREnabled(Renabled);  // Revert to original state if there's an error
             }
         });
     };
@@ -53,7 +60,7 @@ export default function Restaurant({ restaurant, products }) {
                             checked={Renabled == 1}
                             onChange={toggleVisibility}
                             className={classNames(
-                                Renabled ? 'bg-green-600' : 'bg-gray-200',
+                                Renabled == 1 ? 'bg-green-600' : 'bg-gray-200',
                                 'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
                             )}
                         >
