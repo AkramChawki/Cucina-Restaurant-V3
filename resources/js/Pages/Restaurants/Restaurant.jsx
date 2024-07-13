@@ -12,10 +12,14 @@ export default function Restaurant({ restaurant, products }) {
     const [Renabled, setREnabled] = useState(restaurant.visible);
     const { post } = useForm();
 
+    useEffect(() => {
+        setREnabled(restaurant.visible);
+    }, [restaurant.visible]);
+
     const toggleVisibility = () => {
         post(`/restaurant/${restaurant.id}/toggle-visibility`, {
-            onSuccess: () => {
-                setREnabled(prevState => prevState == 1 ? 0 : 1);
+            onSuccess: (response) => {
+                setREnabled(response.visible);
             },
             onError: (errors) => {
                 console.error(errors);
@@ -44,7 +48,7 @@ export default function Restaurant({ restaurant, products }) {
                     </div>
                     <div className="ml-4 mt-2 flex-shrink-0">
                         <Switch
-                            checked={Renabled}
+                            checked={Renabled == 1}
                             onChange={toggleVisibility}
                             className={classNames(
                                 Renabled ? 'bg-green-600' : 'bg-gray-200',
