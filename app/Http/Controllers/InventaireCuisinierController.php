@@ -39,7 +39,6 @@ class InventaireCuisinierController extends Controller
         $order->restau = $request->restau;
         $order->detail = $detail;
         $order->save();
-        dd($order);
         if ($order->restau == "/") {
             $pdf_name = "Inventaire-" . $order->name . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
         } else {
