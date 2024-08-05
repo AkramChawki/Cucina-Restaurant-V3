@@ -47,7 +47,7 @@ export default function Rubrique({ fiches }) {
             </div>
             {fiches.map((fiche, id) => (
                 <div key={id}
-                    className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-2"
+                    className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-1"
                     id="restaurants"
                 >
                     <div className="relative flex" >
@@ -69,7 +69,7 @@ export default function Rubrique({ fiches }) {
                             </Link>
                         </div>
                     </div>
-                    <div className="relative flex">
+                    {/* <div className="relative flex">
                         <img
                             src="/images/restau/green.jpeg"
                             alt=""
@@ -87,7 +87,7 @@ export default function Rubrique({ fiches }) {
                                 Accéder
                             </Link>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             ))}
             {auth.user.role.includes("Numero") &&

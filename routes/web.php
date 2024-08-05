@@ -1,16 +1,18 @@
 <?php
 
 use App\Models\CuisinierCategory;
+use App\Models\CuisinierOrder;
+use App\Models\CuisinierProduct;
 use App\Models\Fiche;
+use App\Models\Livraison;
 use App\Models\Number;
 use App\Models\Product;
 use App\Models\Restaurant;
 use App\Models\Rubrique;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -171,7 +173,7 @@ Route::middleware('auth')->group(function () {
         $restaurant = Restaurant::findOrFail($id);
         $restaurant->visible = $restaurant->visible == 1 ? 0 : 1;
         $restaurant->save();
-    
+
         return back()->with('success', 'Visibility updated successfully.');
     })->name('restaurant.toggleVisibility');
 
@@ -186,7 +188,7 @@ Route::middleware('auth')->group(function () {
         } else {
             $currentRestaurants = json_decode($product->restaurant, true);
             if (!is_array($currentRestaurants)) {
-                $currentRestaurants = []; 
+                $currentRestaurants = [];
             }
         }
 
@@ -206,6 +208,17 @@ Route::middleware('auth')->group(function () {
 
         return back()->with('success', 'Product updated successfully.');
     })->name('product.toggleRestaurant');
+    Route::get('/livraison', function () {
+        $livraisons = Livraison::orderBy('date', 'desc')->get();
+        $formattedData = $livraisons->mapWithKeys(function ($livraison) {
+            return [$livraison->date->format('Y-m-d') => $livraison->data];
+        });
+
+        return Inertia::render('Livraison', [
+            'livraisonData' => $formattedData
+        ]);
+    });
+
 });
 
 require __DIR__ . '/auth.php';

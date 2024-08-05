@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('cleanup:monthly')->monthlyOn(28, '23:59');
+        $schedule->command('livraisons:aggregate')->dailyAt('03:05');
     }
 
     /**
