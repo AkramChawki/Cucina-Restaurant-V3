@@ -111,7 +111,7 @@ class AggregateLivraisons extends Command
             }
         }
 
-        $this->sendSummaryEmail();
+        // $this->sendSummaryEmail();
     }
 
     private function generatePdfForType($type, $data)
