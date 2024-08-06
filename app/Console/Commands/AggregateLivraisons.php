@@ -7,11 +7,16 @@ use App\Models\CuisinierOrder;
 use App\Models\CuisinierProduct;
 use App\Models\Livraison;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LivraisonSummary;
 
 class AggregateLivraisons extends Command
 {
     protected $signature = 'livraisons:aggregate';
-    protected $description = 'Aggregate yesterday\'s orders into livraisons';
+    protected $description = 'Aggregate yesterday\'s orders into livraisons and send summary email';
+
+    private $validTypes = ["MALAK", "SALAH", "HIBA", "SABAH", "NAJIB"];
+    private $summaryData = [];
 
     public function handle()
     {
@@ -20,9 +25,7 @@ class AggregateLivraisons extends Command
 
         $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 
-        $aggregatedData = [
-            1 => [], 2 => [], 3 => [], 4 => [], 5 => []
-        ];
+        $aggregatedData = array_fill_keys($this->validTypes, []);
 
         foreach ($orders as $order) {
             $restau = $order->restau;
@@ -37,13 +40,15 @@ class AggregateLivraisons extends Command
                 
                 $product = CuisinierProduct::find($productId);
                 
-                if ($product) {
+                if ($product && in_array($product->type, $this->validTypes)) {
                     $type = $product->type;
                     
                     if (!isset($aggregatedData[$type][$restau][$productId])) {
                         $aggregatedData[$type][$restau][$productId] = [
-                            'name' => $product->name,
-                            'qty' => 0
+                            'designation' => $product->designation,
+                            'qty' => 0,
+                            'image' => $product->image,
+                            'unite' => $product->unite
                         ];
                     }
                     
@@ -60,8 +65,10 @@ class AggregateLivraisons extends Command
                     foreach ($products as $productId => $data) {
                         $restauProducts[] = [
                             'product_id' => $productId,
-                            'name' => $data['name'],
-                            'qty' => (string)$data['qty']
+                            'designation' => $data['designation'] ?? 'Unknown Product',
+                            'qty' => (string)$data['qty'],
+                            'image' => $data['image'] ?? null,
+                            'unite' => $data['unite'] ?? null
                         ];
                     }
                     $formattedData[] = [
@@ -70,23 +77,46 @@ class AggregateLivraisons extends Command
                     ];
                 }
 
+                if (!in_array($type, $this->validTypes)) {
+                    $this->error("Invalid type: $type. Skipping this entry.");
+                    continue;
+                }
+
                 $pdfUrl = $this->generatePdfForType($type, $formattedData);
                 
-                Livraison::create([
-                    'date' => $startDate->toDateString(),
-                    'type' => $type,
-                    'data' => $formattedData,
-                    'pdf_url' => $pdfUrl
-                ]);
+                try {
+                    $livraison = Livraison::create([
+                        'date' => $startDate->toDateString(),
+                        'type' => $type,
+                        'data' => $formattedData,
+                        'pdf_url' => $pdfUrl
+                    ]);
 
-                $this->info("Livraison data for Type $type aggregated and stored successfully for " . $startDate->toDateString());
+                    $this->summaryData[] = [
+                        'type' => $type,
+                        'pdf_url' => $pdfUrl,
+                        'data' => $formattedData
+                    ];
+
+                    $this->info("Livraison data for Type $type aggregated and stored successfully for " . $startDate->toDateString());
+                } catch (\Exception $e) {
+                    $this->error("Failed to create Livraison for Type $type: " . $e->getMessage());
+                    $this->error("Data: " . json_encode([
+                        'date' => $startDate->toDateString(),
+                        'type' => $type,
+                        'data' => $formattedData,
+                        'pdf_url' => $pdfUrl
+                    ]));
+                }
             }
         }
+
+        $this->sendSummaryEmail();
     }
 
     private function generatePdfForType($type, $data)
     {
-        $view = 'pdf.livraison-summary';
+        $view = 'pdfs.livraison-type';
         $fileName = 'livraison_type_' . $type . '_' . now()->format('Y-m-d') . '.pdf';
         $directory = 'livraisons';
 
@@ -103,5 +133,16 @@ class AggregateLivraisons extends Command
             return null;
         }
         return asset("storage/$directory/$file_name");
+    }
+
+    private function sendSummaryEmail()
+    {
+        $recipientEmails = ['admin@cucinanapoli.com', 'akramchawki01@gmail.com'];
+
+        foreach ($recipientEmails as $email) {
+            Mail::to($email)->send(new LivraisonSummary($this->summaryData));
+        }
+
+        $this->info("Summary email sent to " . implode(', ', $recipientEmails));
     }
 }

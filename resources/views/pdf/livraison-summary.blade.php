@@ -10,6 +10,7 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
         h1, h2 { color: #333; }
+        .product-image { max-width: 50px; max-height: 50px; }
     </style>
 </head>
 <body>
@@ -21,19 +22,25 @@
         <table>
             <thead>
                 <tr>
-                    <th>Product ID</th>
-                    <th>Name</th>
+                    <th>Image</th>
+                    <th>Designation</th>
                     <th>Quantity</th>
+                    <th>Unit</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($restau['products'] as $product)
-                    <tr>
-                        <td>{{$product['product_id']}}</td>
-                        <td>{{$product['name']}}</td>
-                        <td>{{$product['qty']}}</td>
-                    </tr>
-                @endforeach
+                <tr>
+                    <td>
+                        <img src="https://admin.cucinanapoli.com/storage/{{ $product['image'] }}" alt="" width="40px" height="40px">
+                    </td>
+                    <td>
+                        <h4>{{ $product['designation'] }}</h4>
+                    </td>
+                    <td>{{ $product['qty'] }}</td>
+                    <td>{{ $product['unite'] }}</td>
+                </tr>
+            @endforeach
             </tbody>
         </table>
     @endforeach

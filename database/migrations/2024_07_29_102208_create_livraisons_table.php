@@ -9,7 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('livraisons', function (Blueprint $table) {
-            $table->unsignedTinyInteger('type')->after('date');
+            $table->string('type')->after('date');
             $table->string('pdf_url')->nullable()->after('data');
         });
     }

@@ -14,6 +14,6 @@ class Livraison extends Model
     protected $casts = [
         'data' => 'array',
         'date' => 'date',
-        'type' => 'integer',
+        'type' => 'string',
     ];
 }

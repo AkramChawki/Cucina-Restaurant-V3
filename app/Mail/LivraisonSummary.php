@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Livraison;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -14,48 +13,29 @@ class LivraisonSummary extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Livraison $livraison;
+    public $summaryData;
 
-    public $pdf;
-
-    /**
-     * Create a new message instance.
-     */
-    public function __construct($livraison, $pdf)
+    public function __construct($summaryData)
     {
-        $this->livraison = $livraison;
-        $this->pdf = $pdf;
+        $this->summaryData = $summaryData;
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function envelope()
     {
         return new Envelope(
-            subject: 'Résumé des Livraisons',
+            subject: 'Livraison Summary',
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
+    public function content()
     {
         return new Content(
             view: 'emails.livraison-summary',
-            with: ["livraison" => $this->livraison, "pdf" => $this->pdf]
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
+    public function attachments()
     {
-        return [
-        ];
+        return [];
     }
 }
