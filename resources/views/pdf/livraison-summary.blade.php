@@ -48,7 +48,6 @@
         <table>
             <thead>
                 <tr>
-                    <th>Image</th>
                     <th>Designation</th>
                     <th>Quantity</th>
                     <th>Unit</th>
@@ -57,10 +56,6 @@
             <tbody>
                 @foreach ($restau['products'] as $product)
                     <tr>
-                        <td>
-                            <img src="https://admin.cucinanapoli.com/storage/{{ $product['image'] }}" alt=""
-                                width="40px" height="40px">
-                        </td>
                         <td>
                             <h4>{{ $product['designation'] }}</h4>
                         </td>

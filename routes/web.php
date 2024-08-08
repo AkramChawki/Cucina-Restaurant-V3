@@ -25,6 +25,9 @@ use Carbon\Carbon;
 |
 */
 
+$validTypes = ["MALAK", "SALAH", "HIBA", "SABAH", "NAJIB"];
+$summaryData = [];
+
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         $rubriques = Rubrique::all();
@@ -208,17 +211,114 @@ Route::middleware('auth')->group(function () {
 
         return back()->with('success', 'Product updated successfully.');
     })->name('product.toggleRestaurant');
-    Route::get('/livraison', function () {
-        $livraisons = Livraison::orderBy('date', 'desc')->get();
-        $formattedData = $livraisons->mapWithKeys(function ($livraison) {
-            return [$livraison->date->format('Y-m-d') => $livraison->data];
-        });
-
-        return Inertia::render('Livraison', [
-            'livraisonData' => $formattedData
-        ]);
-    });
-
 });
+
+Route::get('/livraisons/aggregate', function () use ($validTypes, &$summaryData) {
+    $startDate = Carbon::yesterday('Europe/Paris')->setTime(4, 0, 0);
+    $endDate = Carbon::today('Europe/Paris')->setTime(4, 0, 0);
+
+    $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+
+    $aggregatedData = array_fill_keys($validTypes, []);
+
+    foreach ($orders as $order) {
+        $restau = $order->restau;
+
+        if (is_null($restau)) {
+            continue;
+        }
+
+        foreach ($order->detail as $item) {
+            $productId = $item['product_id'];
+            $qty = (int)$item['qty'];
+
+            $product = CuisinierProduct::find($productId);
+
+            if ($product && in_array($product->type, $validTypes)) {
+                $type = $product->type;
+
+                if (!isset($aggregatedData[$type][$restau][$productId])) {
+                    $aggregatedData[$type][$restau][$productId] = [
+                        'designation' => $product->designation,
+                        'qty' => 0,
+                        'image' => $product->image,
+                        'unite' => $product->unite
+                    ];
+                }
+
+                $aggregatedData[$type][$restau][$productId]['qty'] += $qty;
+            }
+        }
+    }
+
+    foreach ($aggregatedData as $type => $restaus) {
+        if (!empty($restaus)) {
+            $formattedData = [];
+            foreach ($restaus as $restau => $products) {
+                $restauProducts = [];
+                foreach ($products as $productId => $data) {
+                    $restauProducts[] = [
+                        'product_id' => $productId,
+                        'designation' => $data['designation'] ?? 'Unknown Product',
+                        'qty' => (string)$data['qty'],
+                        'image' => $data['image'] ?? null,
+                        'unite' => $data['unite'] ?? null
+                    ];
+                }
+                $formattedData[] = [
+                    'restau' => $restau,
+                    'products' => $restauProducts
+                ];
+            }
+
+            if (!in_array($type, $validTypes)) {
+                return response()->json(['error' => "Invalid type: $type. Skipping this entry."], 400);
+            }
+
+            $pdfUrl = generatePdfForType($type, $formattedData);
+
+            try {
+                $livraison = Livraison::create([
+                    'date' => $startDate->toDateString(),
+                    'type' => $type,
+                    'data' => $formattedData,
+                    'pdf_url' => $pdfUrl
+                ]);
+
+                $summaryData[] = [
+                    'type' => $type,
+                    'pdf_url' => $pdfUrl,
+                    'data' => $formattedData
+                ];
+
+                return response()->json(['message' => "Livraison data for Type $type aggregated and stored successfully for " . $startDate->toDateString()]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => "Failed to create Livraison for Type $type: " . $e->getMessage()], 500);
+            }
+        }
+    }
+
+    // $this->sendSummaryEmail();
+});
+
+function generatePdfForType($type, $data)
+{
+    $view = 'pdfs.livraison-type';
+    $fileName = 'livraison_type_' . $type . '_' . now()->format('Y-m-d') . '.pdf';
+    $directory = 'livraisons';
+
+    return generate_pdf_and_save($view, ['type' => $type, 'data' => $data], $fileName, $directory);
+}
+
+function generate_pdf_and_save($view, $data, $file_name, $directory)
+{
+    $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
+    $pdf->binary = base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
+    if (!$pdf->saveAs(public_path("storage/$directory/$file_name"))) {
+        $error = $pdf->getError();
+        return response()->json(['error' => "PDF generation failed: $error"], 500);
+    }
+    return asset("storage/$directory/$file_name");
+}
 
 require __DIR__ . '/auth.php';
