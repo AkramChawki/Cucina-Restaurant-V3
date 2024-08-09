@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from "@inertiajs/react";
 
 function Home({ rubriques }) {
-    const { auth } = usePage().props
+    const { auth } = usePage().props;
 
     return (
         <>
@@ -35,7 +35,9 @@ function Home({ rubriques }) {
                                 </div>
                                 <div className="rounded-md shadow mx-3">
                                     <Link
-                                        href={route('logout')} method="post" as="button"
+                                        href={route("logout")}
+                                        method="post"
+                                        as="button"
                                         className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#73ac70] hover:opacity-90 md:py-4 md:text-lg md:px-10"
                                     >
                                         Se Deconnecter
@@ -53,33 +55,135 @@ function Home({ rubriques }) {
                     </div>
                 </main>
             </div>
-            <div className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-3" id="restaurants">
-                {rubriques.map((rubrique, id) => (
-                    auth.user.role.includes(rubrique.title) && (
-                        <div className="relative flex flex-col items-center" key={id}>
-                            <img
-                                src="/images/restau/white.jpeg"
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-center object-cover"
-                            />
-                            <div className="relative w-full flex flex-col items-center justify-center text-center py-20">
-                                <a href="#" className="my-2 text-5xl font-bold text-black">
-                                    {rubrique.title}
-                                </a>
-                                <Link
-                                    href={`/rubrique/${rubrique.title}`}
-                                    className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                                >
-                                    Accéder
-                                </Link>
+            <div
+                className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-3"
+                id="restaurants"
+            >
+                {rubriques.map(
+                    (rubrique, id) =>
+                        auth.user.role.includes(rubrique.title) && (
+                            <div
+                                className="relative flex flex-col items-center"
+                                key={id}
+                            >
+                                <img
+                                    src="/images/restau/white.jpeg"
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-center object-cover"
+                                />
+                                <div className="relative w-full flex flex-col items-center justify-center text-center py-20">
+                                    <a
+                                        href="#"
+                                        className="my-2 text-5xl font-bold text-black"
+                                    >
+                                        {rubrique.title}
+                                    </a>
+                                    <Link
+                                        href={`/rubrique/${rubrique.title}`}
+                                        className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                                    >
+                                        Accéder
+                                    </Link>
+                                </div>
                             </div>
+                        )
+                )}
+                {/* Remove or comment out this entire block
+                {auth.user.role.includes("Inventaire") &&
+                    {
+                        <div className="relative flex">
+                        <img
+                            src="/images/restau/green.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a href="#" className="my-2 text-5xl font-bold text-white">
+                                Inventaire {fiche.name}
+                            </a>
+                            <Link
+                                href="/inventaire"
+                                data={{ ficheId: fiche.id }}
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
                         </div>
-                    )
-                ))}
+                    </div>
+                    }}
+                    */}
+                {auth.user.role.includes("Livraison") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Livraison
+                            </a>
+                            <Link
+                                href="/livraisons"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {auth.user.role.includes("Numero") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Numero
+                            </a>
+                            <Link
+                                href="/numeros"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {auth.user.role.includes("Restaurant") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Restaurant
+                            </a>
+                            <Link
+                                href="/restaurants"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <>
-                {/* This example requires Tailwind CSS v2.0+ */}
                 <footer className="bg-white">
                     <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
                         <div className="flex justify-center space-x-6 md:order-2">

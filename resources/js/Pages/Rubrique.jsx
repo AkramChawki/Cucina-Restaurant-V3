@@ -69,67 +69,9 @@ export default function Rubrique({ fiches }) {
                             </Link>
                         </div>
                     </div>
-                    {/* <div className="relative flex">
-                        <img
-                            src="/images/restau/green.jpeg"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-center object-cover"
-                        />
-                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                            <a href="#" className="my-2 text-5xl font-bold text-white">
-                                Inventaire {fiche.name}
-                            </a>
-                            <Link
-                                href="/inventaire"
-                                data={{ ficheId: fiche.id }}
-                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                            >
-                                Accéder
-                            </Link>
-                        </div>
-                    </div> */}
                 </div>
             ))}
-            {auth.user.role.includes("Numero") &&
-                <div className="relative flex">
-                    <img
-                        src="/images/restau/white.jpeg"
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-center object-cover"
-                    />
-                    <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                        <a href="#" className="my-2 text-5xl font-bold text-black">
-                            Numero
-                        </a>
-                        <Link
-                            href="/numeros"
-                            className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                        >
-                            Accéder
-                        </Link>
-                    </div>
-                </div>
-            }
-            {auth.user.role.includes("Restaurant") &&
-                <div className="relative flex">
-                    <img
-                        src="/images/restau/white.jpeg"
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-center object-cover"
-                    />
-                    <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                        <a href="#" className="my-2 text-5xl font-bold text-black">
-                            Restaurant
-                        </a>
-                        <Link
-                            href="/restaurants"
-                            className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                        >
-                            Accéder
-                        </Link>
-                    </div>
-                </div>
-            }
+            
 
             <>
                 <footer className="bg-white">

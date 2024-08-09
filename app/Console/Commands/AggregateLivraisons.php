@@ -8,7 +8,6 @@ use App\Models\CuisinierProduct;
 use App\Models\Livraison;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\LivraisonSummary;
 
 class AggregateLivraisons extends Command
 {
@@ -111,13 +110,13 @@ class AggregateLivraisons extends Command
             }
         }
 
-        // $this->sendSummaryEmail();
+        $this->sendSummaryEmail();
     }
 
     private function generatePdfForType($type, $data)
     {
-        $view = 'pdfs.livraison-type';
-        $fileName = 'livraison_type_' . $type . '_' . now()->format('Y-m-d') . '.pdf';
+        $view = 'pdf.livraison-summary';
+        $fileName = 'livraison_summary_' . $type . '_' . now()->format('Y-m-d') . '.pdf';
         $directory = 'livraisons';
 
         return $this->generate_pdf_and_save($view, ['type' => $type, 'data' => $data], $fileName, $directory);
@@ -135,14 +134,4 @@ class AggregateLivraisons extends Command
         return asset("storage/$directory/$file_name");
     }
 
-    private function sendSummaryEmail()
-    {
-        $recipientEmails = ['admin@cucinanapoli.com', 'akramchawki01@gmail.com'];
-
-        foreach ($recipientEmails as $email) {
-            Mail::to($email)->send(new LivraisonSummary($this->summaryData));
-        }
-
-        $this->info("Summary email sent to " . implode(', ', $recipientEmails));
-    }
 }

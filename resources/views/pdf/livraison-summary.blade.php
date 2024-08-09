@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livraison Type {{ $type }}</title>
+    <title>Livraison Pour {{ $type }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,7 +40,7 @@
 </head>
 
 <body>
-    <h1>Livraison Summary - Type {{ $type }}</h1>
+    <h1>Commande Pour -  {{ $type }}</h1>
     <p>Date: {{ now()->toDateString() }}</p>
 
     @foreach ($data as $restau)
@@ -48,6 +48,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Image</th>
                     <th>Designation</th>
                     <th>Quantity</th>
                     <th>Unit</th>
@@ -56,6 +57,10 @@
             <tbody>
                 @foreach ($restau['products'] as $product)
                     <tr>
+                        <td>
+                            <img src="https://admin.cucinanapoli.com/storage/{{ $product['image'] }}" alt=""
+                                width="40px" height="40px">
+                        </td>
                         <td>
                             <h4>{{ $product['designation'] }}</h4>
                         </td>
