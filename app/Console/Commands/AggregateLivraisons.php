@@ -19,8 +19,17 @@ class AggregateLivraisons extends Command
 
     public function handle()
     {
-        $startDate = Carbon::yesterday('Europe/Paris')->setTime(4, 0, 0);
-        $endDate = Carbon::today('Europe/Paris')->setTime(4, 0, 0);
+        $now = Carbon::now('Europe/Paris');
+
+        if ($now->hour < 16) {
+            $startDate = Carbon::yesterday('Europe/Paris')->setTime(17, 0, 0);
+            $endDate = Carbon::today('Europe/Paris')->setTime(2, 0, 0);
+        } else {
+            $startDate = Carbon::today('Europe/Paris')->setTime(3, 0, 0);
+            $endDate = Carbon::today('Europe/Paris')->setTime(16, 0, 0);
+        }
+
+        $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 
         $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 
@@ -28,20 +37,20 @@ class AggregateLivraisons extends Command
 
         foreach ($orders as $order) {
             $restau = $order->restau;
-            
+
             if (is_null($restau)) {
                 continue;
             }
-            
+
             foreach ($order->detail as $item) {
                 $productId = $item['product_id'];
                 $qty = (int)$item['qty'];
-                
+
                 $product = CuisinierProduct::find($productId);
-                
+
                 if ($product && in_array($product->type, $this->validTypes)) {
                     $type = $product->type;
-                    
+
                     if (!isset($aggregatedData[$type][$restau][$productId])) {
                         $aggregatedData[$type][$restau][$productId] = [
                             'designation' => $product->designation,
@@ -50,7 +59,7 @@ class AggregateLivraisons extends Command
                             'unite' => $product->unite
                         ];
                     }
-                    
+
                     $aggregatedData[$type][$restau][$productId]['qty'] += $qty;
                 }
             }
@@ -82,7 +91,7 @@ class AggregateLivraisons extends Command
                 }
 
                 $pdfUrl = $this->generatePdfForType($type, $formattedData);
-                
+
                 try {
                     $livraison = Livraison::create([
                         'date' => $startDate->toDateString(),
@@ -133,5 +142,4 @@ class AggregateLivraisons extends Command
         }
         return asset("storage/$directory/$file_name");
     }
-
 }
