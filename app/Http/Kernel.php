@@ -48,7 +48,7 @@ class Kernel extends HttpKernel
 
         'auth' => [
         \App\Http\Middleware\Authenticate::class,
-        \App\Http\Middleware\TimeBasedAuth::class, 
+        // \App\Http\Middleware\TimeBasedAuth::class, 
     ],
     ];
 
@@ -70,6 +70,6 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'time.auth' => \App\Http\Middleware\TimeBasedAuth::class,
+        // 'time.auth' => \App\Http\Middleware\TimeBasedAuth::class,
     ];
 }
