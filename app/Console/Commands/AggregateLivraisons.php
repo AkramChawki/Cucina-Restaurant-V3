@@ -21,12 +21,12 @@ class AggregateLivraisons extends Command
     {
         $now = Carbon::now('Europe/Paris');
 
-        if ($now->hour < 16) {
-            $startDate = Carbon::yesterday('Europe/Paris')->setTime(17, 0, 0);
-            $endDate = Carbon::today('Europe/Paris')->setTime(2, 0, 0);
+        if ($now->hour < 17) {
+            $startDate = Carbon::yesterday('Europe/Paris')->setTime(18, 0, 0);
+            $endDate = Carbon::today('Europe/Paris')->setTime(3, 0, 0);
         } else {
-            $startDate = Carbon::today('Europe/Paris')->setTime(3, 0, 0);
-            $endDate = Carbon::today('Europe/Paris')->setTime(16, 0, 0);
+            $startDate = Carbon::today('Europe/Paris')->setTime(4, 0, 0);
+            $endDate = Carbon::today('Europe/Paris')->setTime(17, 0, 0);
         }
 
         $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
@@ -119,13 +119,12 @@ class AggregateLivraisons extends Command
             }
         }
 
-        $this->sendSummaryEmail();
     }
 
     private function generatePdfForType($type, $data)
     {
         $view = 'pdf.livraison-summary';
-        $fileName = 'livraison_summary_' . $type . '_' . now()->format('Y-m-d') . '.pdf';
+        $fileName = 'livraison_summary_' . $type . '_' . now()->format('Y-m-d H:i') . '.pdf';
         $directory = 'livraisons';
 
         return $this->generate_pdf_and_save($view, ['type' => $type, 'data' => $data], $fileName, $directory);
