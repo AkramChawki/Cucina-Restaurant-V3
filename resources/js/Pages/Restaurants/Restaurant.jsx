@@ -18,20 +18,19 @@ export default function Restaurant({ restaurant, products }) {
 
     const toggleVisibility = () => {
         const newVisibility = Renabled == 1 ? 0 : 1;
-        setREnabled(newVisibility);  // Immediately update local state
+        setREnabled(newVisibility);
     
         post(`/restaurant/${restaurant.id}/toggle-visibility`, {}, {
             preserveState: true,
             preserveScroll: true,
             onSuccess: (page) => {
-                // Optionally verify the server state matches our local state
                 if (page.props.restaurant.visible != newVisibility) {
                     setREnabled(page.props.restaurant.visible);
                 }
             },
             onError: (errors) => {
                 console.error(errors);
-                setREnabled(Renabled);  // Revert to original state if there's an error
+                setREnabled(Renabled); 
             }
         });
     };

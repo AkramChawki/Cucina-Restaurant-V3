@@ -23,7 +23,7 @@ use Inertia\Inertia;
 */
 
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'time.auth'])->group(function () {
 
     Route::get('/', function () {
         $rubriques = Rubrique::all();

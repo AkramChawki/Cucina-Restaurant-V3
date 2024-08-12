@@ -1,1 +1,0 @@
-import{j as t,F as e,a as r}from"./app-19533f92.js";import m from"./Name-9d914867.js";import{F as s}from"./Footer-de0ec9b1.js";function p({ficheId:a,restaurants:o}){return t(e,{children:[r(m,{ficheId:a,restaurants:o}),r(s,{})]})}export{p as default};

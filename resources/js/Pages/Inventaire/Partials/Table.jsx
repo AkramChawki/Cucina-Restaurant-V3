@@ -16,18 +16,13 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Example({ categories, ficheId, restau }) {
+export default function Table({ categories, ficheId, restau }) {
     const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
         restau: restau || '',
         ficheId: ficheId,
-        products: categories.reduce((acc, category) => {
-            category.products.forEach(product => {
-                acc.push({ id: product.id, qty: 0 });
-            });
-            return acc;
-        }, [])
+        products: Array(categories.reduce((sum, category) => sum + category.products.length, 0)).fill({ id: null, qty: 0 }),
     });
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -36,30 +31,15 @@ export default function Example({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const filteredProducts = data.products.filter(product => product.qty > 0);
+        const filteredProducts = data.products.filter(({ qty }) => qty > 0);
         const filteredData = { ...data, products: filteredProducts };
         post('/inventaire/stock', { data: filteredData });
     };
 
-    const handleQtyChange = (productId, value) => {
+    const handleQtyChange = (productIndex, value) => {
         if (value < 0) return;
-        const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: value } : product
-        );
-        setData('products', updatedProducts);
-    };
-
-    const handleFocus = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
-        );
-        setData('products', updatedProducts);
-    };
-
-    const handleBlur = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
-        );
+        const updatedProducts = [...data.products];
+        updatedProducts[productIndex] = { ...updatedProducts[productIndex], qty: value };
         setData('products', updatedProducts);
     };
 
@@ -67,14 +47,18 @@ export default function Example({ categories, ficheId, restau }) {
         setFilterText(e.target.value.toLowerCase());
     };
 
-    const filteredCategories = categories.map((category) => {
-        const filteredProducts = category.products.filter(product =>
-            product.designation.toLowerCase().includes(filterText)
-        );
-        return { ...category, products: filteredProducts };
-    }).filter(category => category.products.length > 0);
+    const categoryProducts = categories.reduce((acc, category) => {
+        category.products.forEach((product) => {
+            acc.push({ category, product });
+        });
+        return acc;
+    }, []);
 
-    const navigation = filteredCategories.map(category => ({
+    const filteredProducts = categoryProducts.filter(({ product }) =>
+        product.designation.toLowerCase().includes(filterText)
+    );
+
+    const navigation = filteredProducts.map(({ category }) => ({
         name: category.name,
         href: `#${category.name.toLowerCase()}`,
     }));

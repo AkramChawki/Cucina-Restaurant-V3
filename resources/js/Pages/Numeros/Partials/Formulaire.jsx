@@ -3,28 +3,32 @@ import React from "react";
 import MultipleValueTextInput from "react-multivalue-text-input";
 
 export default function Formulaire() {
-    const { data, setData, post, processing, errors } = useForm({
-        numbers: [],
-    })
+    const { data, setData, post, processing, errors } = useForm({ numbers: [] });
 
-    function submit(e) {
-        e.preventDefault()
-        post('/numeros')
-    }
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post('/numeros');
+    };
+
+    const handleItemAdded = (item, allItems) => setData('numbers', allItems);
+
+    const handleItemDeleted = (item, allItems) => setData('numbers', allItems);
+
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex h-screen">
-            <div className="m-auto w-[90%] relative   ">
-                <form onSubmit={submit}>
+            <div className="m-auto w-[90%] relative">
+                <form onSubmit={handleSubmit}>
                     <label
                         htmlFor="number"
                         className="px-1 bg-white text-xs font-medium text-gray-900"
                     >
                         Inserer les numeros
                     </label>
-                    <MultipleValueTextInput name="number"
+                    <MultipleValueTextInput
+                        name="number"
                         placeholder="Inserer les numeros"
-                        onItemAdded={(item, allItems) => setData('numbers', allItems)}
-                        onItemDeleted={(item, allItems) => setData('numbers', allItems)}
+                        onItemAdded={handleItemAdded}
+                        onItemDeleted={handleItemDeleted}
                     />
                     <div className="pt-5">
                         <div className="flex justify-end">

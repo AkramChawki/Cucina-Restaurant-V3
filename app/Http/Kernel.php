@@ -48,7 +48,7 @@ class Kernel extends HttpKernel
 
         'auth' => [
         \App\Http\Middleware\Authenticate::class,
-        // \App\Http\Middleware\TimeBasedAuth::class, 
+        \App\Http\Middleware\TimeBasedAuth::class, 
     ],
     ];
 

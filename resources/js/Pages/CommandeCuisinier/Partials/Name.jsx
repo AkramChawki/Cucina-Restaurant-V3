@@ -9,19 +9,15 @@ function classNames(...classes) {
 }
 
 export default function Name({ ficheId, restaurants }) {
-    const getInitialState = () => {
-        const restaurant = "";
-        return restaurant;
-    };
+    const [restaurant, setRestaurant] = React.useState("");
 
-    const [restaurant, setRestaurant] = useState(getInitialState);
-
-    const handleChange = event => {
+    const handleChange = React.useCallback((event) => {
         setRestaurant(event.target.value);
-    };
+    }, []);
+
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex h-screen">
-            <div className="m-auto w-[90%] relative   ">
+            <div className="m-auto w-[90%] relative">
                 <div className="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-[#73ac70] focus-within:border-[#73ac70]">
                     <label
                         htmlFor="name"
@@ -29,14 +25,22 @@ export default function Name({ ficheId, restaurants }) {
                     >
                         Choisissez le restaurant
                     </label>
-                    <select value={restaurant} onChange={handleChange} id="restaurant" name="restaurant" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#90D88C] focus:border-[#90D88C] sm:text-sm rounded-md">
-                        <option defaultValue={""}>Selectionner le restaurant ...</option>
+                    <select
+                        value={restaurant}
+                        onChange={handleChange}
+                        id="restaurant"
+                        name="restaurant"
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#90D88C] focus:border-[#90D88C] sm:text-sm rounded-md"
+                    >
+                        <option value="">Selectionner le restaurant ...</option>
                         {restaurants.map((restaurant) => (
-                            <option key={restaurant.id} value={restaurant.name}>{restaurant.name}</option>
+                            <option key={restaurant.id} value={restaurant.name}>
+                                {restaurant.name}
+                            </option>
                         ))}
                     </select>
                 </div>
-                {restaurant !== "" && (
+                {restaurant && (
                     <>
                         <a
                             href={`/commande-cuisinier/commander?ficheId=${ficheId}&restau=${restaurant}`}
@@ -53,7 +57,6 @@ export default function Name({ ficheId, restaurants }) {
                             Annuler
                         </Link>
                     </>
-
                 )}
             </div>
         </div>

@@ -23,11 +23,8 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
-            Route::middleware(['web'])
+            Route::middleware(['web', 'time.auth'])
                 ->group(base_path('routes/web.php'));
         });
     }
 }
-
-
-// , 'time.auth'
