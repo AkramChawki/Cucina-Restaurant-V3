@@ -42,7 +42,6 @@ class CommandeCuisinierController extends Controller
         $pdf_name = "Commande-" . $order->name . "-" . ($order->restau ?: '') . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
 
         generate_pdf_and_save("pdf.order-summary", ["order" => $order], $pdf_name, "documents");
-        generate_pdf_and_save("pdf.receipt", ["order" => $order], $pdf_name, "receipt");
         Mail::to("admin@cucinanapoli.com")->send(new OrderSummary($order, $pdf_name));
         $order->pdf = $pdf_name;
         $order->save();
