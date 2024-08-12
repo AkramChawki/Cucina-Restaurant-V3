@@ -23,7 +23,7 @@ class TimeBasedAuth
             $now = Carbon::now('Africa/Casablanca');
             
             $morningStart = Carbon::createFromTime(11, 0, 0, 'Africa/Casablanca');
-            $morningEnd = Carbon::createFromTime(16, 0, 0, 'Africa/Casablanca');
+            $morningEnd = Carbon::createFromTime(16, 25, 0, 'Africa/Casablanca');
             $nightStart = Carbon::createFromTime(22, 0, 0, 'Africa/Casablanca');
             $nightEnd = Carbon::createFromTime(3, 0, 0, 'Africa/Casablanca')->addDay();
 
