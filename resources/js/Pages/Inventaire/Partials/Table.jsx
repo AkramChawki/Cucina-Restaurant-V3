@@ -22,7 +22,12 @@ export default function Table({ categories, ficheId, restau }) {
         name: auth.user.name,
         restau: restau || '',
         ficheId: ficheId,
-        products: Array(categories.reduce((sum, category) => sum + category.products.length, 0)).fill({ id: null, qty: 0 }),
+        products: categories.reduce((acc, category) => {
+            category.products.forEach(product => {
+                acc.push({ id: product.id, qty: 0 });
+            });
+            return acc;
+        }, [])
     });
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -31,15 +36,30 @@ export default function Table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const filteredProducts = data.products.filter(({ qty }) => qty > 0);
+        const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
         post('/inventaire/stock', { data: filteredData });
     };
 
-    const handleQtyChange = (productIndex, value) => {
+    const handleQtyChange = (productId, value) => {
         if (value < 0) return;
-        const updatedProducts = [...data.products];
-        updatedProducts[productIndex] = { ...updatedProducts[productIndex], qty: value };
+        const updatedProducts = data.products.map(product =>
+            product.id === productId ? { ...product, qty: value } : product
+        );
+        setData('products', updatedProducts);
+    };
+
+    const handleFocus = (productId) => {
+        const updatedProducts = data.products.map(product =>
+            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
+        );
+        setData('products', updatedProducts);
+    };
+
+    const handleBlur = (productId) => {
+        const updatedProducts = data.products.map(product =>
+            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
+        );
         setData('products', updatedProducts);
     };
 
@@ -47,18 +67,14 @@ export default function Table({ categories, ficheId, restau }) {
         setFilterText(e.target.value.toLowerCase());
     };
 
-    const categoryProducts = categories.reduce((acc, category) => {
-        category.products.forEach((product) => {
-            acc.push({ category, product });
-        });
-        return acc;
-    }, []);
+    const filteredCategories = categories.map((category) => {
+        const filteredProducts = category.products.filter(product =>
+            product.designation.toLowerCase().includes(filterText)
+        );
+        return { ...category, products: filteredProducts };
+    }).filter(category => category.products.length > 0);
 
-    const filteredProducts = categoryProducts.filter(({ product }) =>
-        product.designation.toLowerCase().includes(filterText)
-    );
-
-    const navigation = filteredProducts.map(({ category }) => ({
+    const navigation = filteredCategories.map(category => ({
         name: category.name,
         href: `#${category.name.toLowerCase()}`,
     }));

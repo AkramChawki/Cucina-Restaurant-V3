@@ -16,13 +16,18 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function table({ categories, ficheId, restau }) {
+export default function Table({ categories, ficheId, restau }) {
     const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
         restau: restau || '',
         ficheId: ficheId,
-        products: Array(categories.reduce((acc, category) => acc + category.products.length, 0)).fill({ id: null, qty: 0 }),
+        products: categories.reduce((acc, category) => {
+            category.products.forEach(product => {
+                acc.push({ id: product.id, qty: 0 });
+            });
+            return acc;
+        }, [])
     });
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -31,15 +36,30 @@ export default function table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const filteredProducts = data.products.filter((_, index) => data.products[index].qty > 0);
+        const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
         post('/commande-cuisinier/commander', { data: filteredData });
     };
 
-    const handleQtyChange = (index, value) => {
+    const handleQtyChange = (productId, value) => {
         if (value < 0) return;
-        const updatedProducts = [...data.products];
-        updatedProducts[index] = { ...updatedProducts[index], qty: value };
+        const updatedProducts = data.products.map(product =>
+            product.id === productId ? { ...product, qty: value } : product
+        );
+        setData('products', updatedProducts);
+    };
+
+    const handleFocus = (productId) => {
+        const updatedProducts = data.products.map(product =>
+            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
+        );
+        setData('products', updatedProducts);
+    };
+
+    const handleBlur = (productId) => {
+        const updatedProducts = data.products.map(product =>
+            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
+        );
         setData('products', updatedProducts);
     };
 
@@ -47,7 +67,17 @@ export default function table({ categories, ficheId, restau }) {
         setFilterText(e.target.value.toLowerCase());
     };
 
-    const filteredCategories = categories.filter(category => category.products.some(product => product.designation.toLowerCase().includes(filterText)));
+    const filteredCategories = categories.map((category) => {
+        const filteredProducts = category.products.filter(product =>
+            product.designation.toLowerCase().includes(filterText)
+        );
+        return { ...category, products: filteredProducts };
+    }).filter(category => category.products.length > 0);
+
+    const navigation = filteredCategories.map(category => ({
+        name: category.name,
+        href: `#${category.name.toLowerCase()}`,
+    }));
 
     return (
         <>
@@ -229,14 +259,14 @@ export default function table({ categories, ficheId, restau }) {
                         </div>
                         <main>
                             <div className="py-6">
-                                {filteredCategories.map((category, index) => (
+                                {filteredCategories.map((category) => (
                                     <div key={`c-${category.id}`}>
                                         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                                             <h1 id={category.name.toLowerCase()} className="text-2xl font-semibold text-gray-900">{category.name}</h1>
                                         </div>
                                         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                                             <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-2 lg:max-w-none">
-                                                {category.products.map((product, productIndex) => (
+                                                {category.products.map(product => (
                                                     <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
                                                         <div className="flex-shrink-0">
                                                             <img className="h-48 w-full object-cover" src={"https://admin.cucinanapoli.com/storage/" + product.image} alt="" />
@@ -254,8 +284,10 @@ export default function table({ categories, ficheId, restau }) {
                                                                         className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
                                                                         placeholder="0"
                                                                         min={0}
-                                                                        value={data.products[index * category.products.length + productIndex].qty}
-                                                                        onChange={(e) => handleQtyChange(index * category.products.length + productIndex, parseInt(e.target.value))}
+                                                                        value={data.products.find(p => p.id === product.id)?.qty}
+                                                                        onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
+                                                                        onFocus={() => handleFocus(product.id)}
+                                                                        onBlur={() => handleBlur(product.id)}
                                                                     />
                                                                     <div className='text-center my-4'>
                                                                         unité ({product.unite})
@@ -293,5 +325,3 @@ export default function table({ categories, ficheId, restau }) {
         </>
     )
 }
-
-
