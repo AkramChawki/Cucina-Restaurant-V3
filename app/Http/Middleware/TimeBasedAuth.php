@@ -33,7 +33,7 @@ class TimeBasedAuth
 
         $allowedRanges = [
             'Cuisine' => [
-                ['start' => '11:00', 'end' => '11:30'],
+                ['start' => '10:00', 'end' => '10:30'],
                 ['start' => '22:00', 'end' => '02:00']
             ],
             'Pizzeria' => [
