@@ -25,6 +25,8 @@ export default function table({ categories, ficheId, restau }) {
         products: Array(categories.reduce((acc, category) => acc + category.products.length, 0)).fill({ id: null, qty: 0 }),
     });
 
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+
     const [filterText, setFilterText] = useState('');
 
     const handleSubmit = (e) => {
