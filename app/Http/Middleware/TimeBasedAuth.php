@@ -26,7 +26,7 @@ class TimeBasedAuth
             $now = Carbon::now('Europe/Paris'); // GMT+1 timezone
             
             $morningStart = Carbon::createFromTime(11, 0, 0, 'Europe/Paris');
-            $morningEnd = Carbon::createFromTime(11, 30, 0, 'Europe/Paris');
+            $morningEnd = Carbon::createFromTime(16, 0, 0, 'Europe/Paris');
             $nightStart = Carbon::createFromTime(22, 0, 0, 'Europe/Paris');
             $nightEnd = Carbon::createFromTime(1, 0, 0, 'Europe/Paris')->addDay();
 
