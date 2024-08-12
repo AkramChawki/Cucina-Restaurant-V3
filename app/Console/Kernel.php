@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('livraisons:aggregate')->dailyAt('03:30');
-        $schedule->command('livraisons:aggregate')->dailyAt('17:30');
+        $schedule->command('livraisons:aggregate')->dailyAt('16:30');
     }
 
     /**

@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'Europe/Paris',
+    'timezone' => 'Africa/Casablanca',
 
     /*
     |--------------------------------------------------------------------------

@@ -15,20 +15,17 @@ class TimeBasedAuth
     if (Auth::check()) {
         $user = Auth::user();
         
-        // The restricted roles
         $restrictedRoles = ['Cuisine', 'Pizzeria'];
         
-        // Get the user's roles
         $userRoles = json_decode($user->role, true);
         
-        // Check if the user has only one of the restricted roles
         if (is_array($userRoles) && count($userRoles) === 1 && in_array($userRoles[0], $restrictedRoles)) {
-            $now = Carbon::now('Europe/Paris'); // GMT+1 timezone
+            $now = Carbon::now('Africa/Casablanca');
             
-            $morningStart = Carbon::createFromTime(11, 0, 0, 'Europe/Paris');
-            $morningEnd = Carbon::createFromTime(16, 0, 0, 'Europe/Paris');
-            $nightStart = Carbon::createFromTime(22, 0, 0, 'Europe/Paris');
-            $nightEnd = Carbon::createFromTime(1, 0, 0, 'Europe/Paris')->addDay();
+            $morningStart = Carbon::createFromTime(11, 0, 0, 'Africa/Casablanca');
+            $morningEnd = Carbon::createFromTime(16, 0, 0, 'Africa/Casablanca');
+            $nightStart = Carbon::createFromTime(22, 0, 0, 'Africa/Casablanca');
+            $nightEnd = Carbon::createFromTime(3, 0, 0, 'Africa/Casablanca')->addDay();
 
             if (!$now->between($morningStart, $morningEnd) && 
                 !$now->between($nightStart, $nightEnd)) {

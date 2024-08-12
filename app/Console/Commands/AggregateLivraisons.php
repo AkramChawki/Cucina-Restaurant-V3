@@ -19,41 +19,21 @@ class AggregateLivraisons extends Command
 
     public function handle()
     {
-        $now = Carbon::now('Europe/Paris');
-        $startDate = $this->getStartDate($now);
-        $endDate = $this->getEndDate($now);
+        $now = Carbon::now('Africa/Casablanca');
 
-        $query = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])
-            ->with('detail.product');
-
-        $orders = $query->get();
-
-        $aggregatedData = $this->aggregateData($orders);
-
-        $this->processAggregatedData($startDate, $aggregatedData);
-    }
-
-    private function getStartDate(Carbon $now)
-    {
         if ($now->hour < 17) {
-            return $now->yesterday('Europe/Paris')->setTime(18, 0, 0);
+            $startDate = Carbon::yesterday('Africa/Casablanca')->setTime(17, 0, 0);
+            $endDate = Carbon::today('Africa/Casablanca')->setTime(3, 0, 0);
+        } else {
+            $startDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
+            $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 0, 0);
         }
 
-        return $now->today('Europe/Paris')->setTime(4, 0, 0);
-    }
+        $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 
-    private function getEndDate(Carbon $now)
-    {
-        if ($now->hour < 17) {
-            return $now->today('Europe/Paris')->setTime(3, 0, 0);
-        }
+        $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 
-        return $now->today('Europe/Paris')->setTime(17, 0, 0);
-    }
-
-    private function aggregateData($orders)
-    {
-        $aggregatedData = [];
+        $aggregatedData = array_fill_keys($this->validTypes, []);
 
         foreach ($orders as $order) {
             $restau = $order->restau;
@@ -63,38 +43,47 @@ class AggregateLivraisons extends Command
             }
 
             foreach ($order->detail as $item) {
-                $this->processItem($aggregatedData, $item, $restau);
+                $productId = $item['product_id'];
+                $qty = (int)$item['qty'];
+
+                $product = CuisinierProduct::find($productId);
+
+                if ($product && in_array($product->type, $this->validTypes)) {
+                    $type = $product->type;
+
+                    if (!isset($aggregatedData[$type][$restau][$productId])) {
+                        $aggregatedData[$type][$restau][$productId] = [
+                            'designation' => $product->designation,
+                            'qty' => 0,
+                            'image' => $product->image,
+                            'unite' => $product->unite
+                        ];
+                    }
+
+                    $aggregatedData[$type][$restau][$productId]['qty'] += $qty;
+                }
             }
         }
 
-        return $aggregatedData;
-    }
-
-    private function processItem(&$aggregatedData, $item, $restau)
-    {
-        $product = $item->product;
-
-        if ($product && in_array($product->type, $this->validTypes)) {
-            $type = $product->type;
-
-            if (!isset($aggregatedData[$type][$restau][$product->id])) {
-                $aggregatedData[$type][$restau][$product->id] = [
-                    'designation' => $product->designation,
-                    'qty' => 0,
-                    'image' => $product->image,
-                    'unite' => $product->unite
-                ];
-            }
-
-            $aggregatedData[$type][$restau][$product->id]['qty'] += $item->qty;
-        }
-    }
-
-    private function processAggregatedData(Carbon $startDate, $aggregatedData)
-    {
         foreach ($aggregatedData as $type => $restaus) {
             if (!empty($restaus)) {
-                $formattedData = $this->formatData($restaus);
+                $formattedData = [];
+                foreach ($restaus as $restau => $products) {
+                    $restauProducts = [];
+                    foreach ($products as $productId => $data) {
+                        $restauProducts[] = [
+                            'product_id' => $productId,
+                            'designation' => $data['designation'] ?? 'Unknown Product',
+                            'qty' => (string)$data['qty'],
+                            'image' => $data['image'] ?? null,
+                            'unite' => $data['unite'] ?? null
+                        ];
+                    }
+                    $formattedData[] = [
+                        'restau' => $restau,
+                        'products' => $restauProducts
+                    ];
+                }
 
                 if (!in_array($type, $this->validTypes)) {
                     $this->error("Invalid type: $type. Skipping this entry.");
@@ -129,30 +118,7 @@ class AggregateLivraisons extends Command
                 }
             }
         }
-    }
 
-    private function formatData($restaus)
-    {
-        $formattedData = [];
-
-        foreach ($restaus as $restau => $products) {
-            $restauProducts = array_map(function ($product) {
-                return [
-                    'product_id' => $product['id'],
-                    'designation' => $product['designation'],
-                    'qty' => (string)$product['qty'],
-                    'image' => $product['image'],
-                    'unite' => $product['unite']
-                ];
-            }, $products);
-
-            $formattedData[] = [
-                'restau' => $restau,
-                'products' => $restauProducts
-            ];
-        }
-
-        return $formattedData;
     }
 
     private function generatePdfForType($type, $data)
