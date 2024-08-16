@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import React from 'react'
 
-export default function Rubrique({ fiches }) {
+export default function Rubrique({ fiches, rubriqueTitle }) {
     const { auth } = usePage().props
     return (
         <>
@@ -61,7 +61,7 @@ export default function Rubrique({ fiches }) {
                                 {fiche.name}
                             </a>
                             <Link
-                                href="/commande-cuisinier"
+                                href={rubriqueTitle === "Inventaire" ? "/inventaire" : "/commande-cuisinier"}
                                 data={{ ficheId: fiche.id }}
                                 className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
                             >
@@ -71,7 +71,7 @@ export default function Rubrique({ fiches }) {
                     </div>
                 </div>
             ))}
-            
+
 
             <>
                 <footer className="bg-white">

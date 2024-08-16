@@ -16,12 +16,12 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Table({ categories, ficheId, restau }) {
+export default function Table({ categories, ficheName, restau }) {
     const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
         restau: restau || '',
-        ficheId: ficheId,
+        ficheId: ficheName,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
                 acc.push({ id: product.id, qty: 0 });
@@ -38,13 +38,7 @@ export default function Table({ categories, ficheId, restau }) {
         e.preventDefault();
         const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
-        let endpoint = '';
-        if (data.ficheid === 7) {
-            endpoint = '/inventaire/inv';
-        } else if (data.ficheid === 8) {
-            endpoint = '/inventaire/cntrl';
-        }
-        post(endpoint, { data: filteredData });
+        post('/BL/commander', { data: filteredData });
     };
 
     const handleQtyChange = (productId, value) => {
@@ -271,7 +265,7 @@ export default function Table({ categories, ficheId, restau }) {
                                             <h1 id={category.name.toLowerCase()} className="text-2xl font-semibold text-gray-900">{category.name}</h1>
                                         </div>
                                         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                                            <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-1 lg:max-w-none">
+                                            <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-2 lg:max-w-none">
                                                 {category.products.map(product => (
                                                     <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
                                                         <div className="flex-shrink-0">
@@ -312,7 +306,7 @@ export default function Table({ categories, ficheId, restau }) {
                                         type="submit"
                                         className="inline-flex items-center w-[100%] mt-10 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
                                     >
-                                        Envoyer
+                                        Commander
                                     </button>
                                     <Link
                                         type="button"

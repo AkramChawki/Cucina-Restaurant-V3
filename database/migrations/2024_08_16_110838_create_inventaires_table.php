@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cuisinier_inventaires', function (Blueprint $table) {
+        Schema::create('inventaires', function (Blueprint $table) {
             $table->id();
             $table->string("name");
             $table->string("restau")->nullable();
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cuisinier_inventaires');
+        Schema::dropIfExists('inventaires');
     }
 };

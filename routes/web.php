@@ -33,7 +33,10 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::get('/rubrique/{rubriqueTitle}', function ($rubriqueTitle) {
         $rubrique = Rubrique::where('title', $rubriqueTitle)->first();
         $fiches = $rubrique->fiches;
-        return Inertia::render('Rubrique', ["fiches" => $fiches]);
+        return Inertia::render('Rubrique', [
+            "fiches" => $fiches,
+            "rubriqueTitle" => $rubriqueTitle
+        ]);
     });
 
     Route::get('/commande-cuisinier', function () {
@@ -92,8 +95,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         $exception = Fiche::with('rubrique')
             ->where('id', $ficheId)
             ->where(function ($query) {
-                $query->where('name', 'like', '%labo%')
-                    ->orWhere('name', 'like', '%magasin%');
+                $query->where('name', 'like', '%Inventaire Interne%');
             })
             ->first();
         if ($exception) {
@@ -134,7 +136,8 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         ]);
     });
 
-    Route::post('/inventaire/stock', [App\Http\Controllers\InventaireCuisinierController::class, 'store']);
+    Route::post('/inventaire/inv', [App\Http\Controllers\InventaireCuisinierController::class, 'Inventaire']);
+    Route::post('/inventaire/cntrl', [App\Http\Controllers\InventaireCuisinierController::class, 'Controle']);
 
     Route::get('/numeros', function () {
         return Inertia::render('Numeros/Numeros');
@@ -200,6 +203,34 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         $livraisons = Livraison::all();
         return Inertia::render('Livraison', ["livraisons" => $livraisons]);
     });
+
+    Route::get('/BL', function () {
+        $restaurants = Restaurant::all();
+        $ficheName = request('ficheName');
+        return Inertia::render('BL/BL', [
+            'ficheName' => $ficheName,
+            'restaurants' => $restaurants,
+        ]);
+    });
+    Route::get('/BL/commander', function () {
+        $ficheName = request("ficheName");
+        $restau = request("restau");
+        $fiche = Fiche::where('name', 'like', '%' . $ficheName . '%')->first();
+        $products = $fiche->cuisinier_products->groupBy('cuisinier_category_id');
+        $categories = collect([]);
+        foreach ($products as $categoryId => $products) {
+            $category = CuisinierCategory::find($categoryId);
+            $category->products = $products;
+            $categories->push($category);
+        }
+        return Inertia::render('BL/Commander', [
+            "categories" => $categories,
+            "ficheName" => $ficheName,
+            "restau" => $restau,
+        ]);
+    });
+
+    Route::post('/BL/commander', [App\Http\Controllers\BLController::class, 'store']);
 });
 
 require __DIR__ . '/auth.php';

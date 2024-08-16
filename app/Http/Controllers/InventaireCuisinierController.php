@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Mail\InventaireSummary;
+use App\Models\Controle;
 use App\Models\CuisinierInventaire;
+use App\Models\Inventaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -19,8 +21,9 @@ function generate_pdf_and_save($view, $data, $file_name, $directory)
 }
 class InventaireCuisinierController extends Controller
 {
-    public function store(Request $request)
+    public function Inventaire(Request $request)
     {
+        dd("lol");
         set_time_limit(500);
 
         $qty = array_filter($request->products, function ($product) {
@@ -34,15 +37,48 @@ class InventaireCuisinierController extends Controller
                 "qty" => $product['qty']
             ];
         }
-        $order = new CuisinierInventaire();
+        $order = new Inventaire();
         $order->name = $request->name;
         $order->restau = $request->restau;
         $order->detail = $detail;
         $order->save();
         if ($order->restau == "/") {
-            $pdf_name = "Inventaire-" . $order->name . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
+            $pdf_name = "Inventaire-Interne-" . $order->name . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
         } else {
-            $pdf_name = "Inventaire-" . $order->name . "-" . $order->restau . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
+            $pdf_name = "Inventaire-Interne-" . $order->name . "-" . $order->restau . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
+        }
+        generate_pdf_and_save("pdf.inventaire-summary", ["order" => $order], $pdf_name, "documents");
+        Mail::to("admin@cucinanapoli.com")->send(new InventaireSummary($order, $pdf_name));
+        $order->pdf = $pdf_name;
+        $order->save();
+        return redirect("/");
+    }
+
+    public function Controle(Request $request)
+    {
+        dd("123");
+        set_time_limit(500);
+
+        $qty = array_filter($request->products, function ($product) {
+            return !empty($product['qty']) && $product['qty'] > 0;
+        });
+
+        $detail = [];
+        foreach ($qty as $product) {
+            $detail[] = [
+                "product_id" => $product['id'],
+                "qty" => $product['qty']
+            ];
+        }
+        $order = new Controle();
+        $order->name = $request->name;
+        $order->restau = $request->restau;
+        $order->detail = $detail;
+        $order->save();
+        if ($order->restau == "/") {
+            $pdf_name = "Controle-Interne-" . $order->name . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
+        } else {
+            $pdf_name = "Controle-Interne-" . $order->name . "-" . $order->restau . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
         }
         generate_pdf_and_save("pdf.inventaire-summary", ["order" => $order], $pdf_name, "documents");
         Mail::to("admin@cucinanapoli.com")->send(new InventaireSummary($order, $pdf_name));
