@@ -12,8 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('livraisons:aggregate')->dailyAt('03:30');
-        $schedule->command('livraisons:aggregate')->dailyAt('16:30');
+        $schedule->command('livraisons:aggregate')->twiceDailyAt(3, 16, 15);
+        $schedule->command('records:delete-old')->everyTwoWeeks();
     }
 
     /**

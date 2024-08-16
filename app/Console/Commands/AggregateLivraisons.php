@@ -22,14 +22,12 @@ class AggregateLivraisons extends Command
         $now = Carbon::now('Africa/Casablanca');
 
         if ($now->hour < 17) {
-            $startDate = Carbon::yesterday('Africa/Casablanca')->setTime(17, 0, 0);
-            $endDate = Carbon::today('Africa/Casablanca')->setTime(3, 0, 0);
+            $startDate = Carbon::yesterday('Africa/Casablanca')->setTime(16, 30, 0);
+            $endDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
         } else {
             $startDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
-            $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 0, 0);
+            $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 30, 0);
         }
-
-        $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 
         $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
 

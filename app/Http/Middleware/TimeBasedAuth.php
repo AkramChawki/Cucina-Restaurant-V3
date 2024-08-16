@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Middleware;
 
 use Closure;
@@ -11,30 +10,32 @@ use Illuminate\Support\Facades\Log;
 class TimeBasedAuth
 {
     public function handle(Request $request, Closure $next)
-{
-    if (Auth::check()) {
-        $user = Auth::user();
-        
-        $restrictedRoles = ['Cuisine', 'Pizzeria'];
-        
-        $userRoles = json_decode($user->role, true);
-        
-        if (is_array($userRoles) && count($userRoles) === 1 && in_array($userRoles[0], $restrictedRoles)) {
-            $now = Carbon::now('Africa/Casablanca');
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
             
-            $morningStart = Carbon::createFromTime(11, 0, 0, 'Africa/Casablanca');
-            $morningEnd = Carbon::createFromTime(16, 25, 0, 'Africa/Casablanca');
-            $nightStart = Carbon::createFromTime(22, 0, 0, 'Africa/Casablanca');
-            $nightEnd = Carbon::createFromTime(3, 0, 0, 'Africa/Casablanca')->addDay();
+            $restrictedRoles = ['Cuisine', 'Pizzeria'];
+            
+            $userRoles = json_decode($user->role, true);
+            
+            if (is_array($userRoles) && count($userRoles) === 1 && in_array($userRoles[0], $restrictedRoles)) {
+                $tz = 'Africa/Casablanca';
+                $now = Carbon::now($tz);
+                
+                $morningStart = $now->copy()->setTime(11, 0, 0);
+                $morningEnd = $now->copy()->setTime(17, 0, 0);
+                $nightStart = $now->copy()->setTime(22, 0, 0);
+                $nightEnd = $now->copy()->setTime(3, 0, 0)->addDay();
 
-            if (!$now->between($morningStart, $morningEnd) && 
-                !$now->between($nightStart, $nightEnd)) {
-                Auth::logout();
-                return redirect()->route('login')->with('error', 'You can only log in between 11:00-16:00 and 22:00-01:00.');
+                $isAllowedTime = $now->between($morningStart, $morningEnd) || 
+                                 $now->between($nightStart, $nightEnd);
+
+                if (!$isAllowedTime) {
+                    Auth::logout();
+                    return redirect()->route('login')->with('error', 'You can only log in between 11:00-16:00 and 22:00-02:00.');
+                }
             }
         }
+        return $next($request);
     }
-
-    return $next($request);
-}
 }
