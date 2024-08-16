@@ -142,6 +142,14 @@
 					<li>+212 5 20 57 24 34 | palmier@cucinanapoli.com</li>
 				</ul>
 				@endif
+				@if ($order->restau == "Ziraoui")
+				<h2>Cucina Napoli = Ziraoui</h2>
+				<ul>
+					<li>267 Bd Ziraoui, Casablanca 20250</li>
+					<li>Casablanca</li>
+					<li>+212 5 20 82 32 22 | ziraoui@cucinanapoli.com</li>
+				</ul>
+				@endif
 			</div>
 			<div>
 				<table>

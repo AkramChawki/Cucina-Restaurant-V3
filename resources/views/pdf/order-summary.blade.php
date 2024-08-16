@@ -147,7 +147,7 @@
 				<ul>
 					<li>267, Bd Ziraoui</li>
 					<li>Casablanca</li>
-					<li>+212 6 65 38 03 34 | ziraoui@cucinanapoli.com</li>
+					<li>+212 5 20 82 32 22 | ziraoui@cucinanapoli.com</li>
 				</ul>
 				@endif
 			</div>
