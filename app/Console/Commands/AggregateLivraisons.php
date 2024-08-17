@@ -7,7 +7,6 @@ use App\Models\CuisinierOrder;
 use App\Models\CuisinierProduct;
 use App\Models\Livraison;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Mail;
 
 class AggregateLivraisons extends Command
 {

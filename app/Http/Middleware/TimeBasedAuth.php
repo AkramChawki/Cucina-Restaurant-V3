@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -13,22 +14,23 @@ class TimeBasedAuth
     {
         if (Auth::check()) {
             $user = Auth::user();
-            
+
             $restrictedRoles = ['Cuisine', 'Pizzeria'];
-            
+
             $userRoles = json_decode($user->role, true);
-            
+
             if (is_array($userRoles) && count($userRoles) === 1 && in_array($userRoles[0], $restrictedRoles)) {
                 $tz = 'Africa/Casablanca';
                 $now = Carbon::now($tz);
-                
-                $morningStart = $now->copy()->setTime(11, 0, 0);
-                $morningEnd = $now->copy()->setTime(17, 0, 0);
-                $nightStart = $now->copy()->setTime(22, 0, 0);
-                $nightEnd = $now->copy()->setTime(3, 0, 0)->addDay();
 
-                $isAllowedTime = $now->between($morningStart, $morningEnd) || 
-                                 $now->between($nightStart, $nightEnd);
+                $morningStart = $now->copy()->setTime(11, 0, 0);
+                $morningEnd = $now->copy()->setTime(16, 30, 0);
+                $nightStart = $now->copy()->setTime(22, 0, 0);
+                $nightEnd = $now->copy()->setTime(3, 0, 0);
+
+                $isAllowedTime = $now->between($morningStart, $morningEnd) ||
+                    $now->between($nightStart, $now->copy()->endOfDay()) ||
+                    $now->between($now->copy()->startOfDay(), $nightEnd);
 
                 if (!$isAllowedTime) {
                     Auth::logout();

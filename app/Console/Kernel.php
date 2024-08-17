@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('livraisons:aggregate')->twiceDailyAt(3, 16, 15);
+        $schedule->command('livraisons:aggregate')->twiceDailyAt(3, 16, 30);
         $schedule->command('records:delete-old')->cron('0 0 */14 * *');
     }
 
