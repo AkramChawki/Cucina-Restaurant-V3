@@ -20,10 +20,10 @@ class AggregateLivraisons extends Command
     {
         $now = Carbon::now('Africa/Casablanca');
 
-        if ($now->hour <= 16 && $now->minute <= 25) {
+        if ($now->hour == 3 && $now->minute == 30) {
             $startDate = Carbon::yesterday('Africa/Casablanca')->setTime(16, 30, 0);
             $endDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
-        } else {
+        } elseif ($now->hour == 16 && $now->minute == 30) {
             $startDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
             $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 30, 0);
         }
@@ -115,7 +115,6 @@ class AggregateLivraisons extends Command
                 }
             }
         }
-
     }
 
     private function generatePdfForType($type, $data)
