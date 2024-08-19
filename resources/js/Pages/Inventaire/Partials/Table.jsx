@@ -39,9 +39,9 @@ export default function Table({ categories, ficheId, restau }) {
         const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
         let endpoint = '';
-        if (ficheId === 7) {
+        if (ficheId == 7) {
             endpoint = '/inventaire/inv';
-        } else if (data.ficheid === 8) {
+        } else if (ficheId == 8) {
             endpoint = '/inventaire/cntrl';
         }
         post(endpoint, { data: filteredData });

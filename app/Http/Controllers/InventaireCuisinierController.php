@@ -23,7 +23,6 @@ class InventaireCuisinierController extends Controller
 {
     public function Inventaire(Request $request)
     {
-        dd("lol");
         set_time_limit(500);
 
         $qty = array_filter($request->products, function ($product) {
@@ -56,7 +55,6 @@ class InventaireCuisinierController extends Controller
 
     public function Controle(Request $request)
     {
-        dd("123");
         set_time_limit(500);
 
         $qty = array_filter($request->products, function ($product) {
