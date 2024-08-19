@@ -29,7 +29,7 @@ class InventaireCuisinierController extends Controller
 
         $order = $this->createOrder(new Inventaire(), $request);
         $pdfName = $this->generatePdfName($order, "Inventaire-Interne");
-        $this->savePdf($order, $pdfName, "documents");
+        $this->savePdf($order, $pdfName, "inventaire");
 
         return redirect("/");
     }
