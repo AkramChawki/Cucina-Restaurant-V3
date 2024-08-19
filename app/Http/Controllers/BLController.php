@@ -38,7 +38,7 @@ class BLController extends Controller
         $bl->detail = $detail;
         $bl->save();
         $pdf_name = "BL-" . $bl->name . "-" . ($bl->restau ?: '') . "-" . $bl->created_at->format("d-m-Y") . "-" . $bl->id . ".pdf";
-        generate_pdf_and_save("pdf.bl", ["bl" => $bl], $pdf_name, "documents");
+        generate_pdf_and_save("pdf.bl", ["bl" => $bl], $pdf_name, "bl");
         $bl->pdf = $pdf_name;
         $bl->save();
         return Inertia::render('Home', [
