@@ -233,6 +233,9 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::post('/BL/commander', [App\Http\Controllers\BLController::class, 'store']);
 
     Route::get('/bl/{pdf_url}', function () {
+        $ficheName = request("pdf_url");
+
+        dd($ficheName);
         return view('pdf-tab');
     })->name("bl");
 });

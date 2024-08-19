@@ -6,7 +6,7 @@
     <title>Opening PDF...</title>
     <script>
         window.onload = function() {
-            window.open("{{ $pdf_url }}", "_blank");
+            window.open("{{ $pdf_url }}");
             window.location.href = "/";
         };
     </script>
