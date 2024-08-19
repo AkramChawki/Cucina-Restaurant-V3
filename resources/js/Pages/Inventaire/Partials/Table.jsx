@@ -48,9 +48,10 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleQtyChange = (productId, value) => {
-        if (value < 0) return;
+        const numericValue = parseFloat(value.replace(',', '.'));
+        if (isNaN(numericValue) || numericValue < 0) return;
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: value } : product
+            product.id === productId ? { ...product, qty: numericValue } : product
         );
         setData('products', updatedProducts);
     };
@@ -286,12 +287,11 @@ export default function Table({ categories, ficheId, restau }) {
                                                             <div className="mt-6 flex justify-center">
                                                                 <div className="ml-3 w-full">
                                                                     <input
-                                                                        type="number"
+                                                                        type="text"
                                                                         className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
                                                                         placeholder="0"
-                                                                        min={0}
-                                                                        value={data.products.find(p => p.id === product.id)?.qty}
-                                                                        onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
+                                                                        value={data.products.find(p => p.id === product.id)?.qty.toString().replace('.', ',')}
+                                                                        onChange={(e) => handleQtyChange(product.id, e.target.value)}
                                                                         onFocus={() => handleFocus(product.id)}
                                                                         onBlur={() => handleBlur(product.id)}
                                                                     />
