@@ -47,7 +47,6 @@ class InventaireCuisinierController extends Controller
             $pdf_name = "Inventaire-Interne-" . $order->name . "-" . $order->restau . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
         }
         generate_pdf_and_save("pdf.inventaire-summary", ["order" => $order], $pdf_name, "documents");
-        Mail::to("admin@cucinanapoli.com")->send(new InventaireSummary($order, $pdf_name));
         $order->pdf = $pdf_name;
         $order->save();
         return redirect("/");
@@ -79,7 +78,6 @@ class InventaireCuisinierController extends Controller
             $pdf_name = "Controle-Interne-" . $order->name . "-" . $order->restau . "-" . $order->created_at->format("d-m-Y") . "-" . $order->id . ".pdf";
         }
         generate_pdf_and_save("pdf.inventaire-summary", ["order" => $order], $pdf_name, "inventaire");
-        Mail::to("admin@cucinanapoli.com")->send(new InventaireSummary($order, $pdf_name));
         $order->pdf = $pdf_name;
         $order->save();
         return redirect("/");
