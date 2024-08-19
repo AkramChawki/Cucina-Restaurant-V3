@@ -1,5 +1,5 @@
 
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
     MenuAlt2Icon,
@@ -17,7 +17,7 @@ function classNames(...classes) {
 }
 
 export default function Table({ categories, ficheName, restau }) {
-    const { auth, flash } = usePage().props;
+    const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
         restau: restau || '',
@@ -30,12 +30,6 @@ export default function Table({ categories, ficheName, restau }) {
         }, [])
     });
 
-    useEffect(() => {
-        if (flash.pdfUrl) {
-            window.open(flash.pdfUrl, '_blank');
-        }
-    }, [flash.pdfUrl]);
-
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     const [filterText, setFilterText] = useState('');
@@ -44,7 +38,7 @@ export default function Table({ categories, ficheName, restau }) {
         e.preventDefault();
         const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
-        post('/BL/commander', filteredData);
+        post('/BL/commander', { data: filteredData });
     };
 
     const handleQtyChange = (productId, value) => {

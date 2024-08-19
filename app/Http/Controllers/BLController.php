@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BL;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 function generate_pdf_and_save($view, $data, $file_name, $directory)
 {
@@ -39,9 +39,9 @@ class BLController extends Controller
         $bl->save();
         $pdf_name = "BL-" . $bl->name . "-" . ($bl->restau ?: '') . "-" . $bl->created_at->format("d-m-Y") . "-" . $bl->id . ".pdf";
         generate_pdf_and_save("pdf.bl", ["bl" => $bl], $pdf_name, "bl");
+        $pdf_url = "https://restaurant.cucinanapoli.com/storage/$pdf_name";
         $bl->pdf = $pdf_name;
         $bl->save();
-        return Redirect::to('/')
-        ->with('pdfUrl', asset("storage/documents/$pdf_name"));
+        return Inertia::location("bl/$pdf_url");
     }
 }
