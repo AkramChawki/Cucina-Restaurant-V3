@@ -59,6 +59,29 @@ function Home({ rubriques }) {
                 className="min-h-full grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-3"
                 id="restaurants"
             >
+                {auth.user.role.includes("Restaurant") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Restaurant
+                            </a>
+                            <Link
+                                href="/restaurants"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
                 {rubriques.map(
                     (rubrique, id) =>
                         auth.user.role.includes(rubrique.title) && (
@@ -88,53 +111,6 @@ function Home({ rubriques }) {
                             </div>
                         )
                 )}
-                {auth.user.role.includes("Livraison") && (
-                    <div className="relative flex">
-                        <img
-                            src="/images/restau/white.jpeg"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-center object-cover"
-                        />
-                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                            <a
-                                href="#"
-                                className="my-2 text-5xl font-bold text-black"
-                            >
-                                Livraison
-                            </a>
-                            <Link
-                                href="/livraisons"
-                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                            >
-                                Accéder
-                            </Link>
-                        </div>
-                    </div>
-                )}
-                {auth.user.role.includes("BL") && (
-                    <div className="relative flex">
-                        <img
-                            src="/images/restau/white.jpeg"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-center object-cover"
-                        />
-                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                            <a
-                                href="#"
-                                className="my-2 text-5xl font-bold text-black"
-                            >
-                                BL
-                            </a>
-                            <Link
-                                href="/BL"
-                                data={{ ficheName: "BL" }}
-                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                            >
-                                Accéder
-                            </Link>
-                        </div>
-                    </div>
-                )}
                 {auth.user.role.includes("Numero") && (
                     <div className="relative flex">
                         <img
@@ -158,7 +134,7 @@ function Home({ rubriques }) {
                         </div>
                     </div>
                 )}
-                {auth.user.role.includes("Restaurant") && (
+                {auth.user.role.includes("Controle") && (
                     <div className="relative flex">
                         <img
                             src="/images/restau/white.jpeg"
@@ -170,10 +146,105 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Restaurant
+                                Controle Interne
                             </a>
                             <Link
-                                href="/restaurants"
+                                href="/inventaire"
+                                data={{ ficheId: 8 }}
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {auth.user.role.includes("Audit") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Audit
+                            </a>
+                            <Link
+                                href="/audit"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {auth.user.role.includes("BL") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                BL Economat
+                            </a>
+                            <Link
+                                href="/BL"
+                                data={{ ficheName: "BL" }}
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {auth.user.role.includes("Livraison") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Livraison
+                            </a>
+                            <Link
+                                href="/livraisons"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {auth.user.role.includes("Inventaire") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Inventaire Interne
+                            </a>
+                            <Link
+                                href="/inventaire"
+                                data={{ ficheId: 7 }}
                                 className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
                             >
                                 Accéder
