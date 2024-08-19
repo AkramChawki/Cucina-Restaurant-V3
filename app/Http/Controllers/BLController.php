@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BL;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Redirect;
 
 function generate_pdf_and_save($view, $data, $file_name, $directory)
 {
@@ -41,6 +41,7 @@ class BLController extends Controller
         generate_pdf_and_save("pdf.bl", ["bl" => $bl], $pdf_name, "bl");
         $bl->pdf = $pdf_name;
         $bl->save();
-        return redirect("/");
+        return Redirect::to('/')
+        ->with('pdfUrl', asset("storage/documents/$pdf_name"));
     }
 }
