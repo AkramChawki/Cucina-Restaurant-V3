@@ -24,7 +24,7 @@ export default function Table({ categories, ficheId, restau }) {
         ficheId: ficheId,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
-                acc.push({ id: product.id, qty: 0 });
+                acc.push({ id: product.id, qty: '' });
             });
             return acc;
         }, [])
@@ -48,10 +48,11 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleQtyChange = (productId, value) => {
-        const numericValue = parseFloat(value.replace(',', '.'));
-        if (isNaN(numericValue) || numericValue < 0) return;
+        const regex = /^-?\d*[.,]?\d*$/;
+        if (!regex.test(value) && value !== '') return;
+
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: numericValue } : product
+            product.id === productId ? { ...product, qty: value } : product
         );
         setData('products', updatedProducts);
     };
@@ -64,8 +65,18 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleBlur = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
+        const product = data.products.find(p => p.id === productId);
+        if (!product) return;
+
+        let value = product.qty;
+        if (value === '' || isNaN(parseFloat(value.replace(',', '.')))) {
+            value = '0';
+        } else {
+            value = parseFloat(value.replace(',', '.')).toString().replace('.', ',');
+        }
+
+        const updatedProducts = data.products.map(p =>
+            p.id === productId ? { ...p, qty: value } : p
         );
         setData('products', updatedProducts);
     };
@@ -290,9 +301,8 @@ export default function Table({ categories, ficheId, restau }) {
                                                                         type="text"
                                                                         className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
                                                                         placeholder="0"
-                                                                        value={data.products.find(p => p.id === product.id)?.qty.toString().replace('.', ',')}
+                                                                        value={data.products.find(p => p.id === product.id)?.qty}
                                                                         onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                                                                        onFocus={() => handleFocus(product.id)}
                                                                         onBlur={() => handleBlur(product.id)}
                                                                     />
                                                                     <div className='text-center my-4'>
