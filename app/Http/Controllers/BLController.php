@@ -42,6 +42,6 @@ class BLController extends Controller
         $pdf_url = "https://restaurant.cucinanapoli.com/public/storage/bl/$pdf_name";
         $bl->pdf = $pdf_name;
         $bl->save();
-        return Inertia::location("bl/$pdf_url");
+        return Inertia::location($pdf_url);
     }
 }
