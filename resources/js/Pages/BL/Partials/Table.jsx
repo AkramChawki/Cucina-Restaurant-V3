@@ -38,7 +38,17 @@ export default function Table({ categories, ficheName, restau }) {
         e.preventDefault();
         const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
-        post('/BL/commander', { data: filteredData });
+        post('/BL/commander', filteredData, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (response) => {
+                window.open(response.pdfUrl, '_blank');
+                window.location.href = response.redirectUrl;
+            },
+            onError: (errors) => {
+                console.error('Error:', errors);
+            }
+        });
     };
 
     const handleQtyChange = (productId, value) => {
