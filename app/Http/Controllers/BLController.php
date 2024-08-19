@@ -39,7 +39,7 @@ class BLController extends Controller
         $bl->save();
         $pdf_name = "BL-" . $bl->name . "-" . ($bl->restau ?: '') . "-" . $bl->created_at->format("d-m-Y") . "-" . $bl->id . ".pdf";
         generate_pdf_and_save("pdf.bl", ["bl" => $bl], $pdf_name, "bl");
-        $pdf_url = "https://restaurant.cucinanapoli.com/storage/$pdf_name";
+        $pdf_url = "https://restaurant.cucinanapoli.com/public/storage/bl/$pdf_name";
         $bl->pdf = $pdf_name;
         $bl->save();
         return Inertia::location("bl/$pdf_url");
