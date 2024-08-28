@@ -2,7 +2,9 @@
 
 use App\Models\Audit;
 use App\Models\CuisinierCategory;
+use App\Models\DK;
 use App\Models\Fiche;
+use App\Models\Labo;
 use App\Models\Livraison;
 use App\Models\Number;
 use App\Models\Product;
@@ -261,6 +263,18 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Audit::create($validated);
 
         return redirect("/");
+    });
+
+    Route::get('/detailles', function () {
+        return Inertia::render('Detaills');
+    });
+    Route::get('/labo', function () {
+        $labos = Labo::all();
+        return Inertia::render('Labo', ["labos" => $labos]);
+    });
+    Route::get('/dk', function () {
+        $dks = DK::all();
+        return Inertia::render('DK', ["dks" => $dks]);
     });
 });
 
