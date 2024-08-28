@@ -38,7 +38,15 @@ export default function Table({ categories, ficheId, restau }) {
         e.preventDefault();
         const filteredProducts = data.products.filter(product => product.qty > 0);
         const filteredData = { ...data, products: filteredProducts };
-        post('/commande-cuisinier/commander', { data: filteredData });
+        let endpoint = '';
+        if (ficheId == 17) {
+            endpoint = '/commande-cuisinier/labo';
+        } else if (ficheId == 18) {
+            endpoint = '/commande-cuisinier/dk';
+        } else {
+            endpoint = '/commande-cuisinier/commander';
+        }
+        post(endpoint, { data: filteredData });
     };
 
     const handleQtyChange = (productId, value) => {

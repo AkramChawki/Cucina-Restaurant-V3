@@ -46,8 +46,8 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         $exception = Fiche::with('rubrique')
             ->where('id', $ficheId)
             ->where(function ($query) {
-                $query->where('name', 'like', '%Dark Kitchen%')
-                    ->orWhere('name', 'like', '%akram%');
+                $query->where('name', 'like', '%Labo%')
+                    ->orWhere('name', 'like', '%Dark Kitchen%');
             })
             ->first();
         if ($exception) {
@@ -89,6 +89,8 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     });
 
     Route::post('/commande-cuisinier/commander', [App\Http\Controllers\CommandeCuisinierController::class, 'store']);
+    Route::post('/commande-cuisinier/labo', [App\Http\Controllers\LaboController::class, 'store']);
+    Route::post('/commande-cuisinier/dk', [App\Http\Controllers\DKController::class, 'store']);
 
     Route::get('/inventaire', function () {
         $restaurants = Restaurant::all();
