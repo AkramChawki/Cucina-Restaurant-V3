@@ -46,8 +46,8 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         $exception = Fiche::with('rubrique')
             ->where('id', $ficheId)
             ->where(function ($query) {
-                $query->where('name', 'like', '%Labo%')
-                    ->orWhere('name', 'like', '%Dark Kitchen%');
+                $query->whereRaw('LOWER(name) LIKE ?', ['%labo%'])
+                    ->orWhereRaw('LOWER(name) LIKE ?', ['%dark kitchen%']);
             })
             ->first();
         if ($exception) {
