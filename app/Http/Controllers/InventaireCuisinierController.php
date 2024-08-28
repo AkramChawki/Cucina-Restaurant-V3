@@ -12,7 +12,7 @@ class InventaireCuisinierController extends Controller
     private function generatePdfAndSave($view, $data, $fileName, $directory)
     {
         $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
+        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
         
         $filePath = public_path("storage/$directory/$fileName");
         

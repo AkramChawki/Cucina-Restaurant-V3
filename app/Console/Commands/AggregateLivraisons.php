@@ -129,7 +129,7 @@ class AggregateLivraisons extends Command
     private function generate_pdf_and_save($view, $data, $file_name, $directory)
     {
         $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
+        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
         if (!$pdf->saveAs(public_path("storage/$directory/$file_name"))) {
             $error = $pdf->getError();
             $this->error("PDF generation failed: $error");
