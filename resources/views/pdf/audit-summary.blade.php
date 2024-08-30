@@ -77,7 +77,7 @@
     </div>
 
     <div class="image-container">
-        <img src="https://admin.cucinanapoli.com/storage/audit/{{ $audit->image }}" alt="Product Image">
+        <img src="https://restaurant.cucinanapoli.com/storage/audits/{{ $audit->image }}" alt="Product Image">
     </div>
 
     <table>
