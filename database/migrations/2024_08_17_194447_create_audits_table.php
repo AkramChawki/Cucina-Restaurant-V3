@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string("restau");
             $table->string("defeillance");
             $table->text("image");
+            $table->string("pdf");
             $table->timestamps();
         });
     }

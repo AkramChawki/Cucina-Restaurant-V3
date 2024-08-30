@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Models\Audit;
 use App\Models\CuisinierCategory;
 use App\Models\DK;
@@ -237,33 +238,9 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
 
     Route::post('/BL/commander', [App\Http\Controllers\BLController::class, 'store']);
 
-    Route::get('/audit', function () {
-        $restaurants = Restaurant::all();
-        return Inertia::render('Audit/Audit', ["restaurants" => $restaurants]);
-    });
-    Route::get('/auditform', function () {
-        $restau = request("restau");
-        return Inertia::render('Audit/Auditform', ["restau" => $restau]);
-    });
-
-    Route::post('/auditform', function (Request $request) {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'date' => 'required|date',
-            'restau' => 'required|string|max:255',
-            'defeillance' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
-
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('audit', 'public');
-            $validated['image'] = $imagePath;
-        }
-
-        Audit::create($validated);
-
-        return redirect("/");
-    });
+    Route::get('/audit', [AuditController::class, 'index']);
+Route::get('/auditform', [AuditController::class, 'showForm']);
+Route::post('/auditform', [AuditController::class, 'store']);
 
     Route::get('/detailles', function () {
         return Inertia::render('Detaills');
