@@ -1,48 +1,32 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Console\Commands;
 
 use App\Models\Audit;
-use App\Models\Restaurant;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Console\Command;
 
-class AuditController extends Controller
+class GenerateMissingAuditPdfs extends Command
 {
-    public function index()
-    {
-        $restaurants = Restaurant::all();
-        return Inertia::render('Audit/Audit', ["restaurants" => $restaurants]);
-    }
+    protected $signature = 'audits:generate-missing-pdfs';
+    protected $description = 'Generate PDFs for audits that don\'t have one';
 
-    public function showForm()
+    public function handle()
     {
-        $restau = request("restau");
-        return Inertia::render('Audit/Auditform', ["restau" => $restau]);
-    }
+        $audits = Audit::whereNull('pdf')->get();
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'date' => 'required|date',
-            'restau' => 'required|string|max:255',
-            'defeillance' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
+        $this->info("Found {$audits->count()} audits without PDFs. Generating...");
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('audit', 'public');
-            $validated['image'] = $imagePath;
+        $bar = $this->output->createProgressBar($audits->count());
+
+        foreach ($audits as $audit) {
+            $pdfName = $this->generatePdfName($audit);
+            $this->savePdf($audit, $pdfName);
+            $bar->advance();
         }
 
-        $audit = Audit::create($validated);
-
-        // Generate and save PDF
-        $pdfName = $this->generatePdfName($audit);
-        $this->savePdf($audit, $pdfName);
-
-        return redirect("/");
+        $bar->finish();
+        $this->newLine();
+        $this->info('All missing PDFs have been generated.');
     }
 
     private function generatePdfAndSave($view, $data, $fileName, $directory)
