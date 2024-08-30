@@ -48,8 +48,8 @@
             margin-bottom: 20px;
         }
         .audit-image {
-            max-width: 40%;
-            max-height: 300px;
+            max-width: 50%;
+            max-height: 350px;
             object-fit: contain;
         }
         table {
