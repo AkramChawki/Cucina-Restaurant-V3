@@ -5,56 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Summary</title>
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             color: #333;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         .container {
-            width: 100%;
+            width: 90%;
             max-width: 800px;
-            margin: 0 auto;
             padding: 20px;
             box-sizing: border-box;
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
         }
         .header p {
-            margin: 5px 0;
+            margin: 2px 0;
         }
-        .audit-info {
-            margin-bottom: 30px;
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .audit-image {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 8px;
             text-align: left;
         }
         th {
             background-color: #f2f2f2;
             font-weight: bold;
-        }
-        .image-container {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .audit-image {
-            max-width: 100%;
-            height: auto;
         }
     </style>
 </head>
@@ -66,14 +76,12 @@
             <p>4 BD Anoual</p>
             <p>Casablanca</p>
             <p>+212 5 20 33 83 50 | anoual@cucinanapoli.com</p>
-            @endif
-            @if ($audit->restau == 'Palmier')
+            @elseif ($audit->restau == 'Palmier')
             <h1>Cucina Napoli - Palmier</h1>
             <p>13 rue Ahmed Naciri, Angle Rue Saria Ibnou Zounaim</p>
             <p>Casablanca</p>
             <p>+212 5 20 57 24 34 | palmier@cucinanapoli.com</p>
-            @endif
-            @if ($audit->restau == 'Ziraoui')
+            @elseif ($audit->restau == 'Ziraoui')
             <h1>Cucina Napoli - Ziraoui</h1>
             <p>267 Bd Ziraoui, Casablanca 20250</p>
             <p>Casablanca</p>
@@ -81,32 +89,32 @@
             @endif
         </div>
 
-        <h2 style="text-align: center;">Audit Summary</h2>
-        <div class="audit-info">
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <td>{{ $audit->name }}</td>
-                </tr>
-                <tr>
-                    <th>Date</th>
-                    <td>{{ $audit->date->format('Y-m-d') }}</td>
-                </tr>
-                <tr>
-                    <th>Restaurant</th>
-                    <td>{{ $audit->restau }}</td>
-                </tr>
-                <tr>
-                    <th>Defaillance</th>
-                    <td>{{ $audit->defeillance }}</td>
-                </tr>
-            </table>
-        </div>
-        @if($audit->image && isset($imageWidth) && isset($imageHeight))
+        <h2>Audit Summary</h2>
+
+        @if($audit->image)
             <div class="image-container">
-                <img src="{{ storage_path('app/public/' . $audit->image) }}" alt="Audit Image" class="audit-image" width="{{ $imageWidth }}" height="{{ $imageHeight }}">
+                <img src="{{ storage_path('app/public/' . $audit->image) }}" alt="Audit Image" class="audit-image">
             </div>
         @endif
+
+        <table>
+            <tr>
+                <th>Name</th>
+                <td>{{ $audit->name }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ $audit->date->format('Y-m-d') }}</td>
+            </tr>
+            <tr>
+                <th>Restaurant</th>
+                <td>{{ $audit->restau }}</td>
+            </tr>
+            <tr>
+                <th>Defaillance</th>
+                <td>{{ $audit->defeillance }}</td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>

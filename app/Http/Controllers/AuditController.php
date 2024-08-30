@@ -47,40 +47,28 @@ class AuditController extends Controller
 
     private function generatePdfAndSave($view, $data, $fileName, $directory)
     {
-        // Prepare the image with static dimensions
-        if (isset($data['audit']) && $data['audit']->image) {
-            $imagePath = storage_path('app/public/' . $data['audit']->image);
-            $imageInfo = getimagesize($imagePath);
-            
-            if ($imageInfo !== false) {
-                $aspectRatio = $imageInfo[0] / $imageInfo[1];
-                $newWidth = 400; // Increased width for better visibility
-                $newHeight = intval($newWidth / $aspectRatio);
-                
-                $data['imageWidth'] = $newWidth;
-                $data['imageHeight'] = $newHeight;
-            }
-        }
-
         $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
         $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        
-        // Set page size to A4 and adjust margins
+
         $pdf->setOptions([
             'page-size' => 'A4',
-            'margin-top' => '20',
-            'margin-right' => '20',
-            'margin-bottom' => '20',
-            'margin-left' => '20',
+            'margin-top' => '0',
+            'margin-right' => '0',
+            'margin-bottom' => '0',
+            'margin-left' => '0',
             'encoding' => 'UTF-8',
+            'disable-smart-shrinking',
+            'no-outline',
+            'page-width' => '210mm',
+            'page-height' => '297mm',
         ]);
-        
+
         $filePath = public_path("storage/$directory/$fileName");
-        
+
         if (!$pdf->saveAs($filePath)) {
             throw new \Exception("Failed to generate PDF: " . $pdf->getError());
         }
-        
+
         return asset("storage/$directory/$fileName");
     }
 
