@@ -50,7 +50,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
             ->where('id', $ficheId)
             ->where(function ($query) {
                 $query->where('name', 'like', '%Labo%')
-                    ->orWhere('name', 'like', '%DK%');
+                    ->orWhere('name', 'like', '%Napoli Gang%');
             })
             ->first();
         if ($exception) {
@@ -249,7 +249,7 @@ Route::post('/auditform', [AuditController::class, 'store']);
         $labos = Labo::all();
         return Inertia::render('Labo', ["labos" => $labos]);
     });
-    Route::get('/dk', function () {
+    Route::get('/napoli-gang', function () {
         $dks = DK::all();
         return Inertia::render('DK', ["dks" => $dks]);
     });
