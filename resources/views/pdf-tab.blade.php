@@ -12,6 +12,6 @@
     </script>
 </head>
 <body>
-    <p>Opening PDF in a new tab...</p>
+    <p>L'ouverture du PDF dans une nouvelle ongle...</p>
 </body>
 </html>
