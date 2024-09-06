@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CuisinierOrder;
 use App\Models\Restaurant;
 use App\Models\Fiche;
+use App\Models\CuisinierCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
@@ -26,24 +27,37 @@ class CommandeCuisinierController extends Controller
             ->first();
 
         if ($exception) {
-            $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
-            $categories = collect([]);
-            foreach ($products as $categoryId => $products) {
-                $category = \App\Models\CuisinierCategory::find($categoryId);
-                $category->products = $products;
-                $categories->push($category);
-            }
-            return Inertia::render('CommandeCuisinier/Commander', [
-                "categories" => $categories,
-                "ficheId" => $ficheId,
-                "restau" => null,
-            ]);
+            return $this->renderCommanderView($ficheId, null);
         } else {
             return Inertia::render('CommandeCuisinier/CommandeCuisinier', [
                 "ficheId" => $ficheId,
                 "restaurants" => $restaurants
             ]);
         }
+    }
+
+    public function create(Request $request)
+    {
+        $ficheId = $request->query('ficheId');
+        $restau = $request->query('restau');
+        
+        return $this->renderCommanderView($ficheId, $restau);
+    }
+
+    private function renderCommanderView($ficheId, $restau)
+    {
+        $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
+        $categories = collect([]);
+        foreach ($products as $categoryId => $products) {
+            $category = CuisinierCategory::find($categoryId);
+            $category->products = $products;
+            $categories->push($category);
+        }
+        return Inertia::render('CommandeCuisinier/Commander', [
+            "categories" => $categories,
+            "ficheId" => $ficheId,
+            "restau" => $restau,
+        ]);
     }
 
     public function store(Request $request)
