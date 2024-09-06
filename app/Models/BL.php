@@ -17,8 +17,11 @@ class BL extends Model
     {
         return array_map(function ($item) {
             $p = CuisinierProduct::find($item['product_id']);
-            $p->qty = $item['qty'];
-            return $p;
-        }, $this->detail);
+            if ($p) {
+                $p->qty = $item['qty'];
+                return $p;
+            }
+            return null;
+        }, $this->detail ?? []);
     }
 }
