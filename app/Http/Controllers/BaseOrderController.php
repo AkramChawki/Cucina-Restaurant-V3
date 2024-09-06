@@ -15,7 +15,8 @@ abstract class BaseOrderController extends Controller
     abstract protected function getPdfDirectory();
 
     public function store(Request $request)
-    {
+    {   
+        dd($request->all());
         set_time_limit(500);
 
         Log::info('Store method called in BaseOrderController');
@@ -25,17 +26,19 @@ abstract class BaseOrderController extends Controller
             $order = $this->createOrder($request);
             
             if ($order) {
+                Log::info('Order created', ['order' => $order->toArray()]);
                 $pdfName = $this->generatePdfName($order);
+                Log::info('PDF name generated', ['pdfName' => $pdfName]);
                 $this->savePdf($order, $pdfName);
+                Log::info('PDF saved');
 
-                Log::info('Order created successfully', ['order_id' => $order->id]);
                 return redirect("/")->with('success', 'Order created successfully.');
             } else {
                 Log::warning('Failed to create order');
                 return redirect()->back()->with('error', 'Failed to create order.');
             }
         } catch (\Exception $e) {
-            Log::error('Error in store method', ['error' => $e->getMessage()]);
+            Log::error('Error in store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
@@ -66,9 +69,14 @@ abstract class BaseOrderController extends Controller
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
         $order->detail = $detail;
-        $order->save();
-
-        Log::info('Order created:', $order->toArray());
+        
+        try {
+            $order->save();
+            Log::info('Order saved successfully', ['order' => $order->toArray()]);
+        } catch (\Exception $e) {
+            Log::error('Error saving order', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            throw $e;
+        }
 
         return $order;
     }
