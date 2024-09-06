@@ -36,7 +36,10 @@ export default function Table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const filteredProducts = data.products.filter(product => product.qty > 0);
+        const filteredProducts = data.products.filter(product => product.qty > 0).map(product => ({
+            product_id: product.id,  // Change 'id' to 'product_id'
+            qty: product.qty
+        }));
         const filteredData = { ...data, products: filteredProducts };
         let endpoint = '';
         if (ficheId == 17) {
@@ -48,7 +51,7 @@ export default function Table({ categories, ficheId, restau }) {
         } else {
             endpoint = '/commande-cuisinier/commander';
         }
-        post(endpoint, { data: filteredData });
+        post(endpoint, filteredData);
     };
 
     const handleQtyChange = (productId, value) => {

@@ -65,6 +65,7 @@ class CommandeCuisinierController extends Controller
     {
         set_time_limit(500);
 
+        // Log the incoming request data for debugging
         Log::info('Incoming request data:', $request->all());
 
         $order = $this->createOrder($request);
@@ -81,17 +82,16 @@ class CommandeCuisinierController extends Controller
 
     private function createOrder(Request $request)
     {
+        // Validate the incoming request
         $validated = $request->validate([
             'name' => 'required|string',
             'restau' => 'required|string',
             'products' => 'required|array',
-            'products.*.id' => 'required|integer',
-            'products.*.qty' => 'required|integer|min:0',
+            'products.*.product_id' => 'required|integer',
+            'products.*.qty' => 'required|integer|min:1',
         ]);
 
-        $detail = array_filter($validated['products'], function ($product) {
-            return $product['qty'] > 0;
-        });
+        $detail = $validated['products'];
 
         if (empty($detail)) {
             Log::warning('No products with quantity greater than 0');
@@ -101,7 +101,7 @@ class CommandeCuisinierController extends Controller
         $order = new CuisinierOrder();
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
-        $order->detail = $detail;
+        $order->detail = $detail; // This will be automatically JSON encoded by Laravel
         $order->save();
 
         Log::info('Order created:', $order->toArray());
