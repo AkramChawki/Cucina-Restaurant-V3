@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Menage() {
+export default function Menage({ menages }) {
     const groupedMenages = menages.reduce((acc, menage) => {
         const date = menage.created_at.split("T")[0];
         if (!acc[date]) {
