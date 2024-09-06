@@ -9,6 +9,7 @@ use App\Models\CuisinierCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
+use Illuminate\Support\Facades\Log;
 
 class CommandeCuisinierController extends Controller
 {
@@ -64,31 +65,48 @@ class CommandeCuisinierController extends Controller
     {
         set_time_limit(500);
 
-        $order = $this->createOrder($request);
-        $pdfName = $this->generatePdfName($order);
-        $this->savePdf($order, $pdfName);
+        // Log the incoming request data for debugging
+        Log::info('Incoming request data:', $request->all());
 
-        return redirect("/");
+        $order = $this->createOrder($request);
+
+        if ($order) {
+            $pdfName = $this->generatePdfName($order);
+            $this->savePdf($order, $pdfName);
+
+            return redirect("/")->with('success', 'Order created successfully.');
+        } else {
+            return redirect()->back()->with('error', 'Failed to create order.');
+        }
     }
 
     private function createOrder(Request $request)
     {
-        $qty = array_filter($request->products, function ($product) {
-            return !empty($product['qty']) && $product['qty'] > 0;
+        // Validate the incoming request
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'restau' => 'required|string',
+            'products' => 'required|array',
+            'products.*.id' => 'required|integer',
+            'products.*.qty' => 'required|integer|min:0',
+        ]);
+
+        $detail = array_filter($validated['products'], function ($product) {
+            return $product['qty'] > 0;
         });
 
-        $detail = array_map(function ($product) {
-            return [
-                "product_id" => $product['id'],
-                "qty" => $product['qty']
-            ];
-        }, $qty);
+        if (empty($detail)) {
+            Log::warning('No products with quantity greater than 0');
+            return null;
+        }
 
         $order = new CuisinierOrder();
-        $order->name = $request->name;
-        $order->restau = $request->restau;
-        $order->detail = $detail;
+        $order->name = $validated['name'];
+        $order->restau = $validated['restau'];
+        $order->detail = json_encode($detail); // Ensure detail is stored as JSON
         $order->save();
+
+        Log::info('Order created:', $order->toArray());
 
         return $order;
     }
@@ -103,5 +121,7 @@ class CommandeCuisinierController extends Controller
         $pdfUrl = $this->generatePdfAndSave("pdf.order-summary", ["order" => $order], $pdfName, "orders");
         $order->pdf = $pdfName;
         $order->save();
+
+        Log::info('PDF saved:', ['pdfName' => $pdfName, 'pdfUrl' => $pdfUrl]);
     }
 }
