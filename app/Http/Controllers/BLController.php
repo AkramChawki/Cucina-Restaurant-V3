@@ -5,21 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\BL;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Traits\PdfGeneratorTrait;
 
 class BLController extends Controller
 {
-    private function generatePdfAndSave($view, $data, $fileName, $directory)
+    use PdfGeneratorTrait;
+
+    public function index()
     {
-        $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        
-        $filePath = public_path("storage/$directory/$fileName");
-        
-        if (!$pdf->saveAs($filePath)) {
-            throw new \Exception("Failed to generate PDF: " . $pdf->getError());
+        $restaurants = \App\Models\Restaurant::all();
+        $ficheName = request('ficheName');
+        return Inertia::render('BL/BL', [
+            'ficheName' => $ficheName,
+            'restaurants' => $restaurants,
+        ]);
+    }
+
+    public function create()
+    {
+        $ficheName = request("ficheName");
+        $restau = request("restau");
+        $fiche = \App\Models\Fiche::where('name', 'like', '%' . $ficheName . '%')->first();
+        $products = $fiche->cuisinier_products->groupBy('cuisinier_category_id');
+        $categories = collect([]);
+        foreach ($products as $categoryId => $products) {
+            $category = \App\Models\CuisinierCategory::find($categoryId);
+            $category->products = $products;
+            $categories->push($category);
         }
-        
-        return asset("storage/$directory/$fileName");
+        return Inertia::render('BL/Commander', [
+            "categories" => $categories,
+            "ficheName" => $ficheName,
+            "restau" => $restau,
+        ]);
     }
 
     public function store(Request $request)
@@ -57,8 +75,7 @@ class BLController extends Controller
 
     private function generatePdfName($bl)
     {
-        $restauPart = $bl->restau ?: '';
-        return "BL-{$bl->name}-{$restauPart}-{$bl->created_at->format('d-m-Y')}-{$bl->id}.pdf";
+        return $this->generatePdfFileName("BL", $bl);
     }
 
     private function savePdf($bl, $pdfName)

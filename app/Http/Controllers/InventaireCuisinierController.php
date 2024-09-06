@@ -4,23 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Models\Controle;
 use App\Models\Inventaire;
+use App\Models\Restaurant;
+use App\Models\Fiche;
+use App\Models\CuisinierCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
+use App\Traits\PdfGeneratorTrait;
 
 class InventaireCuisinierController extends Controller
 {
-    private function generatePdfAndSave($view, $data, $fileName, $directory)
+    use PdfGeneratorTrait;
+
+    public function index()
     {
-        $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        
-        $filePath = public_path("storage/$directory/$fileName");
-        
-        if (!$pdf->saveAs($filePath)) {
-            throw new \Exception("Failed to generate PDF: " . $pdf->getError());
+        $restaurants = Restaurant::all();
+        $ficheId = request("ficheId");
+        $exception = Fiche::with('rubrique')
+            ->where('id', $ficheId)
+            ->where(function ($query) {
+                $query->where('name', 'like', '%Inventaire Interne%');
+            })
+            ->first();
+        if ($exception) {
+            $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
+            $categories = collect([]);
+            foreach ($products as $categoryId => $products) {
+                $category = CuisinierCategory::find($categoryId);
+                $category->products = $products;
+                $categories->push($category);
+            }
+            return Inertia::render('Inventaire/Stock', [
+                "categories" => $categories,
+                "ficheId" => $ficheId,
+                "restau" => null,
+            ]);
+        } else {
+            return Inertia::render('Inventaire/Inventaire', [
+                "ficheId" => $ficheId,
+                "restaurants" => $restaurants
+            ]);
         }
-        
-        return asset("storage/$directory/$fileName");
+    }
+
+    public function stock()
+    {
+        $ficheId = request("ficheId");
+        $restau = request("restau");
+        $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
+        $categories = collect([]);
+        foreach ($products as $categoryId => $products) {
+            $category = CuisinierCategory::find($categoryId);
+            $category->products = $products;
+            $categories->push($category);
+        }
+        return Inertia::render('Inventaire/Stock', [
+            "categories" => $categories,
+            "ficheId" => $ficheId,
+            "restau" => $restau,
+        ]);
     }
 
     public function inventaire(Request $request)
@@ -69,8 +110,7 @@ class InventaireCuisinierController extends Controller
 
     private function generatePdfName($order, $prefix)
     {
-        $restauPart = $order->restau == "/" ? "" : "-" . $order->restau;
-        return "{$prefix}-{$order->name}{$restauPart}-{$order->created_at->format('d-m-Y')}-{$order->id}.pdf";
+        return $this->generatePdfName($prefix, $order);
     }
 
     private function savePdf($order, $pdfName, $directory)

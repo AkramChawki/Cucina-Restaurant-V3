@@ -6,18 +6,21 @@ use App\Models\Audit;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Traits\PdfGeneratorTrait;
 
 class AuditController extends Controller
 {
+    use PdfGeneratorTrait;
+
     public function index()
     {
         $restaurants = Restaurant::all();
         return Inertia::render('Audit/Audit', ["restaurants" => $restaurants]);
     }
 
-    public function showForm()
+    public function showForm(Request $request)
     {
-        $restau = request("restau");
+        $restau = $request->query('restau');
         return Inertia::render('Audit/Auditform', ["restau" => $restau]);
     }
 
@@ -38,43 +41,15 @@ class AuditController extends Controller
 
         $audit = Audit::create($validated);
 
-        // Generate and save PDF
         $pdfName = $this->generatePdfName($audit);
         $this->savePdf($audit, $pdfName);
 
         return redirect("/");
     }
 
-    private function generatePdfAndSave($view, $data, $fileName, $directory)
-    {
-        $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-
-        $pdf->setOptions([
-            'page-size' => 'A4',
-            'margin-top' => '0',
-            'margin-right' => '0',
-            'margin-bottom' => '0',
-            'margin-left' => '0',
-            'encoding' => 'UTF-8',
-            'disable-smart-shrinking',
-            'no-outline',
-            'page-width' => '210mm',
-            'page-height' => '297mm',
-        ]);
-
-        $filePath = public_path("storage/$directory/$fileName");
-
-        if (!$pdf->saveAs($filePath)) {
-            throw new \Exception("Failed to generate PDF: " . $pdf->getError());
-        }
-
-        return asset("storage/$directory/$fileName");
-    }
-
     private function generatePdfName($audit)
     {
-        return "Audit-{$audit->name}-{$audit->restau}-{$audit->date->format('Y-m-d')}-{$audit->id}.pdf";
+        return $this->generatePdfFileName("Audit", $audit);
     }
 
     private function savePdf($audit, $pdfName)

@@ -2,70 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\OrderSummary;
 use App\Models\CuisinierOrder;
+use App\Models\Restaurant;
+use App\Models\Fiche;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 
-class CommandeCuisinierController extends Controller
+class CommandeCuisinierController extends BaseOrderController
 {
-    private function generatePdfAndSave($view, $data, $fileName, $directory)
+    public function index(Request $request)
     {
-        $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        
-        $filePath = public_path("storage/$directory/$fileName");
-        
-        if (!$pdf->saveAs($filePath)) {
-            throw new \Exception("Failed to generate PDF: " . $pdf->getError());
+        $restaurants = Restaurant::all();
+        $ficheId = $request->query('ficheId');
+        $exception = Fiche::with('rubrique')
+            ->where('id', $ficheId)
+            ->where(function ($query) {
+                $query->where('name', 'like', '%Labo%')
+                    ->orWhere('name', 'like', '%Napoli Gang%');
+            })
+            ->first();
+
+        if ($exception) {
+            $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
+            $categories = collect([]);
+            foreach ($products as $categoryId => $products) {
+                $category = \App\Models\CuisinierCategory::find($categoryId);
+                $category->products = $products;
+                $categories->push($category);
+            }
+            return Inertia::render('CommandeCuisinier/Commander', [
+                "categories" => $categories,
+                "ficheId" => $ficheId,
+                "restau" => null,
+            ]);
+        } else {
+            return Inertia::render('CommandeCuisinier/CommandeCuisinier', [
+                "ficheId" => $ficheId,
+                "restaurants" => $restaurants
+            ]);
         }
-        
-        return asset("storage/$directory/$fileName");
     }
 
-    public function store(Request $request)
+    public function create(Request $request)
     {
-        set_time_limit(500);
-
-        $order = $this->createOrder($request);
-        $pdfName = $this->generatePdfName($order);
-        $this->savePdf($order, $pdfName);
-
-        return redirect("/");
+        $ficheId = $request->query('ficheId');
+        $restau = $request->query('restau');
+        $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
+        $categories = collect([]);
+        foreach ($products as $categoryId => $products) {
+            $category = \App\Models\CuisinierCategory::find($categoryId);
+            $category->products = $products;
+            $categories->push($category);
+        }
+        return Inertia::render('CommandeCuisinier/Commander', [
+            "categories" => $categories,
+            "ficheId" => $ficheId,
+            "restau" => $restau,
+        ]);
     }
 
-    private function createOrder(Request $request)
+    protected function getModelClass()
     {
-        $qty = array_filter($request->products, function ($product) {
-            return !empty($product['qty']) && $product['qty'] > 0;
-        });
-
-        $detail = array_map(function ($product) {
-            return [
-                "product_id" => $product['id'],
-                "qty" => $product['qty']
-            ];
-        }, $qty);
-
-        $order = new CuisinierOrder();
-        $order->name = $request->name;
-        $order->restau = $request->restau;
-        $order->detail = $detail;
-        $order->save();
-
-        return $order;
+        return CuisinierOrder::class;
     }
 
-    private function generatePdfName($order)
+    protected function getPdfPrefix()
     {
-        $restauPart = $order->restau ?: '';
-        return "Commande-{$order->name}-{$restauPart}-{$order->created_at->format('d-m-Y')}-{$order->id}.pdf";
+        return "Commande";
     }
 
-    private function savePdf($order, $pdfName)
+    protected function getPdfDirectory()
     {
-        $this->generatePdfAndSave("pdf.order-summary", ["order" => $order], $pdfName, "orders");
-        $order->pdf = $pdfName;
-        $order->save();
+        return "orders";
     }
 }
