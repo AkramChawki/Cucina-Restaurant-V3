@@ -6,7 +6,7 @@ import {
     XIcon,
 } from '@heroicons/react/outline'
 import { SearchIcon } from '@heroicons/react/solid'
-import { Link, useForm, usePage } from '@inertiajs/react'
+import { Link, router, useForm, usePage } from '@inertiajs/react'
 
 const userNavigation = [
     { name: 'Se Déconnecter', href: 'logout' },
