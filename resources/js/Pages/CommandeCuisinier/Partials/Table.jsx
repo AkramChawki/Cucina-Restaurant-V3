@@ -36,11 +36,15 @@ export default function Table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log('Submit button clicked');
+    
         const filteredProducts = data.products.filter(product => product.qty > 0).map(product => ({
-            product_id: product.id,  // Change 'id' to 'product_id'
+            product_id: product.id,
             qty: product.qty
         }));
         const filteredData = { ...data, products: filteredProducts };
+        console.log('Filtered data:', filteredData);
+    
         let endpoint = '';
         if (ficheId == 17) {
             endpoint = '/commande-cuisinier/labo';
@@ -51,7 +55,18 @@ export default function Table({ categories, ficheId, restau }) {
         } else {
             endpoint = '/commande-cuisinier/commander';
         }
-        post(endpoint, filteredData);
+        console.log('Endpoint:', endpoint);
+    
+        router.post(endpoint, filteredData, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                console.log('Success:', page);
+            },
+            onError: (errors) => {
+                console.error('Errors:', errors);
+            },
+        });
     };
 
     const handleQtyChange = (productId, value) => {

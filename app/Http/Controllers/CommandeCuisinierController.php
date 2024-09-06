@@ -65,23 +65,32 @@ class CommandeCuisinierController extends Controller
     {
         set_time_limit(500);
 
-        // Log the incoming request data for debugging
+        Log::info('Store method called');
         Log::info('Incoming request data:', $request->all());
 
-        $order = $this->createOrder($request);
+        try {
+            $order = $this->createOrder($request);
 
-        if ($order) {
-            $pdfName = $this->generatePdfName($order);
-            $this->savePdf($order, $pdfName);
+            if ($order) {
+                $pdfName = $this->generatePdfName($order);
+                $this->savePdf($order, $pdfName);
 
-            return redirect("/")->with('success', 'Order created successfully.');
-        } else {
-            return redirect()->back()->with('error', 'Failed to create order.');
+                Log::info('Order created successfully', ['order_id' => $order->id]);
+                return redirect("/")->with('success', 'Order created successfully.');
+            } else {
+                Log::warning('Failed to create order');
+                return redirect()->back()->with('error', 'Failed to create order.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in store method', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
 
     private function createOrder(Request $request)
     {
+        Log::info('createOrder method called');
+
         // Validate the incoming request
         $validated = $request->validate([
             'name' => 'required|string',
@@ -90,6 +99,8 @@ class CommandeCuisinierController extends Controller
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
         ]);
+
+        Log::info('Validated data:', $validated);
 
         $detail = $validated['products'];
 
@@ -101,7 +112,7 @@ class CommandeCuisinierController extends Controller
         $order = new CuisinierOrder();
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
-        $order->detail = $detail; // This will be automatically JSON encoded by Laravel
+        $order->detail = $detail;
         $order->save();
 
         Log::info('Order created:', $order->toArray());
