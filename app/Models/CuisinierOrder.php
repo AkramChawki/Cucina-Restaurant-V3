@@ -13,12 +13,29 @@ class CuisinierOrder extends Model
         'detail' => 'array',
     ];
 
+    public function getDetailAttribute($value)
+    {
+        if (is_string($value)) {
+            return json_decode($value, true) ?? [];
+        }
+        return $value ?? [];
+    }
+
     public function products()
     {
+        $detail = $this->detail;
+        
+        if (!is_array($detail)) {
+            return [];
+        }
+
         return array_map(function ($item) {
             $p = CuisinierProduct::find($item['product_id']);
-            $p->qty = $item['qty'];
-            return $p;
-        }, $this->detail);
+            if ($p) {
+                $p->qty = $item['qty'];
+                return $p;
+            }
+            return null;
+        }, $detail);
     }
 }

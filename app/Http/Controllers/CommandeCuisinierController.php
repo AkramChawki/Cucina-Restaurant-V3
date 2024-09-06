@@ -65,7 +65,6 @@ class CommandeCuisinierController extends Controller
     {
         set_time_limit(500);
 
-        // Log the incoming request data for debugging
         Log::info('Incoming request data:', $request->all());
 
         $order = $this->createOrder($request);
@@ -82,7 +81,6 @@ class CommandeCuisinierController extends Controller
 
     private function createOrder(Request $request)
     {
-        // Validate the incoming request
         $validated = $request->validate([
             'name' => 'required|string',
             'restau' => 'required|string',
@@ -103,7 +101,7 @@ class CommandeCuisinierController extends Controller
         $order = new CuisinierOrder();
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
-        $order->detail = json_encode($detail); // Ensure detail is stored as JSON
+        $order->detail = $detail;
         $order->save();
 
         Log::info('Order created:', $order->toArray());
