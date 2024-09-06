@@ -16,7 +16,6 @@ abstract class BaseOrderController extends Controller
 
     public function store(Request $request)
     {   
-        dd($request->all());
         set_time_limit(500);
 
         Log::info('Store method called in BaseOrderController');
