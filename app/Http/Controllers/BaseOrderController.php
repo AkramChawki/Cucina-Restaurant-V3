@@ -15,7 +15,7 @@ abstract class BaseOrderController extends Controller
     abstract protected function getPdfDirectory();
 
     public function store(Request $request)
-    {   
+    {
         set_time_limit(500);
 
         Log::info('Store method called in BaseOrderController');
@@ -31,14 +31,26 @@ abstract class BaseOrderController extends Controller
                 $this->savePdf($order, $pdfName);
                 Log::info('PDF saved');
 
-                return redirect("/")->with('success', 'Order created successfully.');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order created successfully.',
+                    'order' => $order,
+                    'pdf' => $pdfName
+                ]);
             } else {
                 Log::warning('Failed to create order');
-                return redirect()->back()->with('error', 'Failed to create order.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create order.'
+                ], 400);
             }
         } catch (\Exception $e) {
             Log::error('Error in store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing your request.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
