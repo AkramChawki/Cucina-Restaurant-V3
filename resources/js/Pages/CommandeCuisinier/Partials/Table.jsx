@@ -43,6 +43,8 @@ export default function Table({ categories, ficheId, restau }) {
             endpoint = '/commande-cuisinier/labo';
         } else if (ficheId == 18) {
             endpoint = '/commande-cuisinier/dk';
+        } else if (ficheId == 19) {
+            endpoint = '/commande-cuisinier/menage';
         } else {
             endpoint = '/commande-cuisinier/commander';
         }

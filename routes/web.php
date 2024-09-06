@@ -7,6 +7,7 @@ use App\Models\DK;
 use App\Models\Fiche;
 use App\Models\Labo;
 use App\Models\Livraison;
+use App\Models\Menage;
 use App\Models\Number;
 use App\Models\Product;
 use App\Models\Restaurant;
@@ -94,6 +95,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::post('/commande-cuisinier/commander', [App\Http\Controllers\CommandeCuisinierController::class, 'store']);
     Route::post('/commande-cuisinier/labo', [App\Http\Controllers\LaboController::class, 'store']);
     Route::post('/commande-cuisinier/dk', [App\Http\Controllers\DKController::class, 'store']);
+    Route::post('/commande-cuisinier/menage', [App\Http\Controllers\MenageController::class, 'store']);
 
     Route::get('/inventaire', function () {
         $restaurants = Restaurant::all();
@@ -174,7 +176,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         return Inertia::render('Restaurants/Restaurant', ["restaurant" => $restaurant, "products" => $products]);
     });
 
-    Route::post('/restaurant/{id}/toggle-visibility', function (Request $request, $id) {
+    Route::post('/restaurant/{id}/toggle-visibility', function ($id) {
         $restaurant = Restaurant::findOrFail($id);
         $restaurant->visible = $restaurant->visible == 1 ? 0 : 1;
         $restaurant->save();
@@ -239,8 +241,8 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::post('/BL/commander', [App\Http\Controllers\BLController::class, 'store']);
 
     Route::get('/audit', [AuditController::class, 'index']);
-Route::get('/auditform', [AuditController::class, 'showForm']);
-Route::post('/auditform', [AuditController::class, 'store']);
+    Route::get('/auditform', [AuditController::class, 'showForm']);
+    Route::post('/auditform', [AuditController::class, 'store']);
 
     Route::get('/detailles', function () {
         return Inertia::render('Detaills');
@@ -252,6 +254,10 @@ Route::post('/auditform', [AuditController::class, 'store']);
     Route::get('/napoli-gang', function () {
         $dks = DK::all();
         return Inertia::render('DK', ["dks" => $dks]);
+    });
+    Route::get('/menage', function () {
+        $menages = Menage::all();
+        return Inertia::render('Menage', ["menages" => $menages]);
     });
 });
 
