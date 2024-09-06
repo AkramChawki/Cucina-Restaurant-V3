@@ -31,26 +31,14 @@ abstract class BaseOrderController extends Controller
                 $this->savePdf($order, $pdfName);
                 Log::info('PDF saved');
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Order created successfully.',
-                    'order' => $order,
-                    'pdf' => $pdfName
-                ]);
+                return redirect("/");
             } else {
                 Log::warning('Failed to create order');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to create order.'
-                ], 400);
+                return "error";
             }
         } catch (\Exception $e) {
             Log::error('Error in store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while processing your request.',
-                'error' => $e->getMessage()
-            ], 500);
+            return "error";
         }
     }
 
@@ -60,7 +48,7 @@ abstract class BaseOrderController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string',
-            'restau' => 'required|string',
+            'restau' => 'nullable|string',  // Changed to nullable
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
@@ -78,7 +66,7 @@ abstract class BaseOrderController extends Controller
         $modelClass = $this->getModelClass();
         $order = new $modelClass();
         $order->name = $validated['name'];
-        $order->restau = $validated['restau'];
+        $order->restau = $validated['restau'] ?? null;  // Use null if restau is not provided
         $order->detail = $detail;
         
         try {

@@ -24,4 +24,9 @@ class Labo extends Model
             return null;
         }, $this->detail ?? []);
     }
+
+    public function setRestauAttribute($value)
+    {
+        $this->attributes['restau'] = null;
+    }
 }

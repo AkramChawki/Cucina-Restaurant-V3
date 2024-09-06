@@ -60,18 +60,6 @@ export default function Table({ categories, ficheId, restau }) {
         router.post(endpoint, filteredData, {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: (response) => {
-                console.log('Success:', response);
-                if (response.success) {
-                    console.log('Order created successfully:', response.order);
-                    console.log('PDF generated:', response.pdf);
-                } else {
-                    console.error('Error:', response.message);
-                }
-            },
-            onError: (errors) => {
-                console.error('Errors:', errors);
-            },
         });
     };
 
