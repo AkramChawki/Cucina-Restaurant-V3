@@ -6,7 +6,7 @@ import {
     XIcon,
 } from '@heroicons/react/outline'
 import { SearchIcon } from '@heroicons/react/solid'
-import { Link, useForm, usePage } from '@inertiajs/react'
+import { Link, router, useForm, usePage } from '@inertiajs/react'
 
 const userNavigation = [
     { name: 'Se Déconnecter', href: 'logout' },
@@ -62,24 +62,9 @@ export default function Table({ categories, ficheId, restau }) {
         }
         console.log('Endpoint:', endpoint);
     
-        post(endpoint, filteredData, {
+        router.post(endpoint, filteredData, {
             preserveState: true,
-            preserveScroll: true,
-            onSuccess: (response) => {
-                console.log('Success:', response);
-                if (response.success) {
-                    alert(response.message);
-                    // You might want to redirect here
-                    // window.location.href = '/';
-                } else {
-                    console.error('Error:', response.message);
-                    alert(response.message);
-                }
-            },
-            onError: (errors) => {
-                console.error('Errors:', errors);
-                alert('An error occurred while processing your request. Please check the console for more details.');
-            },
+            preserveScroll: false,
         });
     };
 

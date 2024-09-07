@@ -131,9 +131,14 @@ class InventaireCuisinierController extends Controller
             'products.*.qty' => 'required|integer|min:1',
         ]);
 
-        $detail = array_filter($validated['products'], function ($product) {
-            return $product['qty'] > 0;
-        });
+        Log::info('Validated data:', $validated);
+
+        $detail = $validated['products'];
+
+        if (empty($detail)) {
+            Log::warning('No products with quantity greater than 0');
+            return null;
+        }
 
         $order = new $model();
         $order->name = $validated['name'];
