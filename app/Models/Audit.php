@@ -15,6 +15,7 @@ class Audit extends Model
         'restau',
         'defeillance',
         'image',
+        'pdf'
     ];
 
     protected $casts = [

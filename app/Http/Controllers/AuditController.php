@@ -22,7 +22,7 @@ class AuditController extends Controller
     public function showForm(Request $request)
     {
         $restau = $request->query('restau');
-        return Inertia::render('Audit/Auditform', ["restau" => $restau]);
+        return Inertia::render('Audit/From', ["restau" => $restau]);
     }
 
     public function store(Request $request)
@@ -45,17 +45,16 @@ class AuditController extends Controller
 
             $audit = Audit::create($validated);
 
-            return redirect("/")->with('success', 'Audit created successfully.');
+            // Generate and save PDF
+            $pdfName = $this->generatePdfName($audit);
+            $this->savePdf($audit, $pdfName);
+
+            return redirect()->route('audit.index')->with('success', 'Audit created successfully.');
         } catch (\Exception $e) {
             Log::error('Error in audit store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while processing your request.',
-                'error' => $e->getMessage()
-            ], 500);
+            return back()->with('error', 'An error occurred while creating the audit.');
         }
     }
-
 
     private function generatePdfName($audit)
     {
@@ -65,7 +64,7 @@ class AuditController extends Controller
     private function savePdf($audit, $pdfName)
     {
         $pdfUrl = $this->generatePdfAndSave("pdf.audit-summary", ["audit" => $audit], $pdfName, "audits");
-        $audit->pdf = $pdfUrl;
+        $audit->pdf = $pdfName;
         $audit->save();
     }
 }
