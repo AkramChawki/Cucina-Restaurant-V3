@@ -45,10 +45,14 @@ class AuditController extends Controller
 
             $audit = Audit::create($validated);
 
-            return redirect()->route('audit.index')->with('success', 'Audit created successfully.');
+            return redirect("/")->with('success', 'Audit created successfully.');
         } catch (\Exception $e) {
             Log::error('Error in audit store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return back()->with('error', 'An error occurred while creating the audit.');
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing your request.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
