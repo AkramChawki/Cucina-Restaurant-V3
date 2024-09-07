@@ -37,7 +37,7 @@ export default function Table({ categories, ficheId, restau }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Submit button clicked');
-
+    
         const filteredProducts = data.products.filter(product => product.qty !== '' && parseFloat(product.qty.replace(',', '.')) > 0);
         const filteredData = { 
             ...data, 
@@ -46,13 +46,13 @@ export default function Table({ categories, ficheId, restau }) {
                 qty: parseFloat(product.qty.replace(',', '.'))
             }))
         };
-
+    
         if (!filteredData.restau) {
             delete filteredData.restau;
         }
-
+    
         console.log('Filtered data:', filteredData);
-
+    
         let endpoint = '';
         if (ficheId == 7) {
             endpoint = '/inventaire/inv';
@@ -60,15 +60,25 @@ export default function Table({ categories, ficheId, restau }) {
             endpoint = '/inventaire/cntrl';
         }
         console.log('Endpoint:', endpoint);
-
+    
         post(endpoint, filteredData, {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: (page) => {
-                console.log('Success:', page);
+            onSuccess: (response) => {
+                console.log('Success:', response);
+                if (response.success) {
+                    // Handle success (e.g., show a success message or redirect)
+                    alert(response.message);
+                    // You might want to redirect here
+                    // window.location.href = '/';
+                } else {
+                    console.error('Error:', response.message);
+                    alert(response.message);
+                }
             },
             onError: (errors) => {
                 console.error('Errors:', errors);
+                alert('An error occurred while processing your request.');
             },
         });
     };
