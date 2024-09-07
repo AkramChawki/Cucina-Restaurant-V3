@@ -121,12 +121,14 @@ class InventaireCuisinierController extends Controller
 
     private function createOrder($model, Request $request)
     {
+        Log::info('Received data:', $request->all());
+
         $validatedData = $request->validate([
             'name' => 'required|string',
             'restau' => 'nullable|string',
             'products' => 'required|array',
             'products.*.id' => 'required|integer',
-            'products.*.qty' => 'required|numeric',
+            'products.*.qty' => 'required|numeric|min:0',
         ]);
 
         $detail = array_filter($validatedData['products'], function ($product) {

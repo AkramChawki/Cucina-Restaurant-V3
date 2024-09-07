@@ -40,7 +40,8 @@ export default function Table({ categories, ficheId, restau }) {
     
         const filteredProducts = data.products.filter(product => product.qty !== '' && parseFloat(product.qty.replace(',', '.')) > 0);
         const filteredData = { 
-            ...data, 
+            name: data.name,
+            restau: data.restau || null,
             products: filteredProducts.map(product => ({
                 id: product.id,
                 qty: parseFloat(product.qty.replace(',', '.'))
@@ -67,7 +68,6 @@ export default function Table({ categories, ficheId, restau }) {
             onSuccess: (response) => {
                 console.log('Success:', response);
                 if (response.success) {
-                    // Handle success (e.g., show a success message or redirect)
                     alert(response.message);
                     // You might want to redirect here
                     // window.location.href = '/';
@@ -78,7 +78,7 @@ export default function Table({ categories, ficheId, restau }) {
             },
             onError: (errors) => {
                 console.error('Errors:', errors);
-                alert('An error occurred while processing your request.');
+                alert('An error occurred while processing your request. Please check the console for more details.');
             },
         });
     };
