@@ -22,7 +22,7 @@ class AuditController extends Controller
     public function showForm(Request $request)
     {
         $restau = $request->query('restau');
-        return Inertia::render('Audit/Auditfrom', ["restau" => $restau]);
+        return Inertia::render('Audit/Auditform', ["restau" => $restau]);
     }
 
     public function store(Request $request)
