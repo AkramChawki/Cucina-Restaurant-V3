@@ -121,28 +121,21 @@ class InventaireCuisinierController extends Controller
 
     private function createOrder($model, Request $request)
     {
-        Log::info('Received data:', $request->all());
-
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string',
-            'restau' => 'nullable|string',  // Changed to nullable
+            'restau' => 'nullable|string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
-            'products.*.qty' => 'required|integer|min:1',
+            'products.*.qty' => 'required|numeric|min:0',
         ]);
 
-        Log::info('Validated data:', $validated);
-
-        $detail = $validated['products'];
-
-        if (empty($detail)) {
-            Log::warning('No products with quantity greater than 0');
-            return null;
-        }
+        $detail = array_filter($validatedData['products'], function ($product) {
+            return $product['qty'] > 0;
+        });
 
         $order = new $model();
-        $order->name = $validated['name'];
-        $order->restau = $validated['restau'] ?? null;
+        $order->name = $validatedData['name'];
+        $order->restau = $validatedData['restau'] ?? null;
         $order->detail = $detail;
         $order->save();
 
@@ -151,7 +144,8 @@ class InventaireCuisinierController extends Controller
 
     private function generatePdfName($order, $prefix)
     {
-        return $this->generatePdfFileName($prefix, $order);
+        $restauPart = $order->restau ? "-{$order->restau}" : '';
+        return "{$prefix}-{$order->name}{$restauPart}-{$order->created_at->format('d-m-Y')}-{$order->id}.pdf";
     }
 
     private function savePdf($order, $pdfName, $directory)

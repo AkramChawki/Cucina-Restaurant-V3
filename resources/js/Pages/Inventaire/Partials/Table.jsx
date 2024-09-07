@@ -37,23 +37,23 @@ export default function Table({ categories, ficheId, restau }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Submit button clicked');
-    
-        const filteredProducts = data.products.filter(product => product.qty !== '' && parseFloat(product.qty.replace(',', '.')) > 0);
-        const filteredData = { 
+
+        const filteredProducts = data.products.filter(product => parseFloat(product.qty) > 0).map(product => ({
+            product_id: product.id,
+            qty: parseFloat(product.qty)
+        }));
+        const filteredData = {
             name: data.name,
             restau: data.restau || null,
-            products: filteredProducts.map(product => ({
-                id: product.id,
-                qty: parseFloat(product.qty.replace(',', '.'))
-            }))
+            products: filteredProducts
         };
-    
+
         if (!filteredData.restau) {
             delete filteredData.restau;
         }
-    
+
         console.log('Filtered data:', filteredData);
-    
+
         let endpoint = '';
         if (ficheId == 7) {
             endpoint = '/inventaire/inv';
@@ -61,19 +61,39 @@ export default function Table({ categories, ficheId, restau }) {
             endpoint = '/inventaire/cntrl';
         }
         console.log('Endpoint:', endpoint);
-    
+
         router.post(endpoint, filteredData, {
             preserveState: true,
-            preserveScroll: false,
+            preserveScroll: true,
+            onSuccess: (response) => {
+                console.log('Success:', response);
+                if (response.success) {
+                    alert(response.message);
+                    // You might want to redirect here
+                    // window.location.href = '/';
+                } else {
+                    console.error('Error:', response.message);
+                    alert(response.message);
+                }
+            },
+            onError: (errors) => {
+                console.error('Errors:', errors);
+                alert('An error occurred while processing your request. Please check the console for more details.');
+            },
         });
     };
 
     const handleQtyChange = (productId, value) => {
-        const regex = /^-?\d*[.,]?\d*$/;
-        if (!regex.test(value) && value !== '') return;
-
+        if (value < 0) return;
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: value } : product
+        );
+        setData('products', updatedProducts);
+    };
+
+    const handleFocus = (productId) => {
+        const updatedProducts = data.products.map(product =>
+            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
         );
         setData('products', updatedProducts);
     };
@@ -312,11 +332,14 @@ export default function Table({ categories, ficheId, restau }) {
                                                             <div className="mt-6 flex justify-center">
                                                                 <div className="ml-3 w-full">
                                                                     <input
-                                                                        type="text"
+                                                                        type="number"
+                                                                        step="0.01"
                                                                         className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
                                                                         placeholder="0"
+                                                                        min={0}
                                                                         value={data.products.find(p => p.id === product.id)?.qty}
-                                                                        onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                                                        onChange={(e) => handleQtyChange(product.id, parseFloat(e.target.value))}
+                                                                        onFocus={() => handleFocus(product.id)}
                                                                         onBlur={() => handleBlur(product.id)}
                                                                     />
                                                                     <div className='text-center my-4'>
