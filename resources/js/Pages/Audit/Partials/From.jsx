@@ -15,7 +15,7 @@ export default function From() {
 
     function submit(e) {
         e.preventDefault();
-        post("/auditform", {
+        post("/audit/form", {
             preserveState: true,
             preserveScroll: true,
             forceFormData: true,

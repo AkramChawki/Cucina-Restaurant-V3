@@ -59,7 +59,7 @@ export default function Table({ categories, ficheId, restau }) {
     
         router.post(endpoint, filteredData, {
             preserveState: true,
-            preserveScroll: true,
+            preserveScroll: false,
         });
     };
 
