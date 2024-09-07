@@ -123,21 +123,21 @@ class InventaireCuisinierController extends Controller
     {
         Log::info('Received data:', $request->all());
 
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string',
-            'restau' => 'nullable|string',
+            'restau' => 'nullable|string',  // Changed to nullable
             'products' => 'required|array',
-            'products.*.id' => 'required|integer',
-            'products.*.qty' => 'required|numeric|min:0',
+            'products.*.product_id' => 'required|integer',
+            'products.*.qty' => 'required|integer|min:1',
         ]);
 
-        $detail = array_filter($validatedData['products'], function ($product) {
+        $detail = array_filter($validated['products'], function ($product) {
             return $product['qty'] > 0;
         });
 
         $order = new $model();
-        $order->name = $validatedData['name'];
-        $order->restau = $validatedData['restau'] ?? null;
+        $order->name = $validated['name'];
+        $order->restau = $validated['restau'] ?? null;
         $order->detail = $detail;
         $order->save();
 
