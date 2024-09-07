@@ -76,19 +76,10 @@ class InventaireCuisinierController extends Controller
             $pdfName = $this->generatePdfName($order, "Inventaire-Interne");
             $this->savePdf($order, $pdfName, "inventaire");
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Inventaire created successfully',
-                'order' => $order,
-                'pdfName' => $pdfName,
-            ]);
+            return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
             Log::error('Error in inventaire method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while processing your request.',
-                'error' => $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
 
@@ -103,19 +94,11 @@ class InventaireCuisinierController extends Controller
             $pdfName = $this->generatePdfName($order, "Controle-Interne");
             $this->savePdf($order, $pdfName, "inventaire");
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Controle created successfully',
-                'order' => $order,
-                'pdfName' => $pdfName,
-            ]);
+            return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
             Log::error('Error in controle method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while processing your request.',
-                'error' => $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+
         }
     }
 

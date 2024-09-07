@@ -20,11 +20,11 @@ export default function Table({ categories, ficheId, restau }) {
     const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
-        restau: restau || null,
+        restau: restau || '',
         ficheId: ficheId,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
-                acc.push({ id: product.id, qty: '' });
+                acc.push({ id: product.id, qty: 0 });
             });
             return acc;
         }, [])
@@ -42,7 +42,7 @@ export default function Table({ categories, ficheId, restau }) {
             product_id: product.id,
             qty: parseFloat(product.qty)
         }));
-        const filteredData = {
+        const filteredData = { 
             name: data.name,
             restau: data.restau || null,
             products: filteredProducts
@@ -65,28 +65,15 @@ export default function Table({ categories, ficheId, restau }) {
         router.post(endpoint, filteredData, {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: (response) => {
-                console.log('Success:', response);
-                if (response.success) {
-                    alert(response.message);
-                    // You might want to redirect here
-                    // window.location.href = '/';
-                } else {
-                    console.error('Error:', response.message);
-                    alert(response.message);
-                }
-            },
-            onError: (errors) => {
-                console.error('Errors:', errors);
-                alert('An error occurred while processing your request. Please check the console for more details.');
-            },
         });
     };
 
     const handleQtyChange = (productId, value) => {
-        if (value < 0) return;
+        const numValue = value === '' ? 0 : parseFloat(value);
+        if (isNaN(numValue)) return;
+        const validValue = Math.max(0, numValue);
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: value } : product
+            product.id === productId ? { ...product, qty: validValue } : product
         );
         setData('products', updatedProducts);
     };
@@ -99,18 +86,8 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleBlur = (productId) => {
-        const product = data.products.find(p => p.id === productId);
-        if (!product) return;
-
-        let value = product.qty;
-        if (value === '' || isNaN(parseFloat(value.replace(',', '.')))) {
-            value = '0';
-        } else {
-            value = parseFloat(value.replace(',', '.')).toString().replace('.', ',');
-        }
-
-        const updatedProducts = data.products.map(p =>
-            p.id === productId ? { ...p, qty: value } : p
+        const updatedProducts = data.products.map(product =>
+            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
         );
         setData('products', updatedProducts);
     };
