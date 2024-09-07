@@ -9,6 +9,8 @@ class Controle extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name', 'restau', 'detail', 'pdf'];
+
     protected $casts = [
         'detail' => 'array',
     ];
@@ -16,9 +18,12 @@ class Controle extends Model
     public function products()
     {
         return array_map(function ($item) {
-            $p = CuisinierProduct::find($item['product_id']);
-            $p->qty = $item['qty'];
-            return $p;
-        }, $this->detail);
+            $p = CuisinierProduct::find($item['id']);
+            if ($p) {
+                $p->qty = $item['qty'];
+                return $p;
+            }
+            return null;
+        }, $this->detail ?? []);
     }
 }

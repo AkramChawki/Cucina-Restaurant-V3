@@ -10,6 +10,7 @@ use App\Models\CuisinierCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
+use Illuminate\Support\Facades\Log;
 
 class InventaireCuisinierController extends Controller
 {
@@ -68,40 +69,55 @@ class InventaireCuisinierController extends Controller
     {
         set_time_limit(500);
 
-        $order = $this->createOrder(new Inventaire(), $request);
-        $pdfName = $this->generatePdfName($order, "Inventaire-Interne");
-        $this->savePdf($order, $pdfName, "inventaire");
+        Log::info('Inventaire method called', $request->all());
 
-        return redirect("/");
+        try {
+            $order = $this->createOrder(new Inventaire(), $request);
+            $pdfName = $this->generatePdfName($order, "Inventaire-Interne");
+            $this->savePdf($order, $pdfName, "inventaire");
+
+            return redirect("/")->with('success', 'Order created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error in inventaire method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Failed to create order.');
+        }
     }
 
     public function controle(Request $request)
     {
         set_time_limit(500);
 
-        $order = $this->createOrder(new Controle(), $request);
-        $pdfName = $this->generatePdfName($order, "Controle-Interne");
-        $this->savePdf($order, $pdfName, "inventaire");
+        Log::info('Controle method called', $request->all());
 
-        return redirect("/");
+        try {
+            $order = $this->createOrder(new Controle(), $request);
+            $pdfName = $this->generatePdfName($order, "Controle-Interne");
+            $this->savePdf($order, $pdfName, "inventaire");
+
+            return redirect("/")->with('success', 'Order created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error in controle method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+        }
     }
 
     private function createOrder($model, Request $request)
     {
-        $qty = array_filter($request->products, function ($product) {
-            return !empty($product['qty']) && $product['qty'] > 0;
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'restau' => 'nullable|string',
+            'products' => 'required|array',
+            'products.*.id' => 'required|integer',
+            'products.*.qty' => 'required|numeric',
+        ]);
+
+        $detail = array_filter($validatedData['products'], function ($product) {
+            return $product['qty'] > 0;
         });
 
-        $detail = array_map(function ($product) {
-            return [
-                "product_id" => $product['id'],
-                "qty" => $product['qty']
-            ];
-        }, $qty);
-
         $order = new $model();
-        $order->name = $request->name;
-        $order->restau = $request->restau;
+        $order->name = $validatedData['name'];
+        $order->restau = $validatedData['restau'] ?? null;
         $order->detail = $detail;
         $order->save();
 
@@ -110,12 +126,12 @@ class InventaireCuisinierController extends Controller
 
     private function generatePdfName($order, $prefix)
     {
-        return $this->generatePdfName($prefix, $order);
+        return $this->generatePdfFileName($prefix, $order);
     }
 
     private function savePdf($order, $pdfName, $directory)
     {
-        $this->generatePdfAndSave("pdf.inventaire-summary", ["order" => $order], $pdfName, $directory);
+        $pdfUrl = $this->generatePdfAndSave("pdf.inventaire-summary", ["order" => $order], $pdfName, $directory);
         $order->pdf = $pdfName;
         $order->save();
     }

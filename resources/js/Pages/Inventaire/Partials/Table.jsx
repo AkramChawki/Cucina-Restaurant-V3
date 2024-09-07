@@ -20,7 +20,7 @@ export default function Table({ categories, ficheId, restau }) {
     const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
-        restau: restau || '',
+        restau: restau || null,
         ficheId: ficheId,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
@@ -36,15 +36,41 @@ export default function Table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const filteredProducts = data.products.filter(product => product.qty > 0);
-        const filteredData = { ...data, products: filteredProducts };
+        console.log('Submit button clicked');
+
+        const filteredProducts = data.products.filter(product => product.qty !== '' && parseFloat(product.qty.replace(',', '.')) > 0);
+        const filteredData = { 
+            ...data, 
+            products: filteredProducts.map(product => ({
+                id: product.id,
+                qty: parseFloat(product.qty.replace(',', '.'))
+            }))
+        };
+
+        if (!filteredData.restau) {
+            delete filteredData.restau;
+        }
+
+        console.log('Filtered data:', filteredData);
+
         let endpoint = '';
         if (ficheId == 7) {
             endpoint = '/inventaire/inv';
         } else if (ficheId == 8) {
             endpoint = '/inventaire/cntrl';
         }
-        post(endpoint, { data: filteredData });
+        console.log('Endpoint:', endpoint);
+
+        post(endpoint, filteredData, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                console.log('Success:', page);
+            },
+            onError: (errors) => {
+                console.error('Errors:', errors);
+            },
+        });
     };
 
     const handleQtyChange = (productId, value) => {
@@ -53,13 +79,6 @@ export default function Table({ categories, ficheId, restau }) {
 
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: value } : product
-        );
-        setData('products', updatedProducts);
-    };
-
-    const handleFocus = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
         );
         setData('products', updatedProducts);
     };
