@@ -17,19 +17,28 @@ class CommandeCuisinierController extends Controller
 
     public function index(Request $request)
     {
-        $restaurants = Restaurant::all();
         $ficheId = $request->query('ficheId');
         $exception = Fiche::with('rubrique')
             ->where('id', $ficheId)
             ->where(function ($query) {
-                $query->where('name', 'like', '%Labo%')
-                    ->orWhere('name', 'like', '%Napoli Gang%');
+                $query->where('name', 'like', '%Labo%');
             })
             ->first();
-
         if ($exception) {
             return $this->renderCommanderView($ficheId, null);
         } else {
+            $fiche = Fiche::find($ficheId);
+            $ficheToRestaurantType = [
+                1 => 'Cucina Napoli',
+                5 => 'Cucina Napoli',
+                18 => 'Napoli Gang',
+                19 => 'Cucina Napoli',
+                // Add more mappings as needed
+            ];
+            $restaurantType = $ficheToRestaurantType[$ficheId] ?? null;
+            $restaurants = $restaurantType
+                ? Restaurant::where('type', $restaurantType)->get()
+                : Restaurant::all();
             return Inertia::render('CommandeCuisinier/CommandeCuisinier', [
                 "ficheId" => $ficheId,
                 "restaurants" => $restaurants
@@ -41,7 +50,7 @@ class CommandeCuisinierController extends Controller
     {
         $ficheId = $request->query('ficheId');
         $restau = $request->query('restau');
-        
+
         return $this->renderCommanderView($ficheId, $restau);
     }
 
