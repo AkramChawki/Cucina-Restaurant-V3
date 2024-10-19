@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/detailles', [HomeController::class, 'detailles'])->name('detailles');
-    Route::get('/napoli-gang', [DKController::class, 'index'])->name('dk.index');
+    Route::get('/togo', [DKController::class, 'index'])->name('dk.index');
     Route::get('/labo', [LaboController::class, 'index'])->name('labo.index');
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraison.index');
     Route::get('/menage', [MenageController::class, 'index'])->name('menage.index');
@@ -68,7 +68,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     });
 
     Route::get('/labo', [LaboController::class, 'index'])->name('labo.index');
-    Route::get('/napoli-gang', [DKController::class, 'index'])->name('dk.index');
+    Route::get('/togo', [DKController::class, 'index'])->name('dk.index');
     Route::get('/menage', [MenageController::class, 'index'])->name('menage.index');
 });
 

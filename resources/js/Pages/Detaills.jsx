@@ -104,10 +104,10 @@ export default function Detaills({ fiches, rubriqueTitle }) {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Napoli Gang
+                                    Napoli To Go
                                 </a>
                                 <Link
-                                    href="/napoli-gang"
+                                    href="/togo"
                                     className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
                                 >
                                     Accéder

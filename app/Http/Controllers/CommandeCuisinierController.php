@@ -31,7 +31,7 @@ class CommandeCuisinierController extends Controller
             $ficheToRestaurantType = [
                 1 => 'Cucina Napoli',
                 5 => 'Cucina Napoli',
-                18 => 'Napoli Gang',
+                18 => 'To Go',
                 19 => 'Cucina Napoli',
                 // Add more mappings as needed
             ];
