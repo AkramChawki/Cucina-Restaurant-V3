@@ -15,7 +15,7 @@ class RestValidationMiddleware
         $now = Carbon::now($tz);
 
         $startTime = $now->copy()->setTime(5, 0, 0);
-        $endTime = $now->copy()->setTime(10, 0, 0);
+        $endTime = $now->copy()->setTime(17, 0, 0);
 
         $requiresRest = $now->between($startTime, $endTime);
 
