@@ -8,16 +8,19 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('livraisons', function (Blueprint $table) {
-            $table->string('type')->after('date');
-            $table->string('pdf_url')->nullable()->after('data');
+        Schema::create('livraisons', function (Blueprint $table) {
+            $table->id();
+            $table->date('date');
+            $table->string('type');
+            $table->string('restaurant_group')->nullable();
+            $table->json('data');
+            $table->string('pdf_url')->nullable();
+            $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::table('livraisons', function (Blueprint $table) {
-            $table->dropColumn(['type', 'pdf_url']);
-        });
+        Schema::dropIfExists('livraisons');
     }
 };

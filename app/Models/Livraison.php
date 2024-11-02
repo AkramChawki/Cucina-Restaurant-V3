@@ -9,11 +9,18 @@ class Livraison extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'type', 'data', 'pdf_url'];
+    protected $fillable = [
+        'date', 
+        'type', 
+        'restaurant_group',
+        'data', 
+        'pdf_url'
+    ];
 
     protected $casts = [
         'data' => 'array',
         'date' => 'date',
         'type' => 'string',
+        'restaurant_group' => 'string'
     ];
 }

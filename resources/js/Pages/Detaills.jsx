@@ -104,27 +104,6 @@ export default function Detaills({ fiches, rubriqueTitle }) {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Napoli To Go
-                                </a>
-                                <Link
-                                    href="/togo"
-                                    className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                                >
-                                    Accéder
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="relative flex">
-                            <img
-                                src="/images/restau/white.jpeg"
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-center object-cover"
-                            />
-                            <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                                <a
-                                    href="#"
-                                    className="my-2 text-5xl font-bold text-black"
-                                >
                                     Menage
                                 </a>
                                 <Link

@@ -71,5 +71,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'time.auth' => \App\Http\Middleware\TimeBasedAuth::class,
+        'rest.validation' => \App\Http\Middleware\RestValidationMiddleware::class,
+        
     ];
 }

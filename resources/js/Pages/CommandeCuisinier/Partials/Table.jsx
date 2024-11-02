@@ -1,5 +1,5 @@
 
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
     MenuAlt2Icon,
@@ -16,7 +16,7 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Table({ categories, ficheId, restau }) {
+export default function Table({ categories, ficheId, restau, requiresRest }) {
     const { auth } = usePage().props;
     const { data, setData, post } = useForm({
         name: auth.user.name,
@@ -24,7 +24,11 @@ export default function Table({ categories, ficheId, restau }) {
         ficheId: ficheId,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
-                acc.push({ id: product.id, qty: 0 });
+                acc.push({
+                    id: product.id,
+                    qty: '',
+                    rest: requiresRest ? '' : null
+                });
             });
             return acc;
         }, [])
@@ -36,37 +40,48 @@ export default function Table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Submit button clicked');
-    
-        const filteredProducts = data.products.filter(product => product.qty > 0).map(product => ({
-            product_id: product.id,
-            qty: product.qty
-        }));
+
+        const filteredProducts = data.products
+            .filter(product => product.qty > 0)
+            .map(product => ({
+                product_id: product.id,
+                qty: product.qty,
+                ...(requiresRest && { rest: product.rest })
+            }));
+
         const filteredData = { ...data, products: filteredProducts };
-        console.log('Filtered data:', filteredData);
-    
-        let endpoint = '';
-        if (ficheId == 17) {
-            endpoint = '/commande-cuisinier/labo';
-        } else if (ficheId == 18) {
-            endpoint = '/commande-cuisinier/dk';
-        } else if (ficheId == 19) {
-            endpoint = '/commande-cuisinier/menage';
-        } else {
-            endpoint = '/commande-cuisinier/commander';
-        }
-        console.log('Endpoint:', endpoint);
-    
+
+        let endpoint = ficheId == 17
+            ? '/commande-cuisinier/labo'
+            : ficheId == 19
+                ? '/commande-cuisinier/menage'
+                : '/commande-cuisinier/commander';
+
         router.post(endpoint, filteredData, {
             preserveState: true,
             preserveScroll: false,
         });
     };
 
+
     const handleQtyChange = (productId, value) => {
         if (value < 0) return;
+
+        // If rest is required and not filled, don't allow qty change
+        if (requiresRest) {
+            const product = data.products.find(p => p.id === productId);
+            if (!product.rest) return;
+        }
+
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: value } : product
+            product.id === productId ? { ...product, qty: value || '' } : product
+        );
+        setData('products', updatedProducts);
+    };
+    const handleRestChange = (productId, value) => {
+        if (value < 0) return;
+        const updatedProducts = data.products.map(product =>
+            product.id === productId ? { ...product, rest: value } : product
         );
         setData('products', updatedProducts);
     };
@@ -100,6 +115,7 @@ export default function Table({ categories, ficheId, restau }) {
         name: category.name,
         href: `#${category.name.toLowerCase()}`,
     }));
+
 
     return (
         <>
@@ -289,31 +305,62 @@ export default function Table({ categories, ficheId, restau }) {
                                         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                                             <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-2 lg:max-w-none">
                                                 {category.products.map(product => (
-                                                    <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
-                                                        <div className="flex-shrink-0">
-                                                            <img className="h-48 w-full object-cover" src={"https://admin.cucinanapoli.com/storage/" + product.image} alt="" />
+                                                    <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white">
+                                                        <div className="flex-shrink-0 h-48 overflow-hidden">
+                                                            <img
+                                                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                                                src={"https://admin.cucinanapoli.com/storage/" + product.image}
+                                                                alt={product.designation}
+                                                            />
                                                         </div>
                                                         <div className="flex-1 bg-white p-6 flex flex-col justify-between">
                                                             <div className="flex-1">
-                                                                <a className="block mt-2">
-                                                                    <p className="text-xl font-semibold text-gray-900 text-center">{product.designation}</p>
-                                                                </a>
+                                                                <h3 className="text-xl font-semibold text-gray-900 text-center mb-4">
+                                                                    {product.designation}
+                                                                </h3>
                                                             </div>
-                                                            <div className="mt-6 flex justify-center">
-                                                                <div className="ml-3 w-full">
-                                                                    <input
-                                                                        type="number"
-                                                                        className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
-                                                                        placeholder="0"
-                                                                        min={0}
-                                                                        value={data.products.find(p => p.id === product.id)?.qty}
-                                                                        onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
-                                                                        onFocus={() => handleFocus(product.id)}
-                                                                        onBlur={() => handleBlur(product.id)}
-                                                                    />
-                                                                    <div className='text-center my-4'>
-                                                                        unité ({product.unite})
+                                                            <div className="mt-4 space-y-3">
+                                                                {requiresRest && (
+                                                                    <div className="space-y-2">
+                                                                        <label className="block text-sm font-medium text-gray-700 text-center">
+                                                                            Rest
+                                                                        </label>
+                                                                        <div className="relative rounded-md">
+                                                                            <input
+                                                                                type="number"
+                                                                                className="block w-full py-2 px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-center transition-colors duration-200"
+                                                                                placeholder="Rest"
+                                                                                min={0}
+                                                                                value={data.products.find(p => p.id === product.id)?.rest ?? ''}
+                                                                                onChange={(e) => handleRestChange(product.id, parseFloat(e.target.value))}
+                                                                            />
+                                                                        </div>
                                                                     </div>
+                                                                )}
+
+                                                                {/* Quantity input */}
+                                                                <div className="space-y-2">
+                                                                    <label className="block text-sm font-medium text-gray-700 text-center">
+                                                                        Quantité
+                                                                    </label>
+                                                                    <div className="relative rounded-md">
+                                                                        <input
+                                                                            type="number"
+                                                                            className={`block w-full py-2 px-4 border rounded-md text-center transition-colors duration-200 
+                                                                            ${requiresRest && !data.products.find(p => p.id === product.id)?.rest
+                                                                                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed'
+                                                                                    : 'border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent'}`
+                                                                            }
+                                                                            placeholder="0"
+                                                                            min={0}
+                                                                            value={data.products.find(p => p.id === product.id)?.qty ?? ''}
+                                                                            onChange={(e) => handleQtyChange(product.id, e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                                            disabled={requiresRest && !data.products.find(p => p.id === product.id)?.rest}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-center text-sm text-gray-600 mt-2">
+                                                                    unité ({product.unite})
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -323,18 +370,21 @@ export default function Table({ categories, ficheId, restau }) {
                                         </div>
                                     </div>
                                 ))}
-                                <div className='px-4 py-4'>
+                                <div className='px-4 py-4 space-y-3'>
                                     <button
                                         type="submit"
-                                        className="inline-flex items-center w-[100%] mt-10 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
+                                        className="w-full py-3 px-4 text-lg font-medium rounded-md text-white bg-green-600 hover:bg-green-700 
+                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 
+                                        transition-colors duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Commander
                                     </button>
+
                                     <Link
-                                        type="button"
-                                        as="button"
                                         href="/"
-                                        className="inline-flex items-center w-[100%] mt-2 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
+                                        className="block w-full py-3 px-4 text-lg font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 
+                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 
+                                        text-center transition-colors duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Annuler
                                     </Link>

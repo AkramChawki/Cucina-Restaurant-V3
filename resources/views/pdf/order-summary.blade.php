@@ -167,25 +167,31 @@
 		<div class="inv-body">
 			<table>
 				<thead>
-					<th>Image</th>
-					<th>Produit</th>
-					<th>Qty</th>
-					<th>Unite</th>
-				</thead>
-				<tbody>
-          @foreach ($order->products() as $p)
-					<tr>
-						<td>
-							<img src="https://admin.cucinanapoli.com/storage/{{ $p->image }}" alt="" style="display:block;" width="40px" height="40px">
-						</td>
-						<td>
-							<h4>{{ $p->designation }}</h4>
-						</td>
-						<td>{{ $p->qty }}</td>
-						<td>{{ $p->unite }}</td>
-					</tr>
-          @endforeach
-				</tbody>
+                    <th>Image</th>
+                    <th>Produit</th>
+                    @if(isset($showRest) && $showRest)
+                    <th>Rest</th>
+                    @endif
+                    <th>Qty</th>
+                    <th>Unite</th>
+                </thead>
+                <tbody>
+                    @foreach ($order->products() as $p)
+                    <tr>
+                        <td>
+                            <img src="https://admin.cucinanapoli.com/storage/{{ $p->image }}" alt="" style="display:block;" width="40px" height="40px">
+                        </td>
+                        <td>
+                            <h4>{{ $p->designation }}</h4>
+                        </td>
+                        @if(isset($showRest) && $showRest)
+                        <td>{{ $order->rest[$p->id] ?? '-' }}</td>
+                        @endif
+                        <td>{{ $p->qty }}</td>
+                        <td>{{ $p->unite }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
 			</table>
 		</div>
 	</div>

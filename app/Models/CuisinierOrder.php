@@ -11,6 +11,7 @@ class CuisinierOrder extends Model
 
     protected $casts = [
         'detail' => 'array',
+        'rest' => 'array',
     ];
 
     public function products()
@@ -19,6 +20,10 @@ class CuisinierOrder extends Model
             $p = CuisinierProduct::find($item['product_id']);
             if ($p) {
                 $p->qty = $item['qty'];
+                // Add rest value if it exists
+                if (isset($this->rest[$item['product_id']])) {
+                    $p->rest = $this->rest[$item['product_id']];
+                }
                 return $p;
             }
             return null;

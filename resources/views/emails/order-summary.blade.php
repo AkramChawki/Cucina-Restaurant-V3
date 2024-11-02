@@ -407,6 +407,13 @@
                                     style="font-family: Montserrat, sans-serif; font-size: 14px; line-height: 19.6px;"><strong>{{ $p->designation }} </strong></span></p>
                                 <p style="font-size: 14px; line-height: 140%;"><span
                                     style="font-family: Montserrat, sans-serif; font-size: 14px; line-height: 19.6px;">{{ $p->unite }}</span></p>
+                                    @if(isset($p->rest))
+                                    <p style="font-size: 14px; line-height: 140%; margin-top: 8px;">
+                                        <span style="font-family: Montserrat, sans-serif; font-size: 14px; line-height: 19.6px;">
+                                            Rest: <strong>{{ $p->rest }}</strong>
+                                        </span>
+                                    </p>
+                                    @endif
                               </div>
 
                             </td>

@@ -10,7 +10,6 @@ use App\Models\CuisinierCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
-use Illuminate\Support\Facades\Log;
 
 class InventaireCuisinierController extends Controller
 {
@@ -69,8 +68,6 @@ class InventaireCuisinierController extends Controller
     {
         set_time_limit(500);
 
-        Log::info('Inventaire method called', $request->all());
-
         try {
             $order = $this->createOrder(new Inventaire(), $request);
             $pdfName = $this->generatePdfName($order, "Inventaire-Interne");
@@ -78,7 +75,6 @@ class InventaireCuisinierController extends Controller
 
             return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
-            Log::error('Error in inventaire method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
@@ -87,8 +83,6 @@ class InventaireCuisinierController extends Controller
     {
         set_time_limit(500);
 
-        Log::info('Controle method called', $request->all());
-
         try {
             $order = $this->createOrder(new Controle(), $request);
             $pdfName = $this->generatePdfName($order, "Controle-Interne");
@@ -96,7 +90,6 @@ class InventaireCuisinierController extends Controller
 
             return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
-            Log::error('Error in controle method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
 
         }

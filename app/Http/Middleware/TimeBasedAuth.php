@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class TimeBasedAuth
 {
@@ -15,7 +14,7 @@ class TimeBasedAuth
         if (Auth::check()) {
             $user = Auth::user();
 
-            $restrictedRoles = ['Cuisine', 'Pizzeria', 'Labo', 'Dark Kitchen'];
+            $restrictedRoles = ['Cuisine', 'Pizzeria', 'Labo'];
 
             $userRoles = json_decode($user->role, true);
 

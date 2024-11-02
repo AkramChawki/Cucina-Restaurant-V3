@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Traits\PdfGeneratorTrait;
-use Illuminate\Support\Facades\Log;
 
 abstract class BaseOrderController extends Controller
 {
@@ -18,34 +17,24 @@ abstract class BaseOrderController extends Controller
     {
         set_time_limit(500);
 
-        Log::info('Store method called in BaseOrderController');
-        Log::info('Incoming request data:', $request->all());
 
         try {
             $order = $this->createOrder($request);
             
             if ($order) {
-                Log::info('Order created', ['order' => $order->toArray()]);
                 $pdfName = $this->generatePdfName($order);
-                Log::info('PDF name generated', ['pdfName' => $pdfName]);
                 $this->savePdf($order, $pdfName);
-                Log::info('PDF saved');
-
                 return redirect("/");
             } else {
-                Log::warning('Failed to create order');
                 return "error";
             }
         } catch (\Exception $e) {
-            Log::error('Error in store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return "error";
         }
     }
 
     protected function createOrder(Request $request)
     {
-        Log::info('createOrder method called in BaseOrderController');
-
         $validated = $request->validate([
             'name' => 'required|string',
             'restau' => 'nullable|string',  // Changed to nullable
@@ -54,12 +43,10 @@ abstract class BaseOrderController extends Controller
             'products.*.qty' => 'required|integer|min:1',
         ]);
 
-        Log::info('Validated data:', $validated);
 
         $detail = $validated['products'];
 
         if (empty($detail)) {
-            Log::warning('No products with quantity greater than 0');
             return null;
         }
 
@@ -71,12 +58,9 @@ abstract class BaseOrderController extends Controller
         
         try {
             $order->save();
-            Log::info('Order saved successfully', ['order' => $order->toArray()]);
         } catch (\Exception $e) {
-            Log::error('Error saving order', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             throw $e;
         }
-
         return $order;
     }
 

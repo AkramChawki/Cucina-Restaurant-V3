@@ -16,7 +16,6 @@ class DeleteOldRecords extends Command
         'App\Models\BL' => ['period' => 'weeks', 'value' => 2],
         'App\Models\Controle' => ['period' => 'months', 'value' => 3],
         'App\Models\CuisinierOrder' => ['period' => 'weeks', 'value' => 2],
-        'App\Models\DK' => ['period' => 'weeks', 'value' => 2],
         'App\Models\Inventaire' => ['period' => 'months', 'value' => 3],
         'App\Models\Labo' => ['period' => 'weeks', 'value' => 2],
         'App\Models\Livraison' => ['period' => 'days', 'value' => 3],
@@ -68,9 +67,6 @@ class DeleteOldRecords extends Command
                 break;
             case 'CuisinierOrder':
                 $this->deleteFile('public/orders/' . $record->pdf);
-                break;
-            case 'DK':
-                $this->deleteFile('public/dk/' . $record->pdf);
                 break;
             case 'Labo':
                 $this->deleteFile('public/labo/' . $record->pdf);

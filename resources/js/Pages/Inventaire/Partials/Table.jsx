@@ -42,7 +42,7 @@ export default function Table({ categories, ficheId, restau }) {
             product_id: product.id,
             qty: parseFloat(product.qty)
         }));
-        const filteredData = { 
+        const filteredData = {
             name: data.name,
             restau: data.restau || null,
             products: filteredProducts
@@ -296,32 +296,37 @@ export default function Table({ categories, ficheId, restau }) {
                                         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                                             <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-1 lg:max-w-none">
                                                 {category.products.map(product => (
-                                                    <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
-                                                        <div className="flex-shrink-0">
-                                                            <img className="h-48 w-full object-cover" src={"https://admin.cucinanapoli.com/storage/" + product.image} alt="" />
+                                                    <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white">
+                                                        <div className="flex-shrink-0 h-48 overflow-hidden">
+                                                            <img className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" src={"https://admin.cucinanapoli.com/storage/" + product.image} alt={product.designation} />
                                                         </div>
                                                         <div className="flex-1 bg-white p-6 flex flex-col justify-between">
                                                             <div className="flex-1">
-                                                                <a className="block mt-2">
-                                                                    <p className="text-xl font-semibold text-gray-900 text-center">{product.designation}</p>
-                                                                </a>
+                                                                <h3 className="text-xl font-semibold text-gray-900 text-center mb-4">
+                                                                    {product.designation}
+                                                                </h3>
                                                             </div>
-                                                            <div className="mt-6 flex justify-center">
-                                                                <div className="ml-3 w-full">
-                                                                    <input
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
-                                                                        placeholder="0"
-                                                                        min={0}
-                                                                        value={data.products.find(p => p.id === product.id)?.qty}
-                                                                        onChange={(e) => handleQtyChange(product.id, parseFloat(e.target.value))}
-                                                                        onFocus={() => handleFocus(product.id)}
-                                                                        onBlur={() => handleBlur(product.id)}
-                                                                    />
-                                                                    <div className='text-center my-4'>
-                                                                        unité ({product.unite})
+                                                            <div className="mt-4 space-y-3">
+                                                                <div className="space-y-2">
+                                                                    <label className="block text-sm font-medium text-gray-700 text-center">
+                                                                        Quantité
+                                                                    </label>
+                                                                    <div className="relative rounded-md">
+                                                                        <input
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            className="block w-full py-2 px-4 border rounded-md text-center transition-colors duration-200 border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                                            placeholder="0"
+                                                                            min={0}
+                                                                            value={data.products.find(p => p.id === product.id)?.qty}
+                                                                            onChange={(e) => handleQtyChange(product.id, parseFloat(e.target.value))}
+                                                                            onFocus={() => handleFocus(product.id)}
+                                                                            onBlur={() => handleBlur(product.id)}
+                                                                        />
                                                                     </div>
+                                                                </div>
+                                                                <div className="text-center text-sm text-gray-600 mt-2">
+                                                                    unité ({product.unite})
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -334,15 +339,18 @@ export default function Table({ categories, ficheId, restau }) {
                                 <div className='px-4 py-4'>
                                     <button
                                         type="submit"
-                                        className="inline-flex items-center w-[100%] mt-10 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
+                                        className="w-full py-3 px-4 text-lg font-medium rounded-md text-white bg-green-600 hover:bg-green-700 
+                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 
+                                        transition-colors duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Envoyer
                                     </button>
+
                                     <Link
-                                        type="button"
-                                        as="button"
                                         href="/"
-                                        className="inline-flex items-center w-[100%] mt-2 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
+                                        className="block w-full py-3 px-4 text-lg font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 
+                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 
+                                        text-center transition-colors duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Annuler
                                     </Link>

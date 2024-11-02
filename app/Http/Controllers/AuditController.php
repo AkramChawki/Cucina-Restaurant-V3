@@ -7,7 +7,6 @@ use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
-use Illuminate\Support\Facades\Log;
 
 class AuditController extends Controller
 {
@@ -27,8 +26,6 @@ class AuditController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Audit store method called', $request->all());
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'date' => 'required|date',
@@ -50,7 +47,6 @@ class AuditController extends Controller
 
             return redirect("/")->with('success', 'Audit created successfully.');
         } catch (\Exception $e) {
-            Log::error('Error in audit store method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Failed to create order.');
         }
     }
