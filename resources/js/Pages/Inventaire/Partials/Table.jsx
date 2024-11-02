@@ -36,7 +36,6 @@ export default function Table({ categories, ficheId, restau }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Submit button clicked');
 
         const filteredProducts = data.products.filter(product => parseFloat(product.qty) > 0).map(product => ({
             product_id: product.id,
@@ -51,16 +50,12 @@ export default function Table({ categories, ficheId, restau }) {
         if (!filteredData.restau) {
             delete filteredData.restau;
         }
-
-        console.log('Filtered data:', filteredData);
-
         let endpoint = '';
         if (ficheId == 7) {
             endpoint = '/inventaire/inv';
         } else if (ficheId == 8) {
             endpoint = '/inventaire/cntrl';
         }
-        console.log('Endpoint:', endpoint);
 
         router.post(endpoint, filteredData, {
             preserveState: true,
