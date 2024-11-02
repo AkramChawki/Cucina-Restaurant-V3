@@ -56,7 +56,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
             : ficheId == 19
                 ? '/commande-cuisinier/menage'
                 : ficheId == 20
-                    ? '/commande-cuisinier-boisson'
+                    ? '/commande-cuisinier/boisson'
                     : '/commande-cuisinier/commander';
 
         router.post(endpoint, filteredData, {
