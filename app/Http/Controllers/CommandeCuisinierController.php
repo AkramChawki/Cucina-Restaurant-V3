@@ -46,10 +46,10 @@ class CommandeCuisinierController extends Controller
         } else {
             $fiche = Fiche::find($ficheId);
             $ficheToRestaurantType = [
-                1 => ['Cucina Napoli', 'togo'],
-                5 => ['Cucina Napoli', 'togo'],
-                19 => ['Cucina Napoli', 'togo'],
-                20 => ['Cucina Napoli', 'togo']
+                1 => ['Cucina Napoli', 'To Go'],
+                5 => ['Cucina Napoli', 'To Go'],
+                19 => ['Cucina Napoli', 'To Go'],
+                20 => ['Cucina Napoli', 'To Go']
             ];
             $restaurantType = $ficheToRestaurantType[$ficheId] ?? null;
             $restaurants = $restaurantType 
