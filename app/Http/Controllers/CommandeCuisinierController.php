@@ -56,7 +56,6 @@ class CommandeCuisinierController extends Controller
                 ? Restaurant::whereIn('type', $restaurantType)->get()
                 : Restaurant::all();
 
-            dd($restaurants);
             return Inertia::render('CommandeCuisinier/CommandeCuisinier', [
                 "ficheId" => $ficheId,
                 "restaurants" => $restaurants,
