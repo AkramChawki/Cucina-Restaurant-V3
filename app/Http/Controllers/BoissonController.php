@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Boisson;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class BoissonController extends Controller
@@ -11,7 +10,7 @@ class BoissonController extends Controller
     public function index()
     {
         $boissons = Boisson::orderBy('created_at', 'desc')->get();
-        return Inertia::render('Menage', ['boissons' => $boissons]);
+        return Inertia::render('Boisson', ['boissons' => $boissons]);
     }
     protected function getModelClass()
     {
@@ -20,11 +19,11 @@ class BoissonController extends Controller
 
     protected function getPdfPrefix()
     {
-        return "Commande-Menage";
+        return "Commande-Boisson";
     }
 
     protected function getPdfDirectory()
     {
-        return "menage";
+        return "boisson";
     }
 }
