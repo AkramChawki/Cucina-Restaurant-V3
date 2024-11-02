@@ -46,17 +46,17 @@ class CommandeCuisinierController extends Controller
         } else {
             $fiche = Fiche::find($ficheId);
             $ficheToRestaurantType = [
-                1 => 'Cucina Napoli',
-                5 => 'Cucina Napoli',
-                19 => 'Cucina Napoli',
-                20 => 'Cucina Napoli',
+                1 => ['Cucina Napoli', 'togo'],
+                5 => ['Cucina Napoli', 'togo'],
+                19 => ['Cucina Napoli', 'togo'],
+                20 => ['Cucina Napoli', 'togo']
             ];
             $restaurantType = $ficheToRestaurantType[$ficheId] ?? null;
-            $restaurants = $restaurantType
-                ? Restaurant::where('type', $restaurantType)->get()
+            $restaurants = $restaurantType 
+                ? Restaurant::whereIn('type', $restaurantType)->get()
                 : Restaurant::all();
 
-
+            dd($restaurants);
             return Inertia::render('CommandeCuisinier/CommandeCuisinier', [
                 "ficheId" => $ficheId,
                 "restaurants" => $restaurants,
