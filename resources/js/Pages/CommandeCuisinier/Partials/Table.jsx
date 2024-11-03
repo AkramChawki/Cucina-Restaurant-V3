@@ -1,4 +1,3 @@
-
 import { Fragment, useEffect, useState } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
@@ -35,12 +34,10 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
     });
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
-
     const [filterText, setFilterText] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         const filteredProducts = data.products
             .filter(product => product.qty > 0)
             .map(product => ({
@@ -59,45 +56,27 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                     ? '/commande-cuisinier/boisson'
                     : '/commande-cuisinier/commander';
 
-        router.post(endpoint, filteredData, {
-            preserveState: true,
-            preserveScroll: false,
-        });
+        router.post(endpoint, filteredData);
     };
-
 
     const handleQtyChange = (productId, value) => {
         if (value < 0) return;
-
-        // If rest is required and not filled, don't allow qty change
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
-            if (!product.rest) return;
+            // Modified to allow rest value of 0
+            if (product.rest === '' || product.rest === undefined) return;
         }
-
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: value || '' } : product
         );
         setData('products', updatedProducts);
     };
+
     const handleRestChange = (productId, value) => {
+        // Allow value to be 0 or positive numbers
         if (value < 0) return;
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, rest: value } : product
-        );
-        setData('products', updatedProducts);
-    };
-
-    const handleFocus = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
-        );
-        setData('products', updatedProducts);
-    };
-
-    const handleBlur = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
         );
         setData('products', updatedProducts);
     };
@@ -118,10 +97,9 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
         href: `#${category.name.toLowerCase()}`,
     }));
 
-
     return (
         <>
-            <div>
+            <div className="min-h-screen bg-gray-50">
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog as="div" className="fixed inset-0 flex z-40 md:hidden" onClose={setSidebarOpen}>
                         <Transition.Child
@@ -179,7 +157,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                                 key={item.name}
                                                 href={item.href}
                                                 className={classNames(
-                                                    item.current ? 'bg-[#0D3D33] text-white' : 'text-[#90D88C] hover:bg-[#73ac70]',
+                                                    'text-[#90D88C] hover:bg-[#73ac70]',
                                                     'group flex items-center px-2 py-2 text-base font-medium rounded-md'
                                                 )}
                                             >
@@ -190,10 +168,9 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                 </div>
                             </div>
                         </Transition.Child>
-                        <div className="flex-shrink-0 w-14" aria-hidden="true">
-                        </div>
                     </Dialog>
                 </Transition.Root>
+
                 <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
                     <div className="flex flex-col flex-grow pt-5 bg-[#0D3D33] overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
@@ -210,7 +187,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                         key={item.name}
                                         href={item.href}
                                         className={classNames(
-                                            item.current ? 'bg-[#0D3D33] text-white' : 'text-[#90D88C] hover:bg-[#73ac70]',
+                                            'text-[#90D88C] hover:bg-[#73ac70]',
                                             'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
                                         )}
                                     >
@@ -221,6 +198,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                         </div>
                     </div>
                 </div>
+
                 <div className="md:pl-64 flex flex-col flex-1">
                     <form onSubmit={handleSubmit}>
                         <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow">
@@ -244,7 +222,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                             </div>
                                             <input
                                                 id="search-field"
-                                                className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm"
+                                                className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent sm:text-sm"
                                                 placeholder="Search"
                                                 type="text"
                                                 name="search"
@@ -297,99 +275,97 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                 </div>
                             </div>
                         </div>
-                        <main>
+
+                        <main className="flex-1">
                             <div className="py-6">
                                 {filteredCategories.map((category) => (
-                                    <div key={`c-${category.id}`}>
-                                        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                                            <h1 id={category.name.toLowerCase()} className="text-2xl font-semibold text-gray-900">{category.name}</h1>
+                                    <div key={`c-${category.id}`} className="px-4">
+                                        <div className="max-w-7xl mx-auto">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h1 id={category.name.toLowerCase()} className="text-2xl font-bold text-gray-900">
+                                                    {category.name}
+                                                </h1>
+                                                <span className="text-sm text-gray-500">
+                                                    {category.products.length}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                                            <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-2 lg:max-w-none">
-                                                {category.products.map(product => (
-                                                    <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white">
-                                                        <div className="flex-shrink-0 h-48 overflow-hidden">
-                                                            <img
-                                                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                                                src={"https://admin.cucinanapoli.com/storage/" + product.image}
-                                                                alt={product.designation}
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1 bg-white p-6 flex flex-col justify-between">
-                                                            <div className="flex-1">
-                                                                <h3 className="text-xl font-semibold text-gray-900 text-center mb-4">
-                                                                    {product.designation}
-                                                                </h3>
-                                                            </div>
-                                                            <div className="mt-4 space-y-3">
-                                                                {requiresRest && (
-                                                                    <div className="space-y-2">
-                                                                        <label className="block text-sm font-medium text-gray-700 text-center">
-                                                                            Rest
-                                                                        </label>
-                                                                        <div className="relative rounded-md">
-                                                                            <input
-                                                                                type="number"
-                                                                                className="block w-full py-2 px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-center transition-colors duration-200"
-                                                                                placeholder="Rest"
-                                                                                min={0}
-                                                                                value={data.products.find(p => p.id === product.id)?.rest ?? ''}
-                                                                                onChange={(e) => handleRestChange(product.id, parseFloat(e.target.value))}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                )}
 
-                                                                {/* Quantity input */}
-                                                                <div className="space-y-2">
-                                                                    <label className="block text-sm font-medium text-gray-700 text-center">
-                                                                        Quantité
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {category.products.map(product => (
+                                                <div key={`p-${product.id}`} className="bg-white rounded-lg overflow-hidden shadow">
+                                                    <div className="aspect-w-1 aspect-h-1">
+                                                        <img
+                                                            className="w-full h-48 object-cover"
+                                                            src={"https://admin.cucinanapoli.com/storage/" + product.image}
+                                                            alt={product.designation}
+                                                        />
+                                                    </div>
+                                                    <div className="p-4">
+                                                        <h3 className="text-lg font-semibold text-center mb-4">
+                                                            {product.designation}
+                                                        </h3>
+
+                                                        <div className="space-y-3">
+                                                            {requiresRest && (
+                                                                <div>
+                                                                    <label className="block text-sm text-gray-600 text-center mb-1">
+                                                                        Rest
                                                                     </label>
-                                                                    <div className="relative rounded-md">
-                                                                        <input
-                                                                            type="number"
-                                                                            className={`block w-full py-2 px-4 border rounded-md text-center transition-colors duration-200 
-                                                                            ${requiresRest && !data.products.find(p => p.id === product.id)?.rest
-                                                                                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed'
-                                                                                    : 'border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent'}`
-                                                                            }
-                                                                            placeholder="0"
-                                                                            min={0}
-                                                                            value={data.products.find(p => p.id === product.id)?.qty ?? ''}
-                                                                            onChange={(e) => handleQtyChange(product.id, e.target.value === '' ? '' : parseInt(e.target.value))}
-                                                                            disabled={requiresRest && !data.products.find(p => p.id === product.id)?.rest}
-                                                                        />
-                                                                    </div>
+                                                                    <input
+                                                                        type="number"
+                                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-center"
+                                                                        placeholder="Rest"
+                                                                        min={0}
+                                                                        value={data.products.find(p => p.id === product.id)?.rest ?? ''}
+                                                                        onChange={(e) => handleRestChange(product.id, e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                                    />
                                                                 </div>
-                                                                <div className="text-center text-sm text-gray-600 mt-2">
+                                                            )}
+
+                                                            <div>
+                                                                <label className="block text-sm text-gray-600 text-center mb-1">
+                                                                    Quantité
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' || data.products.find(p => p.id === product.id)?.rest === undefined)
+                                                                        ? 'bg-gray-100 cursor-not-allowed'
+                                                                        : ''
+                                                                        }`}
+                                                                    placeholder="0"
+                                                                    min={0}
+                                                                    value={data.products.find(p => p.id === product.id)?.qty ?? ''}
+                                                                    onChange={(e) => handleQtyChange(product.id, e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                                    disabled={requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' || data.products.find(p => p.id === product.id)?.rest === undefined)}
+                                                                />
+                                                                <div className="text-center text-sm text-gray-500 mt-1">
                                                                     unité ({product.unite})
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
-                                <div className='px-4 py-4 space-y-3'>
-                                    <button
-                                        type="submit"
-                                        className="w-full py-3 px-4 text-lg font-medium rounded-md text-white bg-green-600 hover:bg-green-700 
-                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 
-                                        transition-colors duration-200 shadow-md hover:shadow-lg"
-                                    >
-                                        Commander
-                                    </button>
 
-                                    <Link
-                                        href="/"
-                                        className="block w-full py-3 px-4 text-lg font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 
-                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 
-                                        text-center transition-colors duration-200 shadow-md hover:shadow-lg"
-                                    >
-                                        Annuler
-                                    </Link>
+                                <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
+                                    <div className="max-w-7xl mx-auto flex flex-col space-y-2">
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                                        >
+                                            Commander
+                                        </button>
+                                        <Link
+                                            href="/"
+                                            className="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-center"
+                                        >
+                                            Annuler
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </main>
