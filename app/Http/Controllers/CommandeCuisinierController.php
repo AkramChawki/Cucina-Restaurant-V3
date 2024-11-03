@@ -20,10 +20,13 @@ class CommandeCuisinierController extends Controller
         $tz = 'Africa/Casablanca';
         $now = Carbon::now($tz);
 
-        // From 5 AM to 4 PM
-        $startTime = $now->copy()->setTime(5, 0, 0);
-        $endTime = $now->copy()->setTime(17, 0, 0);
+        // Set start time to 8 PM (20:00) of current day
+        $startTime = $now->copy()->setTime(20, 0, 0);
 
+        // Set end time to 3 AM (03:00) of next day
+        $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
+
+        // Check if current time is between start and end time
         $requiresRest = $now->between($startTime, $endTime);
 
         return $requiresRest;
@@ -52,7 +55,7 @@ class CommandeCuisinierController extends Controller
                 20 => ['Cucina Napoli', 'To Go']
             ];
             $restaurantType = $ficheToRestaurantType[$ficheId] ?? null;
-            $restaurants = $restaurantType 
+            $restaurants = $restaurantType
                 ? Restaurant::whereIn('type', $restaurantType)->get()
                 : Restaurant::all();
 
