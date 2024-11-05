@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Traits\PdfGeneratorTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 abstract class BaseOrderController extends Controller
 {
@@ -43,20 +44,31 @@ abstract class BaseOrderController extends Controller
             if ($order) {
                 try {
                     $pdfName = $this->generatePdfName($order);
-                    $this->savePdf($order, $pdfName);
+                    $pdfPath = $this->savePdf($order, $pdfName);
                     
-                    return redirect()->route('dashboard')->with('success', 'Order created successfully.');
+                    Log::info('Order created successfully', [
+                        'order_id' => $order->id,
+                        'pdf_path' => $pdfPath
+                    ]);
+                    
+                    return redirect()->route('home')->with('success', 'Order created successfully.');
                 } catch (\Exception $e) {
-                    Log::error('PDF Generation failed: ' . $e->getMessage());
-                    // Still redirect even if PDF fails
-                    return redirect()->route('dashboard')->with('warning', 'Order created but PDF generation failed.');
+                    Log::error('PDF Generation failed', [
+                        'error' => $e->getMessage(),
+                        'order_id' => $order->id ?? null
+                    ]);
+                    
+                    return redirect()->route('home')->with('warning', 'Order created but PDF generation failed.');
                 }
             }
             
             return redirect()->back()->with('error', 'Failed to create order.');
             
         } catch (\Exception $e) {
-            Log::error('Order creation failed: ' . $e->getMessage());
+            Log::error('Order creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
@@ -119,19 +131,33 @@ abstract class BaseOrderController extends Controller
     protected function savePdf($order, $pdfName)
     {
         $requiresRest = $order->rest !== null;
+        $directory = $this->getPdfDirectory();
 
         try {
-            $pdfUrl = $this->generatePdfAndSave("pdf.order-summary", [
-                "order" => $order,
-                "showRest" => $requiresRest
-            ], $pdfName, $this->getPdfDirectory());
+            // Ensure directory exists
+            Storage::disk('public')->makeDirectory($directory);
+
+            $pdfPath = $this->generatePdfAndSave(
+                "pdf.order-summary", 
+                [
+                    "order" => $order,
+                    "showRest" => $requiresRest
+                ],
+                $pdfName,
+                $directory
+            );
             
             $order->pdf = $pdfName;
             $order->save();
             
-            return $pdfUrl;
+            return $pdfPath;
+            
         } catch (\Exception $e) {
-            Log::error('PDF Generation failed in savePdf: ' . $e->getMessage());
+            Log::error('PDF Generation failed in savePdf', [
+                'error' => $e->getMessage(),
+                'order_id' => $order->id,
+                'directory' => $directory
+            ]);
             throw $e;
         }
     }
