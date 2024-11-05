@@ -38,7 +38,6 @@ class MenageController extends Controller
 
     public function store(Request $request)
     {   
-        dd($request->all());
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
         try {
@@ -67,7 +66,7 @@ class MenageController extends Controller
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
         ];
-
+        dd($validationRules);
         if ($requiresRest) {
             $validationRules['products.*.rest'] = 'required|numeric|min:0';
         }
