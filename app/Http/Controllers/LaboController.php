@@ -6,6 +6,7 @@ use App\Models\Labo;
 use App\Traits\PdfGeneratorTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LaboController extends Controller
 {
@@ -42,6 +43,7 @@ class LaboController extends Controller
                 return redirect()->back()->with('error', 'Failed to create order.');
             }
         } catch (\Exception $e) {
+            Log::error('Labo order creation failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
