@@ -176,22 +176,28 @@
                     <th>Unite</th>
                 </thead>
                 <tbody>
-                    @foreach ($order->products() as $p)
-                    <tr>
-                        <td>
-                            <img src="https://admin.cucinanapoli.com/storage/{{ $p->image }}" alt="" style="display:block;" width="40px" height="40px">
-                        </td>
-                        <td>
-                            <h4>{{ $p->designation }}</h4>
-                        </td>
-                        @if(isset($showRest) && $showRest)
-                        <td>{{ $order->rest[$p->id] ?? '-' }}</td>
-                        @endif
-                        <td>{{ $p->qty }}</td>
-                        <td>{{ $p->unite }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
+					@foreach ($order->products() as $p)
+					<tr>
+						<td>
+							<img src="https://admin.cucinanapoli.com/storage/{{ $p->image }}" alt="" style="display:block;" width="40px" height="40px">
+						</td>
+						<td>
+							<h4>{{ $p->designation }}</h4>
+						</td>
+						@if(isset($showRest) && $showRest)
+						<td>
+							@php
+								$restItem = collect($order->rest)->firstWhere('product_id', $p->id);
+								$restQty = $restItem ? $restItem['qty'] : '-';
+							@endphp
+							{{ $restQty }}
+						</td>
+						@endif
+						<td>{{ $p->qty }}</td>
+						<td>{{ $p->unite }}</td>
+					</tr>
+					@endforeach
+				</tbody>
 			</table>
 		</div>
 	</div>
