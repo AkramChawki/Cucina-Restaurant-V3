@@ -38,7 +38,6 @@ class LaboController extends Controller
     {
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-        dd($request->all());
         try {
             $order = $this->createOrder($request, $requiresRest);
 
@@ -60,7 +59,7 @@ class LaboController extends Controller
 
         $validationRules = [
             'name' => 'required|string',
-            'restau' => 'string',
+            'restau' => 'required|string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
