@@ -35,9 +35,14 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [filterText, setFilterText] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return; // Prevent multiple submissions
+        
+        setIsSubmitting(true);
+        
         const filteredProducts = data.products
             .filter(product => product.qty > 0)
             .map(product => ({
@@ -56,14 +61,17 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                     ? '/commande-cuisinier/boisson'
                     : '/commande-cuisinier/commander';
 
-        router.post(endpoint, filteredData);
+        try {
+            await router.post(endpoint, filteredData);
+        } catch (error) {
+            setIsSubmitting(false);
+        }
     };
 
     const handleQtyChange = (productId, value) => {
         if (value < 0) return;
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
-            // Modified to allow rest value of 0
             if (product.rest === '' || product.rest === undefined) return;
         }
         const updatedProducts = data.products.map(product =>
@@ -73,7 +81,6 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
     };
 
     const handleRestChange = (productId, value) => {
-        // Allow value to be 0 or positive numbers
         if (value < 0) return;
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, rest: value } : product
@@ -277,7 +284,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                         </div>
 
                         <main className="flex-1">
-                            <div className="py-6">
+                            <div className="py-6 pb-32"> {/* Added padding bottom to prevent content from being hidden */}
                                 {filteredCategories.map((category) => (
                                     <div key={`c-${category.id}`} className="px-4">
                                         <div className="max-w-7xl mx-auto">
@@ -351,17 +358,18 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                     </div>
                                 ))}
 
-                                <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
-                                    <div className="max-w-7xl mx-auto flex flex-col space-y-2">
+                                <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4" style={{ marginBottom: '20px' }}>
+                                    <div className="max-w-7xl mx-auto flex flex-row space-x-4"> {/* Changed to flex-row and added space-x-4 */}
                                         <button
                                             type="submit"
-                                            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                                            disabled={isSubmitting}
+                                            className={`flex-1 ${isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white py-3 rounded-lg font-semibold transition-colors`}
                                         >
-                                            Commander
+                                            {isSubmitting ? 'En cours...' : 'Commander'}
                                         </button>
                                         <Link
                                             href="/"
-                                            className="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-center"
+                                            className="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-center"
                                         >
                                             Annuler
                                         </Link>
