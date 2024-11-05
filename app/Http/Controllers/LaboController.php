@@ -71,6 +71,7 @@ class LaboController extends Controller
 
         $validated = $request->validate($validationRules);
         dd($validated);
+
         $detail = collect($validated['products'])->map(function ($item) {
             return [
                 'product_id' => $item['product_id'],
@@ -91,7 +92,6 @@ class LaboController extends Controller
         if (empty($detail)) {
             return null;
         }
-        dd($validated);
 
         $order = new Labo();
         $order->name = $validated['name'];
