@@ -40,21 +40,20 @@ class MenageController extends Controller
     {   
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-        $order = $this->createOrder($request, $requiresRest);
-        $pdfName = $this->generatePdfName($order);
-        $this->savePdf($order, $pdfName);
-        dd($order);
-        return redirect("/")->with('success', 'Order created successfully.');
-        // try {
+        try {
+            $order = $this->createOrder($request, $requiresRest);
 
-        //     if ($order) {
+            if ($order) {
+                $pdfName = $this->generatePdfName($order);
+                $this->savePdf($order, $pdfName);
 
-        //     } else {
-        //         return redirect()->back()->with('error', 'Failed to create order.');
-        //     }
-        // } catch (\Exception $e) {
-        //     return redirect()->back()->with('error', 'An error occurred while processing your request.');
-        // }
+                return redirect("/")->with('success', 'Order created successfully.');
+            } else {
+                return redirect()->back()->with('error', 'Failed to create order.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+        }
     }
 
     private function createOrder(Request $request, $requiresRest)

@@ -17,7 +17,7 @@ class Boisson extends Model
     public function products()
     {
         return array_map(function ($item) {
-            $p = Boisson::find($item['product_id']);
+            $p = CuisinierProduct::find($item['product_id']);
             if ($p) {
                 $p->qty = $item['qty'];
                 // Add rest value if it exists in the rest array
