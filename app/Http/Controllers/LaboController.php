@@ -61,7 +61,7 @@ class LaboController extends Controller
 
         $validationRules = [
             'name' => 'required|string',
-            'restau' => 'required|string',
+            'restau' => 'string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
