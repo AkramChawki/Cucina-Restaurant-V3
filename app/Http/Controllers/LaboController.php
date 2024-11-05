@@ -38,6 +38,7 @@ class LaboController extends Controller
     {
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
+        dd($request->all());
         try {
             $order = $this->createOrder($request, $requiresRest);
 
@@ -70,7 +71,6 @@ class LaboController extends Controller
         }
 
         $validated = $request->validate($validationRules);
-        dd("123");
 
         $detail = collect($validated['products'])->map(function ($item) {
             return [
