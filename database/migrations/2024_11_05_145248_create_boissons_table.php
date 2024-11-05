@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string("name");
             $table->string("restau")->nullable();
             $table->json("detail");
+            $table->json("rest")->nullable();
             $table->string("pdf")->nullable();
             $table->timestamps();
         });
