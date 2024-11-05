@@ -20,9 +20,10 @@ class CuisinierOrder extends Model
             $p = CuisinierProduct::find($item['product_id']);
             if ($p) {
                 $p->qty = $item['qty'];
-                // Add rest value if it exists
-                if (isset($this->rest[$item['product_id']])) {
-                    $p->rest = $this->rest[$item['product_id']];
+                // Add rest value if it exists in the rest array
+                if ($this->rest) {
+                    $restItem = collect($this->rest)->firstWhere('product_id', $item['product_id']);
+                    $p->rest = $restItem ? $restItem['qty'] : null;
                 }
                 return $p;
             }

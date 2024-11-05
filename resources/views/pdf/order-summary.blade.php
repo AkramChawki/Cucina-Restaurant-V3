@@ -185,13 +185,7 @@
 							<h4>{{ $p->designation }}</h4>
 						</td>
 						@if(isset($showRest) && $showRest)
-						<td>
-							@php
-								$restItem = collect($order->rest)->firstWhere('product_id', $p->id);
-								$restQty = $restItem ? $restItem['qty'] : '-';
-							@endphp
-							{{ $restQty }}
-						</td>
+						<td>{{ $p->rest ?? '-' }}</td>
 						@endif
 						<td>{{ $p->qty }}</td>
 						<td>{{ $p->unite }}</td>
