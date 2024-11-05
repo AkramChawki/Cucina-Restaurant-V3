@@ -45,7 +45,7 @@ abstract class BaseOrderController extends Controller
                 try {
                     $pdfName = $this->generatePdfName($order);
                     $pdfPath = $this->savePdf($order, $pdfName);
-                    
+                    dd($pdfPath);
                     Log::info('Order created successfully', [
                         'order_id' => $order->id,
                         'pdf_path' => $pdfPath
