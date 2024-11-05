@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Traits\PdfGeneratorTrait;
+use Carbon\Carbon;
 
 abstract class BaseOrderController extends Controller
 {
@@ -13,38 +14,76 @@ abstract class BaseOrderController extends Controller
     abstract protected function getPdfPrefix();
     abstract protected function getPdfDirectory();
 
+    protected function isRestInputRequired()
+    {
+        $tz = 'Africa/Casablanca';
+        $now = Carbon::now($tz);
+
+        // Set start time to 8 PM (20:00) of current day
+        $startTime = $now->copy()->setTime(20, 0, 0);
+
+        // Set end time to 3 AM (03:00) of next day
+        $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
+
+        // Check if current time is between start and end time
+        $requiresRest = $now->between($startTime, $endTime);
+
+        return $requiresRest;
+    }
+
     public function store(Request $request)
     {
         set_time_limit(500);
-
+        $requiresRest = $this->isRestInputRequired();
 
         try {
-            $order = $this->createOrder($request);
+            $order = $this->createOrder($request, $requiresRest);
             
             if ($order) {
                 $pdfName = $this->generatePdfName($order);
                 $this->savePdf($order, $pdfName);
-                return redirect("/");
+                
+                return redirect("/")->with('success', 'Order created successfully.');
             } else {
-                return "error";
+                return redirect()->back()->with('error', 'Failed to create order.');
             }
         } catch (\Exception $e) {
-            return "error";
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
         }
     }
 
-    protected function createOrder(Request $request)
+    protected function createOrder(Request $request, $requiresRest = false)
     {
-        $validated = $request->validate([
+        $validationRules = [
             'name' => 'required|string',
-            'restau' => 'nullable|string',  // Changed to nullable
+            'restau' => 'required|string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
-        ]);
+        ];
 
+        if ($requiresRest) {
+            $validationRules['products.*.rest'] = 'required|numeric|min:0';
+        }
 
-        $detail = $validated['products'];
+        $validated = $request->validate($validationRules);
+
+        $detail = collect($validated['products'])->map(function ($item) {
+            return [
+                'product_id' => $item['product_id'],
+                'qty' => $item['qty']
+            ];
+        })->toArray();
+
+        $rest = null;
+        if ($requiresRest) {
+            $rest = collect($validated['products'])->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['rest']
+                ];
+            })->toArray();
+        }
 
         if (empty($detail)) {
             return null;
@@ -53,14 +92,16 @@ abstract class BaseOrderController extends Controller
         $modelClass = $this->getModelClass();
         $order = new $modelClass();
         $order->name = $validated['name'];
-        $order->restau = $validated['restau'] ?? null;  // Use null if restau is not provided
+        $order->restau = $validated['restau'];
         $order->detail = $detail;
+        $order->rest = $rest;
         
         try {
             $order->save();
         } catch (\Exception $e) {
             throw $e;
         }
+        
         return $order;
     }
 
@@ -72,7 +113,13 @@ abstract class BaseOrderController extends Controller
 
     protected function savePdf($order, $pdfName)
     {
-        $pdfUrl = $this->generatePdfAndSave("pdf.order-summary", ["order" => $order], $pdfName, $this->getPdfDirectory());
+        $requiresRest = $order->rest !== null;
+
+        $pdfUrl = $this->generatePdfAndSave("pdf.order-summary", [
+            "order" => $order,
+            "showRest" => $requiresRest
+        ], $pdfName, $this->getPdfDirectory());
+        
         $order->pdf = $pdfName;
         $order->save();
     }
