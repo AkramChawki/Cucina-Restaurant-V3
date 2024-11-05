@@ -40,20 +40,21 @@ class MenageController extends Controller
     {   
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-        try {
-            $order = $this->createOrder($request, $requiresRest);
+        $order = $this->createOrder($request, $requiresRest);
+        dd($order);
+        $pdfName = $this->generatePdfName($order);
+        $this->savePdf($order, $pdfName);
+        return redirect("/")->with('success', 'Order created successfully.');
+        // try {
 
-            if ($order) {
-                $pdfName = $this->generatePdfName($order);
-                $this->savePdf($order, $pdfName);
+        //     if ($order) {
 
-                return redirect("/")->with('success', 'Order created successfully.');
-            } else {
-                return redirect()->back()->with('error', 'Failed to create order.');
-            }
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'An error occurred while processing your request.');
-        }
+        //     } else {
+        //         return redirect()->back()->with('error', 'Failed to create order.');
+        //     }
+        // } catch (\Exception $e) {
+        //     return redirect()->back()->with('error', 'An error occurred while processing your request.');
+        // }
     }
 
     private function createOrder(Request $request, $requiresRest)
@@ -66,13 +67,11 @@ class MenageController extends Controller
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
         ];
-        dd($validationRules);
         if ($requiresRest) {
             $validationRules['products.*.rest'] = 'required|numeric|min:0';
         }
 
         $validated = $request->validate($validationRules);
-
         $detail = collect($validated['products'])->map(function ($item) {
             return [
                 'product_id' => $item['product_id'],
