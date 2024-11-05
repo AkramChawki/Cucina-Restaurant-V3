@@ -21,17 +21,9 @@ class LaboController extends Controller
     {
         $tz = 'Africa/Casablanca';
         $now = Carbon::now($tz);
-
-        // Set start time to 8 PM (20:00) of current day
         $startTime = $now->copy()->setTime(20, 0, 0);
-
-        // Set end time to 3 AM (03:00) of next day
         $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
-
-        // Check if current time is between start and end time
-        $requiresRest = $now->between($startTime, $endTime);
-
-        return $requiresRest;
+        return $now->between($startTime, $endTime);
     }
 
     public function store(Request $request)
@@ -56,7 +48,6 @@ class LaboController extends Controller
 
     private function createOrder(Request $request, $requiresRest)
     {
-
         $validationRules = [
             'name' => 'required|string',
             'restau' => 'required|string',
@@ -94,11 +85,10 @@ class LaboController extends Controller
 
         $order = new Labo();
         $order->name = $validated['name'];
-        $order->restau = Null;
+        $order->restau = $validated['restau']; // Now properly setting the restau value
         $order->detail = $detail;
         $order->rest = $rest;
         $order->save();
-
 
         return $order;
     }
@@ -120,5 +110,4 @@ class LaboController extends Controller
         $order->pdf = $pdfName;
         $order->save();
     }
-    
 }
