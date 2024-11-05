@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Boisson;
 use Inertia\Inertia;
 
-class BoissonController extends Controller
+class BoissonController extends BaseOrderController
 {
     public function index()
     {
