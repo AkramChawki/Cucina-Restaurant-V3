@@ -17,7 +17,8 @@ class Menage extends Model
     public function products()
     {
         return array_map(function ($item) {
-            $p = Menage::find($item['product_id']);
+            // Change Menage::find to Product::find since we're looking for products
+            $p = Product::find($item['product_id']);
             if ($p) {
                 $p->qty = $item['qty'];
                 // Add rest value if it exists in the rest array
@@ -27,7 +28,14 @@ class Menage extends Model
                 }
                 return $p;
             }
-            return null;
+            // Return a null-safe object if product not found
+            return (object)[
+                'image' => null,
+                'designation' => 'Product Not Found',
+                'qty' => $item['qty'],
+                'unite' => 'N/A',
+                'rest' => null
+            ];
         }, $this->detail ?? []);
     }
 }
