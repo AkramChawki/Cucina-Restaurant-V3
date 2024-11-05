@@ -38,10 +38,9 @@ class LaboController extends Controller
     {
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-        $order = $this->createOrder($request, $requiresRest);
-        dd($order);
 
         try {
+            $order = $this->createOrder($request, $requiresRest);
 
             if ($order) {
                 $pdfName = $this->generatePdfName($order);
@@ -72,7 +71,7 @@ class LaboController extends Controller
         }
 
         $validated = $request->validate($validationRules);
-
+        dd($validated);
         $detail = collect($validated['products'])->map(function ($item) {
             return [
                 'product_id' => $item['product_id'],
