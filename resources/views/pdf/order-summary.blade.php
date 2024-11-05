@@ -126,6 +126,14 @@
 		<img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" class="inv-logo" />
 		<div class="inv-header">
 			<div>
+			    @if ($order->restau == null)
+				<h2>Cucina Napoli - Bureau</h2>
+				<ul>
+					<li>rue 28 num 56 Lotissement Mestouna Hay Hassani</li>
+					<li>Casablance</li>
+					<li>+212 6 64 68 52 75 | admin@cucinanapoli.com</li>
+				</ul>
+				@endif
 			    @if ($order->restau == "Anoual")
 				<h2>Cucina Napoli - Anoual</h2>
 				<ul>
@@ -135,7 +143,7 @@
 				</ul>
 				@endif
 				@if ($order->restau == "Palmier")
-				<h2>Cucina Napoli = Palmier</h2>
+				<h2>Cucina Napoli - Palmier</h2>
 				<ul>
 					<li>13 rue Ahmed Naciri, Angle Rue Saria Ibnou Zounaim</li>
 					<li>Casablanca</li>
@@ -143,7 +151,7 @@
 				</ul>
 				@endif
 				@if ($order->restau == "Ziraoui")
-				<h2>Cucina Napoli = Ziraoui</h2>
+				<h2>Cucina Napoli - Ziraoui</h2>
 				<ul>
 					<li>267, Bd Ziraoui</li>
 					<li>Casablanca</li>

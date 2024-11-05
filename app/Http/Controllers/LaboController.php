@@ -52,7 +52,6 @@ class LaboController extends Controller
     {
         $validationRules = [
             'name' => 'required|string',
-            'restau' => 'required|string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
@@ -61,7 +60,7 @@ class LaboController extends Controller
         if ($requiresRest) {
             $validationRules['products.*.rest'] = 'required|numeric|min:0';
         }
-
+    
         $validated = $request->validate($validationRules);
 
         $detail = collect($validated['products'])->map(function ($item) {
