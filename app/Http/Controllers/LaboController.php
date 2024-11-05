@@ -38,10 +38,10 @@ class LaboController extends Controller
     {
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-
+        $order = $this->createOrder($request, $requiresRest);
+        dd($order);
 
         try {
-            $order = $this->createOrder($request, $requiresRest);
 
             if ($order) {
                 $pdfName = $this->generatePdfName($order);
