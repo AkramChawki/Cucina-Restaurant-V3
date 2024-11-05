@@ -70,7 +70,7 @@ class LaboController extends Controller
         }
 
         $validated = $request->validate($validationRules);
-        dd($validated);
+        dd("123");
 
         $detail = collect($validated['products'])->map(function ($item) {
             return [
