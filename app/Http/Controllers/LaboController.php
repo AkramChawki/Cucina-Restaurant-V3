@@ -91,13 +91,13 @@ class LaboController extends Controller
         if (empty($detail)) {
             return null;
         }
+        dd($validated);
 
         $order = new Labo();
         $order->name = $validated['name'];
         $order->restau = Null;
         $order->detail = $detail;
         $order->rest = $rest;
-        dd($order);
         $order->save();
 
 
