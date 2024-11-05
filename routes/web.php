@@ -33,7 +33,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/commander', [CommandeCuisinierController::class, 'store'])->name('commande-cuisinier.store');
         Route::post('/labo', [LaboController::class, 'store'])->name('labo.store');
         Route::post('/menage', [MenageController::class, 'store'])->name('menage.store');
-        Route::post('S/boisson', [BoissonController::class, 'store'])->name('boisson.store');
+        Route::post('/boisson', [BoissonController::class, 'store'])->name('boisson.store');
     });
 
 

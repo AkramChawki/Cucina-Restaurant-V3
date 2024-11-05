@@ -37,11 +37,10 @@ class MenageController extends Controller
     }
 
     public function store(Request $request)
-    {
+    {   
+        dd($request->all());
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-
-
         try {
             $order = $this->createOrder($request, $requiresRest);
 
@@ -102,8 +101,6 @@ class MenageController extends Controller
         $order->detail = $detail;
         $order->rest = $rest;
         $order->save();
-
-
         return $order;
     }
 
