@@ -31,11 +31,11 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::get('/', [CommandeCuisinierController::class, 'index'])->name('commande-cuisinier.index');
         Route::get('/commander', [CommandeCuisinierController::class, 'create'])->name('commande-cuisinier.create');
         Route::post('/commander', [CommandeCuisinierController::class, 'store'])->name('commande-cuisinier.store');
+        Route::post('/labo', [LaboController::class, 'store'])->name('labo.store');
+        Route::post('/menage', [MenageController::class, 'store'])->name('menage.store');
+        Route::post('S/boisson', [BoissonController::class, 'store'])->name('boisson.store');
     });
 
-    Route::post('/commande-cuisinier/labo', [LaboController::class, 'store'])->name('labo.store');
-    Route::post('/commande-cuisinier/menage', [MenageController::class, 'store'])->name('menage.store');
-    Route::post('/commande-cuisinier/boisson', [BoissonController::class, 'store'])->name('boisson.store');
 
     Route::prefix('inventaire')->group(function () {
         Route::get('/', [InventaireCuisinierController::class, 'index'])->name('inventaire.index');
