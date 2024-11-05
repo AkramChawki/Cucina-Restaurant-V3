@@ -60,7 +60,7 @@ class LaboController extends Controller
         if ($requiresRest) {
             $validationRules['products.*.rest'] = 'required|numeric|min:0';
         }
-    
+
         $validated = $request->validate($validationRules);
 
         $detail = collect($validated['products'])->map(function ($item) {
@@ -86,7 +86,7 @@ class LaboController extends Controller
 
         $order = new Labo();
         $order->name = $validated['name'];
-        $order->restau = $validated['restau']; // Now properly setting the restau value
+        $order->restau = $request->input('restau', null); // Get restau from request, default to null if not present
         $order->detail = $detail;
         $order->rest = $rest;
         $order->save();
