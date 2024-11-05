@@ -41,9 +41,9 @@ class MenageController extends Controller
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
         $order = $this->createOrder($request, $requiresRest);
-        dd($order);
         $pdfName = $this->generatePdfName($order);
         $this->savePdf($order, $pdfName);
+        dd($order);
         return redirect("/")->with('success', 'Order created successfully.');
         // try {
 
