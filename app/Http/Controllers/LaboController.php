@@ -38,7 +38,6 @@ class LaboController extends Controller
     {
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-        dd("123");
         try {
             $order = $this->createOrder($request, $requiresRest);
 
@@ -98,6 +97,7 @@ class LaboController extends Controller
         $order->restau = Null;
         $order->detail = $detail;
         $order->rest = $rest;
+        dd($order);
         $order->save();
 
 
