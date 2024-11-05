@@ -31,8 +31,4 @@ class Labo extends Model
         }, $this->detail ?? []);
     }
 
-    public function setRestauAttribute($value)
-    {
-        $this->attributes['restau'] = null;
-    }
 }

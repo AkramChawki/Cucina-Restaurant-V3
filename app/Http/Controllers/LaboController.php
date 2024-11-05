@@ -96,7 +96,7 @@ class LaboController extends Controller
 
         $order = new Labo();
         $order->name = $validated['name'];
-        $order->restau = $validated['restau'];
+        $order->restau = Null;
         $order->detail = $detail;
         $order->rest = $rest;
         $order->save();
