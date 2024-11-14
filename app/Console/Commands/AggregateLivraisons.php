@@ -47,29 +47,38 @@ class AggregateLivraisons extends Command
             foreach ($order->detail as $item) {
                 $productId = $item['product_id'];
                 $qty = (int)$item['qty'];
-
+                $rest = null;
+                
+                if ($order->rest) {
+                    $restItem = collect($order->rest)->firstWhere('product_id', $productId);
+                    if ($restItem) {
+                        $rest = (int)$restItem['qty'];
+                    }
+                }
+            
                 $product = CuisinierProduct::find($productId);
-
+            
                 if ($product && in_array($product->type, $this->validTypes)) {
                     $type = $product->type;
-
-                    // Determine which aggregation to use
-                    $targetAggregation = $isZiraoui ? 
-                        $aggregatedDataZiraoui : 
-                        $aggregatedDataOthers;
-
+                    $targetAggregation = $isZiraoui ? $aggregatedDataZiraoui : $aggregatedDataOthers;
+            
                     if (!isset($targetAggregation[$type][$restau][$productId])) {
                         $targetAggregation[$type][$restau][$productId] = [
                             'designation' => $product->designation,
                             'qty' => 0,
+                            'rest' => 0,
                             'image' => $product->image,
-                            'unite' => $product->unite
+                            'unite' => $product->unite,
+                            'has_rest' => false
                         ];
                     }
-
+            
                     $targetAggregation[$type][$restau][$productId]['qty'] += $qty;
-
-                    // Update the reference
+                    if ($rest !== null) {
+                        $targetAggregation[$type][$restau][$productId]['rest'] += $rest;
+                        $targetAggregation[$type][$restau][$productId]['has_rest'] = true;
+                    }
+            
                     if ($isZiraoui) {
                         $aggregatedDataZiraoui = $targetAggregation;
                     } else {
@@ -102,6 +111,8 @@ class AggregateLivraisons extends Command
                             'product_id' => $productId,
                             'designation' => $data['designation'] ?? 'Unknown Product',
                             'qty' => (string)$data['qty'],
+                            'rest' => (string)($data['rest'] ?? 0),
+                            'has_rest' => $data['has_rest'] ?? false,
                             'image' => $data['image'] ?? null,
                             'unite' => $data['unite'] ?? null
                         ];
