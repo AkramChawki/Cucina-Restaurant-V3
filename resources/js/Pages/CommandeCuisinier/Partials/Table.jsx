@@ -25,8 +25,8 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
             category.products.forEach(product => {
                 acc.push({
                     id: product.id,
-                    qty: '',  // Initialize as empty string
-                    rest: requiresRest ? '' : null  // Initialize rest as empty string if required
+                    qty: '',
+                    rest: requiresRest ? '' : null
                 });
             });
             return acc;
@@ -37,36 +37,43 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
     const [filterText, setFilterText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    
+
 
     const handleQtyChange = (productId, value) => {
-        // Convert empty string to empty string, otherwise ensure it's a valid number
-        const normalizedValue = value === '' ? '' : Math.max(0, parseInt(value) || 0);
-        
+        // Allow empty string
+        if (value === '') {
+            const updatedProducts = data.products.map(product =>
+                product.id === productId ? { ...product, qty: '' } : product
+            );
+            setData('products', updatedProducts);
+            return;
+        }
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue < 0) return;
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
-            if (product.rest === '' || product.rest === undefined) return;
+            if (!product || product.rest === '' || product.rest === undefined) return;
         }
-
         const updatedProducts = data.products.map(product =>
-            product.id === productId 
-                ? { ...product, qty: normalizedValue.toString() } 
-                : product
+            product.id === productId ? { ...product, qty: value } : product
         );
-        
         setData('products', updatedProducts);
     };
 
     const handleRestChange = (productId, value) => {
-        // Convert empty string to empty string, otherwise ensure it's a valid number
-        const normalizedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
-        
+        // Allow empty string
+        if (value === '') {
+            const updatedProducts = data.products.map(product =>
+                product.id === productId ? { ...product, rest: '' } : product
+            );
+            setData('products', updatedProducts);
+            return;
+        }
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue < 0) return;
         const updatedProducts = data.products.map(product =>
-            product.id === productId 
-                ? { ...product, rest: normalizedValue.toString() } 
-                : product
+            product.id === productId ? { ...product, rest: value } : product
         );
-        
         setData('products', updatedProducts);
     };
 
@@ -94,22 +101,24 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
         
         const filteredProducts = data.products
             .filter(product => {
-                const qty = parseInt(product.qty);
+                const qty = parseFloat(product.qty);
                 return !isNaN(qty) && qty > 0;
             })
             .map(product => ({
                 product_id: product.id,
-                qty: parseInt(product.qty),
+                qty: parseFloat(product.qty),
                 ...(requiresRest && { rest: parseFloat(product.rest) })
             }));
 
         const filteredData = { ...data, products: filteredProducts };
 
-        const endpoint = {
-            17: '/commande-cuisinier/labo',
-            19: '/commande-cuisinier/menage',
-            20: '/commande-cuisinier/boisson'
-        }[ficheId] || '/commande-cuisinier/commander';
+        let endpoint = ficheId == 17
+            ? '/commande-cuisinier/labo'
+            : ficheId == 19
+                ? '/commande-cuisinier/menage'
+                : ficheId == 20
+                    ? '/commande-cuisinier/boisson'
+                    : '/commande-cuisinier/commander';
 
         try {
             await router.post(endpoint, filteredData);
@@ -340,7 +349,7 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                                                         min="0"
                                                                         value={data.products.find(p => p.id === product.id)?.rest ?? ''}
                                                                         onChange={(e) => handleRestChange(product.id, e.target.value)}
-                                                                        step="any" // Allow decimal numbers for rest
+                                                                        step="any"
                                                                     />
                                                                 </div>
                                                             )}
