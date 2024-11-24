@@ -9,10 +9,14 @@ use Inertia\Inertia;
 
 class RestaurantController extends Controller
 {
-    public function index()
+
+    function index() {
+        return Inertia::render('Restaurants/Rubrique');
+    }
+    public function menu()
     {
         $restaurants = Restaurant::all();
-        return Inertia::render('Restaurants/Restaurants', ["restaurants" => $restaurants]);
+        return Inertia::render('Restaurants/Restaurant', ["restaurants" => $restaurants]);
     }
 
     public function show(Request $request)
@@ -20,7 +24,7 @@ class RestaurantController extends Controller
         $restau = $request->query('restau');
         $restaurant = Restaurant::where("name", $restau)->firstOrFail();
         $products = Product::all();
-        return Inertia::render('Restaurants/Restaurant', [
+        return Inertia::render('Restaurants/ManageRestaurant', [
             "restaurant" => $restaurant,
             "products" => $products
         ]);

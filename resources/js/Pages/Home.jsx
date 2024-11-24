@@ -74,7 +74,7 @@ function Home({ rubriques }) {
                                 Restaurant
                             </a>
                             <Link
-                                href="/restaurants"
+                                href="/restaurants-rubriques"
                                 className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
                             >
                                 Accéder

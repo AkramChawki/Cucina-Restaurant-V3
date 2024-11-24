@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmployeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RubriqueController;
 use App\Http\Controllers\CommandeCuisinierController;
@@ -47,12 +48,19 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::resource('numbers', NumberController::class);
 
 
-    Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants.index');
+    Route::get('/restaurants-rubriques', [RestaurantController::class, 'index'])->name('restaurants.index');
+    Route::get('/restaurants', [RestaurantController::class, 'menu'])->name('restaurants.menu');
     Route::get('/restaurant', [RestaurantController::class, 'show'])->name('restaurants.show');
     Route::post('/restaurant/{id}/toggle-visibility', [RestaurantController::class, 'toggleVisibility'])->name('restaurants.toggleVisibility');
     Route::post('/product/{id}/toggle-restaurant', [ProductController::class, 'toggleRestaurant'])->name('products.toggleRestaurant');
 
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraisons.index');
+
+    Route::get('/employes', [EmployeController::class, 'employe'])->name('employes.employe');
+    Route::get('/add-employe', [EmployeController::class, 'employeAdd'])->name('employes.employeAdd');
+    Route::post('/employees', [EmployeController::class, 'store'])->name('employes.store');
+    Route::get('/attendance', [EmployeController::class, 'attendance'])->name('employes.attendance');
+    Route::get('/manage-attendance', [EmployeController::class, 'manageAttendance'])->name('employes.manageAttendance');
 
 
     Route::prefix('BL')->group(function () {
@@ -61,7 +69,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/commander', [BLController::class, 'store'])->name('BL.store');
     });
 
-    Route::prefix('audit')->group(function () {
+    Route::prefix('audit')->group(callback: function () {
         Route::get('/', [AuditController::class, 'index'])->name('audit.index');
         Route::get('/form', [AuditController::class, 'showForm'])->name('audit.form');
         Route::post('/form', [AuditController::class, 'store'])->name('audit.store');

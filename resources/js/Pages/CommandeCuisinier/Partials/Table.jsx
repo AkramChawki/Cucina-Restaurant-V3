@@ -17,7 +17,7 @@ function classNames(...classes) {
 
 export default function Table({ categories, ficheId, restau, requiresRest }) {
     const { auth } = usePage().props;
-    const { data, setData, post } = useForm({
+    const { data, setData } = useForm({
         name: auth.user.name,
         restau: restau || '',
         ficheId: ficheId,
@@ -25,8 +25,8 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
             category.products.forEach(product => {
                 acc.push({
                     id: product.id,
-                    qty: '',
-                    rest: requiresRest ? '' : null
+                    qty: '',  // Initialize as empty string
+                    rest: requiresRest ? '' : null  // Initialize rest as empty string if required
                 });
             });
             return acc;
@@ -37,54 +37,36 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
     const [filterText, setFilterText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (isSubmitting) return; // Prevent multiple submissions
-        
-        setIsSubmitting(true);
-        
-        const filteredProducts = data.products
-            .filter(product => product.qty > 0)
-            .map(product => ({
-                product_id: product.id,
-                qty: product.qty,
-                ...(requiresRest && { rest: product.rest })
-            }));
-
-        const filteredData = { ...data, products: filteredProducts };
-
-        let endpoint = ficheId == 17
-            ? '/commande-cuisinier/labo'
-            : ficheId == 19
-                ? '/commande-cuisinier/menage'
-                : ficheId == 20
-                    ? '/commande-cuisinier/boisson'
-                    : '/commande-cuisinier/commander';
-
-        try {
-            await router.post(endpoint, filteredData);
-        } catch (error) {
-            setIsSubmitting(false);
-        }
-    };
+    
 
     const handleQtyChange = (productId, value) => {
-        if (value < 0) return;
+        // Convert empty string to empty string, otherwise ensure it's a valid number
+        const normalizedValue = value === '' ? '' : Math.max(0, parseInt(value) || 0);
+        
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
             if (product.rest === '' || product.rest === undefined) return;
         }
+
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: value || '' } : product
+            product.id === productId 
+                ? { ...product, qty: normalizedValue.toString() } 
+                : product
         );
+        
         setData('products', updatedProducts);
     };
 
     const handleRestChange = (productId, value) => {
-        if (value < 0) return;
+        // Convert empty string to empty string, otherwise ensure it's a valid number
+        const normalizedValue = value === '' ? '' : Math.max(0, parseFloat(value) || 0);
+        
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, rest: value } : product
+            product.id === productId 
+                ? { ...product, rest: normalizedValue.toString() } 
+                : product
         );
+        
         setData('products', updatedProducts);
     };
 
@@ -103,6 +85,38 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
         name: category.name,
         href: `#${category.name.toLowerCase()}`,
     }));
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        
+        setIsSubmitting(true);
+        
+        const filteredProducts = data.products
+            .filter(product => {
+                const qty = parseInt(product.qty);
+                return !isNaN(qty) && qty > 0;
+            })
+            .map(product => ({
+                product_id: product.id,
+                qty: parseInt(product.qty),
+                ...(requiresRest && { rest: parseFloat(product.rest) })
+            }));
+
+        const filteredData = { ...data, products: filteredProducts };
+
+        const endpoint = {
+            17: '/commande-cuisinier/labo',
+            19: '/commande-cuisinier/menage',
+            20: '/commande-cuisinier/boisson'
+        }[ficheId] || '/commande-cuisinier/commander';
+
+        try {
+            await router.post(endpoint, filteredData);
+        } catch (error) {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <>
@@ -323,9 +337,10 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                                                         type="number"
                                                                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-center"
                                                                         placeholder="Rest"
-                                                                        min={0}
+                                                                        min="0"
                                                                         value={data.products.find(p => p.id === product.id)?.rest ?? ''}
-                                                                        onChange={(e) => handleRestChange(product.id, e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                                        onChange={(e) => handleRestChange(product.id, e.target.value)}
+                                                                        step="any" // Allow decimal numbers for rest
                                                                     />
                                                                 </div>
                                                             )}
@@ -336,15 +351,17 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
                                                                 </label>
                                                                 <input
                                                                     type="number"
-                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' || data.products.find(p => p.id === product.id)?.rest === undefined)
-                                                                        ? 'bg-gray-100 cursor-not-allowed'
-                                                                        : ''
+                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' ||
+                                                                            data.products.find(p => p.id === product.id)?.rest === undefined)
+                                                                            ? 'bg-gray-100 cursor-not-allowed'
+                                                                            : ''
                                                                         }`}
                                                                     placeholder="0"
-                                                                    min={0}
+                                                                    min="0"
                                                                     value={data.products.find(p => p.id === product.id)?.qty ?? ''}
-                                                                    onChange={(e) => handleQtyChange(product.id, e.target.value === '' ? '' : parseInt(e.target.value))}
-                                                                    disabled={requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' || data.products.find(p => p.id === product.id)?.rest === undefined)}
+                                                                    onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                                                    disabled={requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' ||
+                                                                        data.products.find(p => p.id === product.id)?.rest === undefined)}
                                                                 />
                                                                 <div className="text-center text-sm text-gray-500 mt-1">
                                                                     unité ({product.unite})
