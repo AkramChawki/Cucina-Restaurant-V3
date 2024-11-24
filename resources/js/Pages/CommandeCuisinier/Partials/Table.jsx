@@ -15,7 +15,9 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Table({ categories, ficheId, restau, requiresRest }) {
+export default function Table({ categories, ficheId, restau, requiresRest: propRequiresRest }) {
+    const requiresRest = ficheId == 20 ? true : propRequiresRest;
+    
     const { auth } = usePage().props;
     const { data, setData } = useForm({
         name: auth.user.name,
@@ -40,7 +42,6 @@ export default function Table({ categories, ficheId, restau, requiresRest }) {
 
 
     const handleQtyChange = (productId, value) => {
-        // Allow empty string
         if (value === '') {
             const updatedProducts = data.products.map(product =>
                 product.id === productId ? { ...product, qty: '' } : product
