@@ -1,4 +1,3 @@
-
 import { Fragment, useState } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
@@ -31,8 +30,19 @@ export default function Table({ categories, ficheName, restau }) {
     });
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
-
     const [filterText, setFilterText] = useState('');
+
+    // Prevent scroll from changing number input values
+    const handleInputInteraction = (e) => {
+        // Prevent scroll on mobile
+        if (e.type === 'touchstart') {
+            e.target.blur();
+        }
+        // Prevent scroll on desktop
+        else if (e.type === 'wheel') {
+            e.target.blur();
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -139,7 +149,7 @@ export default function Table({ categories, ficheName, restau }) {
                                                 key={item.name}
                                                 href={item.href}
                                                 className={classNames(
-                                                    item.current ? 'bg-[#0D3D33] text-white' : 'text-[#90D88C] hover:bg-[#73ac70]',
+                                                    'text-[#90D88C] hover:bg-[#73ac70]',
                                                     'group flex items-center px-2 py-2 text-base font-medium rounded-md'
                                                 )}
                                             >
@@ -154,6 +164,7 @@ export default function Table({ categories, ficheName, restau }) {
                         </div>
                     </Dialog>
                 </Transition.Root>
+
                 <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
                     <div className="flex flex-col flex-grow pt-5 bg-[#0D3D33] overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4">
@@ -170,7 +181,7 @@ export default function Table({ categories, ficheName, restau }) {
                                         key={item.name}
                                         href={item.href}
                                         className={classNames(
-                                            item.current ? 'bg-[#0D3D33] text-white' : 'text-[#90D88C] hover:bg-[#73ac70]',
+                                            'text-[#90D88C] hover:bg-[#73ac70]',
                                             'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
                                         )}
                                     >
@@ -181,6 +192,7 @@ export default function Table({ categories, ficheName, restau }) {
                         </div>
                     </div>
                 </div>
+
                 <div className="md:pl-64 flex flex-col flex-1">
                     <form onSubmit={handleSubmit}>
                         <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow">
@@ -257,6 +269,7 @@ export default function Table({ categories, ficheName, restau }) {
                                 </div>
                             </div>
                         </div>
+
                         <main>
                             <div className="py-6">
                                 {filteredCategories.map((category) => (
@@ -288,6 +301,8 @@ export default function Table({ categories, ficheName, restau }) {
                                                                         onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
                                                                         onFocus={() => handleFocus(product.id)}
                                                                         onBlur={() => handleBlur(product.id)}
+                                                                        onWheel={handleInputInteraction}
+                                                                        onTouchStart={handleInputInteraction}
                                                                     />
                                                                     <div className='text-center my-4'>
                                                                         unité ({product.unite})

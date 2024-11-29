@@ -17,7 +17,7 @@ function classNames(...classes) {
 
 export default function Table({ categories, ficheId, restau, requiresRest: propRequiresRest }) {
     const requiresRest = ficheId == 20 ? true : propRequiresRest;
-    
+
     const { auth } = usePage().props;
     const { data, setData } = useForm({
         name: auth.user.name,
@@ -39,7 +39,20 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
     const [filterText, setFilterText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const handleWheel = (e) => {
+        e.target.blur();
+    };
 
+    const handleInputInteraction = (e) => {
+        // Prevent scroll on mobile
+        if (e.type === 'touchstart') {
+            e.target.blur();
+        }
+        // Prevent scroll on desktop
+        else if (e.type === 'wheel') {
+            e.target.blur();
+        }
+    };
 
     const handleQtyChange = (productId, value) => {
         if (value === '') {
@@ -97,9 +110,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
-        
         setIsSubmitting(true);
-        
         const filteredProducts = data.products
             .filter(product => {
                 const qty = parseFloat(product.qty);
@@ -308,7 +319,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                         </div>
 
                         <main className="flex-1">
-                            <div className="py-6 pb-32"> {/* Added padding bottom to prevent content from being hidden */}
+                            <div className="py-6 pb-32">
                                 {filteredCategories.map((category) => (
                                     <div key={`c-${category.id}`} className="px-4">
                                         <div className="max-w-7xl mx-auto">
@@ -350,6 +361,8 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                                         min="0"
                                                                         value={data.products.find(p => p.id === product.id)?.rest ?? ''}
                                                                         onChange={(e) => handleRestChange(product.id, e.target.value)}
+                                                                        onWheel={handleWheel}
+                                                                        onTouchStart={handleInputInteraction}
                                                                         step="any"
                                                                     />
                                                                 </div>
@@ -362,14 +375,16 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                                 <input
                                                                     type="number"
                                                                     className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' ||
-                                                                            data.products.find(p => p.id === product.id)?.rest === undefined)
-                                                                            ? 'bg-gray-100 cursor-not-allowed'
-                                                                            : ''
+                                                                        data.products.find(p => p.id === product.id)?.rest === undefined)
+                                                                        ? 'bg-gray-100 cursor-not-allowed'
+                                                                        : ''
                                                                         }`}
                                                                     placeholder="0"
                                                                     min="0"
                                                                     value={data.products.find(p => p.id === product.id)?.qty ?? ''}
                                                                     onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                                                    onWheel={handleInputInteraction}
+                                                                    onTouchStart={handleInputInteraction}
                                                                     disabled={requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' ||
                                                                         data.products.find(p => p.id === product.id)?.rest === undefined)}
                                                                 />
@@ -386,7 +401,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                 ))}
 
                                 <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4" style={{ marginBottom: '20px' }}>
-                                    <div className="max-w-7xl mx-auto flex flex-row space-x-4"> {/* Changed to flex-row and added space-x-4 */}
+                                    <div className="max-w-7xl mx-auto flex flex-row space-x-4">
                                         <button
                                             type="submit"
                                             disabled={isSubmitting}
