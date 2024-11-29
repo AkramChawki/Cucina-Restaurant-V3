@@ -63,6 +63,17 @@ export default function Table({ categories, ficheId, restau }) {
         });
     };
 
+    const handleInputInteraction = (e) => {
+        // Prevent scroll on mobile
+        if (e.type === 'touchstart') {
+            e.target.blur();
+        }
+        // Prevent scroll on desktop
+        else if (e.type === 'wheel') {
+            e.target.blur();
+        }
+    };
+
     const handleQtyChange = (productId, value) => {
         const numValue = value === '' ? 0 : parseFloat(value);
         if (isNaN(numValue)) return;
@@ -317,6 +328,8 @@ export default function Table({ categories, ficheId, restau }) {
                                                                             onChange={(e) => handleQtyChange(product.id, parseFloat(e.target.value))}
                                                                             onFocus={() => handleFocus(product.id)}
                                                                             onBlur={() => handleBlur(product.id)}
+                                                                            onWheel={handleInputInteraction}
+                                                                            onTouchStart={handleInputInteraction}
                                                                         />
                                                                     </div>
                                                                 </div>
