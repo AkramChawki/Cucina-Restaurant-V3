@@ -23,35 +23,30 @@ class EmployeController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(Employe::$rules);
+        $data = $request->validate(Employe::$rules);
 
+        // Handle profile photo
         if ($request->hasFile('profile_photo')) {
-            $profilePhoto = $request->file('profile_photo');
-            $profilePhotoName = time() . '_profile_' . $profilePhoto->getClientOriginalName();
-            $profilePhoto->move(public_path('employe/profile'), $profilePhotoName);
-            $validated['profile_photo'] = 'employe/profile/' . $profilePhotoName;
+            $data['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
         }
 
+        // Handle ID card front
         if ($request->hasFile('id_card_front')) {
-            $idCardFront = $request->file('id_card_front');
-            $idCardFrontName = time() . '_front_' . $idCardFront->getClientOriginalName();
-            $idCardFront->move(public_path('employe/identity'), $idCardFrontName);
-            $validated['id_card_front'] = 'employe/identity/' . $idCardFrontName;
+            $data['id_card_front'] = $request->file('id_card_front')->store('id-cards', 'public');
         }
 
+        // Handle ID card back
         if ($request->hasFile('id_card_back')) {
-            $idCardBack = $request->file('id_card_back');
-            $idCardBackName = time() . '_back_' . $idCardBack->getClientOriginalName();
-            $idCardBack->move(public_path('employe/identity'), $idCardBackName);
-            $validated['id_card_back'] = 'employe/identity/' . $idCardBackName;
+            $data['id_card_back'] = $request->file('id_card_back')->store('id-cards', 'public');
         }
 
-        $employee = Employe::create($validated);
+        Employe::create($data);
 
         return redirect('/')->with('success', 'Employee added successfully.');
     }
 
-    function attendance() {
+    function attendance()
+    {
         $restaurants = Restaurant::all();
         return Inertia::render('Restaurants/Presence', ["restaurants" => $restaurants]);
     }
