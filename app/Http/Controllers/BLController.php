@@ -44,56 +44,56 @@ class BLController extends Controller
     }
 
     public function store(Request $request)
-    {
-        set_time_limit(500);
+{
+    set_time_limit(500);
 
-        try {
-            $validationRules = [
-                'name' => 'required|string',
-                'restau' => 'required|string',
-                'products' => 'required|array',
-                'products.*.product_id' => 'required|integer',
-                'products.*.qty' => 'required|integer|min:1',
+    try {
+        Log::info('Received request data:', $request->all()); // Debug log
+
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'restau' => 'required|string',
+            'products' => 'required|array',
+            'products.*.product_id' => 'required|integer',
+            'products.*.qty' => 'required|numeric|min:0',
+            'products.*.rest' => 'required|numeric|min:0',
+        ]);
+
+        // Create BL with validated data
+        $bl = new BL();
+        $bl->name = $validatedData['name'];
+        $bl->restau = $validatedData['restau'];
+        
+        // Store product details
+        $bl->detail = array_map(function ($product) {
+            return [
+                'product_id' => $product['product_id'],
+                'qty' => $product['qty']
             ];
+        }, $validatedData['products']);
 
-            // Only add rest validation if required
-            if (true) { // Always true for BL
-                $validationRules['products.*.rest'] = 'required|numeric|min:0';
-            }
+        // Store rest values
+        $bl->rest = array_map(function ($product) {
+            return [
+                'product_id' => $product['product_id'],
+                'qty' => $product['rest']
+            ];
+        }, $validatedData['products']);
 
-            $validated = $request->validate($validationRules);
+        $bl->save();
 
-            // Create order with validated data
-            $detail = collect($validated['products'])->map(function ($item) {
-                return [
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['qty']
-                ];
-            })->toArray();
+        // Generate and save PDF
+        $pdfName = $this->generatePdfFileName("BL", $bl);
+        $this->generatePdfAndSave("pdf.bl", ["bl" => $bl], $pdfName, "bl");
+        $bl->pdf = $pdfName;
+        $bl->save();
 
-            $rest = collect($validated['products'])->map(function ($item) {
-                return [
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['rest']
-                ];
-            })->toArray();
+        return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
 
-            $bl = new BL();
-            $bl->name = $validated['name'];
-            $bl->restau = $validated['restau'];
-            $bl->detail = $detail;
-            $bl->rest = $rest;
-            $bl->save();
-
-            $pdfName = $this->generatePdfFileName("BL", $bl);
-            $this->generatePdfAndSave("pdf.bl", ["bl" => $bl], $pdfName, "bl");
-            $bl->pdf = $pdfName;
-            $bl->save();
-
-            return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
-        } catch (\Exception $e) {
-            Log::error('BL Store Error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
-        }
+    } catch (\Exception $e) {
+        Log::error('BL Store Error: ' . $e->getMessage());
+        Log::error('Validation errors:', $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : []);
+        return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
     }
+}
 }

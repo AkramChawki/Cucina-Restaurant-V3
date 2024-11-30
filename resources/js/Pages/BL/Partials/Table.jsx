@@ -107,9 +107,9 @@ export default function Table({ categories, ficheName, restau }) {
                 return !isNaN(qty) && qty > 0;
             })
             .map(product => ({
-                product_id: product.id,
+                product_id: product.id,  // Changed from id to product_id
                 qty: parseInt(product.qty),
-                rest: parseFloat(product.rest) // Always include rest for BL
+                rest: parseFloat(product.rest)
             }));
     
         if (filteredProducts.length === 0) {
@@ -118,14 +118,20 @@ export default function Table({ categories, ficheName, restau }) {
             return;
         }
     
-        // Format data to match controller expectation
+        // Filter out any products where rest is undefined, null, or NaN
+        const validProducts = filteredProducts.filter(product => 
+            !isNaN(product.rest) && product.rest !== null && product.rest !== undefined
+        );
+    
         const formData = {
             name: data.name,
             restau: data.restau,
-            products: filteredProducts
+            ficheId: data.ficheId,
+            products: validProducts
         };
     
         try {
+            console.log('Submitting data:', formData); // Debug log
             await post('/BL/commander', formData);
         } catch (error) {
             console.error('Submission error:', error);
