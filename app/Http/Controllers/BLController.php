@@ -71,8 +71,8 @@ class BLController extends Controller
         $order = new BL();  // or new Boisson() for BoissonController
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
-        $order->detail = json_encode($detail);
-        $order->rest = json_encode($rest);
+        $order->detail = $detail;  // No json_encode needed due to casting
+        $order->rest = $rest;
         $order->save();
 
         return $order;
