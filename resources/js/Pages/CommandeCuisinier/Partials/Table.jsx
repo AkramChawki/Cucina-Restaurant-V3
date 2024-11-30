@@ -16,7 +16,7 @@ function classNames(...classes) {
 }
 
 export default function Table({ categories, ficheId, restau, requiresRest: propRequiresRest }) {
-    const requiresRest = ficheId == 20 ? true : propRequiresRest;
+    const requiresRest = ficheId == 20 || ficheId == 6 ? true : propRequiresRest;
 
     const { auth } = usePage().props;
     const { data, setData } = useForm({
