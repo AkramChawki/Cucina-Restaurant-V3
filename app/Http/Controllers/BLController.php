@@ -48,34 +48,41 @@ class BLController extends Controller
         set_time_limit(500);
 
         try {
-            $validatedData = $request->validate([
+            $validationRules = [
                 'name' => 'required|string',
                 'restau' => 'required|string',
-                'products' => 'required|array|min:1',
-                'products.*.id' => 'required|integer',
-                'products.*.qty' => 'required|numeric|gt:0',
-                'products.*.rest' => 'required|numeric|min:0',
-            ]);
+                'products' => 'required|array',
+                'products.*.product_id' => 'required|integer',
+                'products.*.qty' => 'required|integer|min:1',
+            ];
+
+            // Only add rest validation if required
+            if (true) { // Always true for BL
+                $validationRules['products.*.rest'] = 'required|numeric|min:0';
+            }
+
+            $validated = $request->validate($validationRules);
+
+            // Create order with validated data
+            $detail = collect($validated['products'])->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['qty']
+                ];
+            })->toArray();
+
+            $rest = collect($validated['products'])->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['rest']
+                ];
+            })->toArray();
 
             $bl = new BL();
-            $bl->name = $request->name;
-            $bl->restau = $request->restau;
-
-            // Format detail and rest arrays
-            $bl->detail = array_map(function ($product) {
-                return [
-                    "product_id" => $product['id'],
-                    "qty" => $product['qty']
-                ];
-            }, $request->products);
-
-            $bl->rest = array_map(function ($product) {
-                return [
-                    "product_id" => $product['id'],
-                    "qty" => $product['rest']
-                ];
-            }, $request->products);
-
+            $bl->name = $validated['name'];
+            $bl->restau = $validated['restau'];
+            $bl->detail = $detail;
+            $bl->rest = $rest;
             $bl->save();
 
             $pdfName = $this->generatePdfFileName("BL", $bl);
