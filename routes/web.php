@@ -86,7 +86,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
 
     Route::get('/labo', [LaboController::class, 'index'])->name('labo.index');
     Route::get('/menage', [MenageController::class, 'index'])->name('menage.index');
-    Route::get('/boissons', [BoissonController::class, 'index'])->name('boisson.index');
 });
 
 require __DIR__ . '/auth.php';
