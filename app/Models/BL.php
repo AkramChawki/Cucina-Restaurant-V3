@@ -10,7 +10,6 @@ class BL extends Model
     use HasFactory;
 
     protected $casts = [
-        'detail' => 'array',
     ];
 
     public function products()
@@ -19,6 +18,10 @@ class BL extends Model
             $p = CuisinierProduct::find($item['product_id']);
             if ($p) {
                 $p->qty = $item['qty'];
+                if ($this->rest) {
+                    $restItem = collect($this->rest)->firstWhere('product_id', $item['product_id']);
+                    $p->rest = $restItem ? $restItem['qty'] : null;
+                }
                 return $p;
             }
             return null;

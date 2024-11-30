@@ -16,7 +16,7 @@ function classNames(...classes) {
 }
 
 export default function Table({ categories, ficheId, restau, requiresRest: propRequiresRest }) {
-    const requiresRest = ficheId == 20 || ficheId == 6 ? true : propRequiresRest;
+    const requiresRest = ficheId == 20 ? true : propRequiresRest;
 
     const { auth } = usePage().props;
     const { data, setData } = useForm({
@@ -44,11 +44,9 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
     };
 
     const handleInputInteraction = (e) => {
-        // Prevent scroll on mobile
         if (e.type === 'touchstart') {
             e.target.blur();
         }
-        // Prevent scroll on desktop
         else if (e.type === 'wheel') {
             e.target.blur();
         }
@@ -75,7 +73,6 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
     };
 
     const handleRestChange = (productId, value) => {
-        // Allow empty string
         if (value === '') {
             const updatedProducts = data.products.map(product =>
                 product.id === productId ? { ...product, rest: '' } : product

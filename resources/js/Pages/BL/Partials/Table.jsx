@@ -23,7 +23,11 @@ export default function Table({ categories, ficheName, restau }) {
         ficheId: ficheName,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
-                acc.push({ id: product.id, qty: 0 });
+                acc.push({
+                    id: product.id,
+                    qty: '',
+                    rest: ''
+                });
             });
             return acc;
         }, [])
@@ -31,8 +35,8 @@ export default function Table({ categories, ficheName, restau }) {
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [filterText, setFilterText] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Prevent scroll from changing number input values
     const handleInputInteraction = (e) => {
         // Prevent scroll on mobile
         if (e.type === 'touchstart') {
@@ -44,31 +48,38 @@ export default function Table({ categories, ficheName, restau }) {
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const filteredProducts = data.products.filter(product => product.qty > 0);
-        const filteredData = { ...data, products: filteredProducts };
-        post('/BL/commander', { data: filteredData });
-    };
-
     const handleQtyChange = (productId, value) => {
-        if (value < 0) return;
+        if (value === '') {
+            const updatedProducts = data.products.map(product =>
+                product.id === productId ? { ...product, qty: '' } : product
+            );
+            setData('products', updatedProducts);
+            return;
+        }
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue < 0) return;
+
+        const product = data.products.find(p => p.id === productId);
+        if (!product || product.rest === '' || product.rest === undefined) return;
+
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: value } : product
         );
         setData('products', updatedProducts);
     };
 
-    const handleFocus = (productId) => {
+    const handleRestChange = (productId, value) => {
+        if (value === '') {
+            const updatedProducts = data.products.map(product =>
+                product.id === productId ? { ...product, rest: '' } : product
+            );
+            setData('products', updatedProducts);
+            return;
+        }
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue < 0) return;
         const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === 0 ? { ...product, qty: '' } : product
-        );
-        setData('products', updatedProducts);
-    };
-
-    const handleBlur = (productId) => {
-        const updatedProducts = data.products.map(product =>
-            product.id === productId && product.qty === '' ? { ...product, qty: 0 } : product
+            product.id === productId ? { ...product, rest: value } : product
         );
         setData('products', updatedProducts);
     };
@@ -89,9 +100,33 @@ export default function Table({ categories, ficheName, restau }) {
         href: `#${category.name.toLowerCase()}`,
     }));
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
+        const filteredProducts = data.products
+            .filter(product => {
+                const qty = parseFloat(product.qty);
+                const rest = parseFloat(product.rest);
+                return !isNaN(qty) && qty > 0 && !isNaN(rest) && rest >= 0;
+            })
+            .map(product => ({
+                id: product.id,
+                qty: parseFloat(product.qty),
+                rest: parseFloat(product.rest)
+            }));
+
+        try {
+            await post('/BL/commander', { ...data, products: filteredProducts });
+        } catch (error) {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <>
-            <div>
+            <div className="min-h-screen bg-gray-50">
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog as="div" className="fixed inset-0 flex z-40 md:hidden" onClose={setSidebarOpen}>
                         <Transition.Child
@@ -160,8 +195,6 @@ export default function Table({ categories, ficheName, restau }) {
                                 </div>
                             </div>
                         </Transition.Child>
-                        <div className="flex-shrink-0 w-14" aria-hidden="true">
-                        </div>
                     </Dialog>
                 </Transition.Root>
 
@@ -216,7 +249,7 @@ export default function Table({ categories, ficheName, restau }) {
                                             </div>
                                             <input
                                                 id="search-field"
-                                                className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm"
+                                                className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent sm:text-sm"
                                                 placeholder="Search"
                                                 type="text"
                                                 name="search"
@@ -270,67 +303,105 @@ export default function Table({ categories, ficheName, restau }) {
                             </div>
                         </div>
 
-                        <main>
-                            <div className="py-6">
+                        <main className="flex-1">
+                            <div className="py-6 pb-32">
                                 {filteredCategories.map((category) => (
-                                    <div key={`c-${category.id}`}>
-                                        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                                            <h1 id={category.name.toLowerCase()} className="text-2xl font-semibold text-gray-900">{category.name}</h1>
+                                    <div key={`c-${category.id}`} className="px-4">
+                                        <div className="max-w-7xl mx-auto">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h1 id={category.name.toLowerCase()} className="text-2xl font-bold text-gray-900">
+                                                    {category.name}
+                                                </h1>
+                                                <span className="text-sm text-gray-500">
+                                                    {category.products.length}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                                            <div className="mt-12 max-w-4xl mx-auto grid gap-3 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-2 lg:max-w-none">
-                                                {category.products.map(product => (
-                                                    <div key={`p-${product.id}`} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
-                                                        <div className="flex-shrink-0">
-                                                            <img className="h-48 w-full object-cover" src={"https://admin.cucinanapoli.com/storage/" + product.image} alt="" />
-                                                        </div>
-                                                        <div className="flex-1 bg-white p-6 flex flex-col justify-between">
-                                                            <div className="flex-1">
-                                                                <a className="block mt-2">
-                                                                    <p className="text-xl font-semibold text-gray-900 text-center">{product.designation}</p>
-                                                                </a>
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {category.products.map(product => (
+                                                <div key={`p-${product.id}`} className="bg-white rounded-lg overflow-hidden shadow">
+                                                    <div className="aspect-w-1 aspect-h-1">
+                                                        <img
+                                                            className="w-full h-48 object-cover"
+                                                            src={"https://admin.cucinanapoli.com/storage/" + product.image}
+                                                            alt={product.designation}
+                                                        />
+                                                    </div>
+                                                    <div className="p-4">
+                                                        <h3 className="text-lg font-semibold text-center mb-4">
+                                                            {product.designation}
+                                                        </h3>
+
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <label className="block text-sm text-gray-600 text-center mb-1">
+                                                                    Rest
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-center"
+                                                                    placeholder="Rest"
+                                                                    min="0"
+                                                                    value={data.products.find(p => p.id === product.id)?.rest ?? ''}
+                                                                    onChange={(e) => handleRestChange(product.id, e.target.value)}
+                                                                    onWheel={handleInputInteraction}
+                                                                    onTouchStart={handleInputInteraction}
+                                                                    step="any"
+                                                                />
                                                             </div>
-                                                            <div className="mt-6 flex justify-center">
-                                                                <div className="ml-3 w-full">
-                                                                    <input
-                                                                        type="number"
-                                                                        className="focus:ring-[#90D88C] focus:border-[#90D88C] block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md text-center"
-                                                                        placeholder="0"
-                                                                        min={0}
-                                                                        value={data.products.find(p => p.id === product.id)?.qty}
-                                                                        onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
-                                                                        onFocus={() => handleFocus(product.id)}
-                                                                        onBlur={() => handleBlur(product.id)}
-                                                                        onWheel={handleInputInteraction}
-                                                                        onTouchStart={handleInputInteraction}
-                                                                    />
-                                                                    <div className='text-center my-4'>
-                                                                        unité ({product.unite})
-                                                                    </div>
+
+                                                            <div>
+                                                                <label className="block text-sm text-gray-600 text-center mb-1">
+                                                                    Quantité
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${data.products.find(p => p.id === product.id)?.rest === '' ||
+                                                                            data.products.find(p => p.id === product.id)?.rest === undefined
+                                                                            ? 'bg-gray-100 cursor-not-allowed'
+                                                                            : ''
+                                                                        }`}
+                                                                    placeholder="0"
+                                                                    min="0"
+                                                                    value={data.products.find(p => p.id === product.id)?.qty ?? ''}
+                                                                    onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                                                    onWheel={handleInputInteraction}
+                                                                    onTouchStart={handleInputInteraction}
+                                                                    disabled={
+                                                                        data.products.find(p => p.id === product.id)?.rest === '' ||
+                                                                        data.products.find(p => p.id === product.id)?.rest === undefined
+                                                                    }
+                                                                    step="any"
+                                                                />
+                                                                <div className="text-center text-sm text-gray-500 mt-1">
+                                                                    unité ({product.unite})
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
-                                <div className='px-4 py-4'>
-                                    <button
-                                        type="submit"
-                                        className="inline-flex items-center w-[100%] mt-10 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
-                                    >
-                                        Commander
-                                    </button>
-                                    <Link
-                                        type="button"
-                                        as="button"
-                                        href="/"
-                                        className="inline-flex items-center w-[100%] mt-2 px-4 py-4 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
-                                    >
-                                        Annuler
-                                    </Link>
+
+                                <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4" style={{ marginBottom: '20px' }}>
+                                    <div className="max-w-7xl mx-auto flex flex-row space-x-4">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className={`flex-1 ${isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white py-3 rounded-lg font-semibold transition-colors`}
+                                        >
+                                            {isSubmitting ? 'En cours...' : 'Commander'}
+                                        </button>
+                                        <Link
+                                            href="/"
+                                            className="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-center"
+                                        >
+                                            Annuler
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </main>

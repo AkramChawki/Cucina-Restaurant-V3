@@ -37,12 +37,22 @@ class BLController extends Controller
             "categories" => $categories,
             "ficheName" => $ficheName,
             "restau" => $restau,
+            "requiresRest" => true // Always true for BL
         ]);
     }
 
     public function store(Request $request)
     {
         set_time_limit(500);
+
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'restau' => 'required|string',
+            'products' => 'required|array',
+            'products.*.id' => 'required|integer',
+            'products.*.qty' => 'required|numeric|min:0',
+            'products.*.rest' => 'required|numeric|min:0',
+        ]);
 
         $bl = $this->createBL($request);
         $pdfName = $this->generatePdfName($bl);
@@ -60,7 +70,8 @@ class BLController extends Controller
         $detail = array_map(function ($product) {
             return [
                 "product_id" => $product['id'],
-                "qty" => $product['qty']
+                "qty" => $product['qty'],
+                "rest" => $product['rest']
             ];
         }, $qty);
 
