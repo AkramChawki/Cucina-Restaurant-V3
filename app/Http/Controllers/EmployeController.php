@@ -60,9 +60,12 @@ class EmployeController extends Controller
     }
 
     function employeUpdate($id)  {
+
+        $restaurants = Restaurant::all();
         $employe = Employe::findOrFail($id);
         return Inertia::render('Restaurants/UpdateEmploye', [
-            'employe' => $employe
+            'employe' => $employe,
+            "restaurants" => $restaurants
         ]);
     }
 

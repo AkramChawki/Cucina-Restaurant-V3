@@ -2,7 +2,7 @@ import { Link, useForm } from '@inertiajs/react';
 import Footer from '@/Components/Footer';
 import { useState, useRef, useEffect } from 'react';
 
-export default function Form({ employe }) {
+export default function Form({ employe, restaurants }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [frontPreview, setFrontPreview] = useState(null);
   const [backPreview, setBackPreview] = useState(null);
@@ -245,6 +245,26 @@ export default function Form({ employe }) {
                     </span>
                   </div>
                   {errors.username && <div className="text-red-500 text-sm mt-1">{errors.username}</div>}
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="restaurant" className="block text-sm font-medium text-gray-700">
+                    restaurant
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="restau"
+                      name="restau"
+                      value={data.restau}
+                      onChange={e => setData('restau', e.target.value)}
+                      className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    >
+                      {restaurants.map((restaurant) => (
+                            <option key={restaurant.id} value={restaurant.slug}>{restaurant.name}</option>
+                        ))}
+                    </select>
+                    {errors.restau && <div className="text-red-500 text-sm mt-1">{errors.restau}</div>}
+                  </div>
                 </div>
 
                 <div className="sm:col-span-6">
