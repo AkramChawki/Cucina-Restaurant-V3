@@ -38,12 +38,7 @@ export default function Table({ categories, ficheName, restau }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleInputInteraction = (e) => {
-        // Prevent scroll on mobile
-        if (e.type === 'touchstart') {
-            e.target.blur();
-        }
-        // Prevent scroll on desktop
-        else if (e.type === 'wheel') {
+        if (e.type === 'touchstart' || e.type === 'wheel') {
             e.target.blur();
         }
     };
@@ -117,12 +112,20 @@ export default function Table({ categories, ficheName, restau }) {
                 rest: parseFloat(product.rest)
             }));
 
+        if (filteredProducts.length === 0) {
+            alert('Veuillez ajouter au moins un produit');
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             await post('/BL/commander', { ...data, products: filteredProducts });
         } catch (error) {
+            console.error('Submission error:', error);
             setIsSubmitting(false);
         }
     };
+
 
     return (
         <>

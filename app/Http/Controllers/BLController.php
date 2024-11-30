@@ -37,7 +37,7 @@ class BLController extends Controller
             "categories" => $categories,
             "ficheName" => $ficheName,
             "restau" => $restau,
-            "requiresRest" => true // Always true for BL
+            "requiresRest" => true
         ]);
     }
 
@@ -53,14 +53,7 @@ class BLController extends Controller
             'products.*.qty' => 'required|numeric|min:0',
             'products.*.rest' => 'required|numeric|min:0',
         ]);
-        $bl = $this->createBL($request);
-        $pdfName = $this->generatePdfName($bl);
-        $this->savePdf($bl, $pdfName);
-        return Inertia::location($this->getPdfUrl($pdfName));
-    }
 
-    private function createBL(Request $request)
-    {
         $qty = array_filter($request->products, function ($product) {
             return !empty($product['qty']) && $product['qty'] > 0;
         });
@@ -68,8 +61,14 @@ class BLController extends Controller
         $detail = array_map(function ($product) {
             return [
                 "product_id" => $product['id'],
-                "qty" => $product['qty'],
-                "rest" => $product['rest']
+                "qty" => $product['qty']
+            ];
+        }, $qty);
+
+        $rest = array_map(function ($product) {
+            return [
+                "product_id" => $product['id'],
+                "qty" => $product['rest']
             ];
         }, $qty);
 
@@ -77,25 +76,14 @@ class BLController extends Controller
         $bl->name = $request->name;
         $bl->restau = $request->restau;
         $bl->detail = $detail;
+        $bl->rest = $rest;
         $bl->save();
 
-        return $bl;
-    }
-
-    private function generatePdfName($bl)
-    {
-        return $this->generatePdfFileName("BL", $bl);
-    }
-
-    private function savePdf($bl, $pdfName)
-    {
+        $pdfName = $this->generatePdfFileName("BL", $bl);
         $this->generatePdfAndSave("pdf.bl", ["bl" => $bl], $pdfName, "bl");
         $bl->pdf = $pdfName;
         $bl->save();
-    }
 
-    private function getPdfUrl($pdfName)
-    {
-        return "https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName";
+        return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
     }
 }
