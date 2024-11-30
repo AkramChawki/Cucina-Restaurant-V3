@@ -1,0 +1,1 @@
+import{a as r,F as m}from"./app-1f72a59b.js";import e from"./Table-5be0f825.js";import"./SearchIcon-f3727368.js";import"./description-81a12f3e.js";function s({categories:t,ficheId:o,restau:a}){return r(m,{children:r(e,{categories:t,ficheId:o,restau:a})})}export{s as default};

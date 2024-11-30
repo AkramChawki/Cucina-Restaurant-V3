@@ -100,11 +100,13 @@ export default function Table({ categories, ficheName, restau }) {
         if (isSubmitting) return;
         setIsSubmitting(true);
     
+        // Only include products where either qty or rest is actually entered
         const filteredProducts = data.products
             .filter(product => {
                 const qty = parseFloat(product.qty);
                 const rest = parseFloat(product.rest);
-                return !isNaN(qty) && qty > 0 && !isNaN(rest) && rest >= 0;
+                // Only include products where both qty and rest are valid numbers and qty > 0
+                return !isNaN(qty) && !isNaN(rest) && qty > 0;
             })
             .map(product => ({
                 id: product.id,
@@ -119,17 +121,10 @@ export default function Table({ categories, ficheName, restau }) {
         }
     
         try {
-            post(route('BL.store'), {
-                ...data, 
-                products: filteredProducts,
-                onSuccess: () => {
-                    // Handle successful submission
-                    console.log('Success');
-                },
-                onError: (errors) => {
-                    console.error('Submission errors:', errors);
-                    setIsSubmitting(false);
-                },
+            await post('/BL/commander', {
+                name: data.name,
+                restau: data.restau,
+                products: filteredProducts
             });
         } catch (error) {
             console.error('Submission error:', error);
