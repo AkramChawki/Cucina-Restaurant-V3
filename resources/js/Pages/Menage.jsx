@@ -55,7 +55,7 @@ export default function Menage({ menages }) {
                                                         })}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <a href={menage.pdf_url}>
+                                                        <a href={`https://restaurant.cucinanapoli.com/public/storage/menage/${menage.pdf}`}>
                                                             PDF
                                                         </a>
                                                     </td>
