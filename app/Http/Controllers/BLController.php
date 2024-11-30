@@ -3,111 +3,98 @@
 namespace App\Http\Controllers;
 
 use App\Models\BL;
+use App\Traits\PdfGeneratorTrait;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Traits\PdfGeneratorTrait;
-use Illuminate\Support\Facades\Log;
-
 
 class BLController extends Controller
 {
     use PdfGeneratorTrait;
 
-    public function index()
+    private function isRestInputRequired()
     {
-        $restaurants = \App\Models\Restaurant::all();
-        $ficheName = request('ficheName');
-        return Inertia::render('BL/BL', [
-            'ficheName' => $ficheName,
-            'restaurants' => $restaurants,
-        ]);
-    }
-
-    public function create()
-    {
-        $ficheName = request("ficheName");
-        $restau = request("restau");
-        $fiche = \App\Models\Fiche::where('name', 'like', '%' . $ficheName . '%')->first();
-        $products = $fiche->cuisinier_products->groupBy('cuisinier_category_id');
-        $categories = collect([]);
-        foreach ($products as $categoryId => $products) {
-            $category = \App\Models\CuisinierCategory::find($categoryId);
-            $category->products = $products;
-            $categories->push($category);
-        }
-        return Inertia::render('BL/Commander', [
-            "categories" => $categories,
-            "ficheName" => $ficheName,
-            "restau" => $restau,
-            "requiresRest" => true
-        ]);
+        $tz = 'Africa/Casablanca';
+        $now = Carbon::now($tz);
+        $startTime = $now->copy()->setTime(20, 0, 0);
+        $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
+        $requiresRest = $now->between($startTime, $endTime);
+        return $requiresRest;
     }
 
     public function store(Request $request)
-{
-    set_time_limit(500);
+    {
+        set_time_limit(500);
+        $requiresRest = $this->isRestInputRequired();
+        try {
+            $order = $this->createOrder($request, $requiresRest);
+            if ($order) {
+                $pdfName = $this->generatePdfName($order);
+                $this->savePdf($order, $pdfName);
 
-    try {
-        Log::info('Raw request data:', $request->all());
+                return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
+            } else {
+                return redirect()->back()->with('error', 'Failed to create order.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+        }
+    }
 
-        // Validate the basic structure first
-        $validated = $request->validate([
+    private function createOrder(Request $request, $requiresRest)
+    {
+
+        $validationRules = [
             'name' => 'required|string',
             'restau' => 'required|string',
-            'products' => 'required|array|min:1',
-        ]);
-
-        // Process and validate products
-        $validProducts = collect($request->input('products'))
-            ->filter(function ($product) {
-                return isset($product['product_id']) && 
-                       isset($product['qty']) && 
-                       isset($product['rest']);
-            })
-            ->map(function ($product) {
-                return [
-                    'product_id' => $product['product_id'],
-                    'qty' => $product['qty'],
-                    'rest' => $product['rest']
-                ];
-            })
-            ->toArray();
-
-        if (empty($validProducts)) {
-            throw new \Exception('No valid products found in request');
+            'products' => 'required|array',
+            'products.*.product_id' => 'required|integer',
+            'products.*.qty' => 'required|integer|min:1',
+        ];
+        if ($requiresRest) {
+            $validationRules['products.*.rest'] = 'required|numeric|min:0';
         }
-
-        $bl = new BL();
-        $bl->name = $validated['name'];
-        $bl->restau = $validated['restau'];
-        
-        // Format arrays for storage
-        $bl->detail = array_map(function ($product) {
+        $validated = $request->validate($validationRules);
+        $detail = collect($validated['products'])->map(function ($item) {
             return [
-                'product_id' => $product['product_id'],
-                'qty' => $product['qty']
+                'product_id' => $item['product_id'],
+                'qty' => $item['qty']
             ];
-        }, $validProducts);
-
-        $bl->rest = array_map(function ($product) {
-            return [
-                'product_id' => $product['product_id'],
-                'qty' => $product['rest']
-            ];
-        }, $validProducts);
-
-        $bl->save();
-
-        $pdfName = $this->generatePdfFileName("BL", $bl);
-        $this->generatePdfAndSave("pdf.bl", ["bl" => $bl], $pdfName, "bl");
-        $bl->pdf = $pdfName;
-        $bl->save();
-
-        return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
-
-    } catch (\Exception $e) {
-        Log::error('BL Store Error: ' . $e->getMessage());
-        return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
+        })->toArray();
+        $rest = null;
+        if ($requiresRest) {
+            $rest = collect($validated['products'])->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['rest']
+                ];
+            })->toArray();
+        }
+        if (empty($detail)) {
+            return null;
+        }
+        $order = new BL();
+        $order->name = $validated['name'];
+        $order->restau = $validated['restau'];
+        $order->detail = $detail;
+        $order->rest = $rest;
+        $order->save();
+        return $order;
     }
-}
+
+    private function generatePdfName($order)
+    {
+        return $this->generatePdfFileName("Commande-BL", $order);
+    }
+
+    private function savePdf($order, $pdfName)
+    {
+        $requiresRest = $order->rest !== null;
+        $pdfUrl = $this->generatePdfAndSave("pdf.order-summary", [
+            "order" => $order,
+            "showRest" => $requiresRest
+        ], $pdfName, "BL");
+        $order->pdf = $pdfName;
+        $order->save();
+    }
 }
