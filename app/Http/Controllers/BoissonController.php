@@ -14,19 +14,8 @@ class BoissonController extends Controller
 
     private function isRestInputRequired()
     {
-        $tz = 'Africa/Casablanca';
-        $now = Carbon::now($tz);
-
-        // Set start time to 8 PM (20:00) of current day
-        $startTime = $now->copy()->setTime(20, 0, 0);
-
-        // Set end time to 3 AM (03:00) of next day
-        $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
-
-        // Check if current time is between start and end time
-        $requiresRest = $now->between($startTime, $endTime);
-
-        return $requiresRest;
+        // Always require rest input for BL
+        return true;
     }
 
     public function store(Request $request)
@@ -53,18 +42,14 @@ class BoissonController extends Controller
 
     private function createOrder(Request $request, $requiresRest)
     {
-
         $validationRules = [
             'name' => 'required|string',
             'restau' => 'required|string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
             'products.*.qty' => 'required|integer|min:1',
+            'products.*.rest' => 'required|numeric|min:0'  // Always require rest
         ];
-
-        if ($requiresRest) {
-            $validationRules['products.*.rest'] = 'required|numeric|min:0';
-        }
 
         $validated = $request->validate($validationRules);
 
@@ -75,27 +60,23 @@ class BoissonController extends Controller
             ];
         })->toArray();
 
-        $rest = null;
-        if ($requiresRest) {
-            $rest = collect($validated['products'])->map(function ($item) {
-                return [
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['rest']
-                ];
-            })->toArray();
-        }
+        $rest = collect($validated['products'])->map(function ($item) {
+            return [
+                'product_id' => $item['product_id'],
+                'qty' => floatval($item['rest'])
+            ];
+        })->toArray();
 
         if (empty($detail)) {
             return null;
         }
 
-        $order = new Boisson();
+        $order = new Boisson();  // or new Boisson() for BoissonController
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
-        $order->detail = $detail;
-        $order->rest = $rest;
+        $order->detail = json_encode($detail);
+        $order->rest = json_encode($rest);
         $order->save();
-
 
         return $order;
     }
