@@ -57,7 +57,7 @@ class BLController extends Controller
         $bl = $this->createBL($request);
         $pdfName = $this->generatePdfName($bl);
         $this->savePdf($bl, $pdfName);
-
+        dd($validatedData);
         return Inertia::location($this->getPdfUrl($pdfName));
     }
 
