@@ -99,39 +99,36 @@ export default function Table({ categories, ficheName, restau }) {
         e.preventDefault();
         if (isSubmitting) return;
         setIsSubmitting(true);
-    
-        // Filter and transform products to match expected format
+
+        // Filter out products with no qty and transform them
         const filteredProducts = data.products
             .filter(product => {
+                // Only include products where qty is entered and greater than 0
                 const qty = parseFloat(product.qty);
-                return !isNaN(qty) && qty > 0;
+                const rest = parseFloat(product.rest);
+                return !isNaN(qty) && qty > 0 && !isNaN(rest) && rest >= 0;
             })
             .map(product => ({
-                product_id: product.id,  // Changed from id to product_id
+                product_id: product.id,
                 qty: parseInt(product.qty),
                 rest: parseFloat(product.rest)
             }));
-    
+
         if (filteredProducts.length === 0) {
             alert('Veuillez ajouter au moins un produit');
             setIsSubmitting(false);
             return;
         }
-    
-        // Filter out any products where rest is undefined, null, or NaN
-        const validProducts = filteredProducts.filter(product => 
-            !isNaN(product.rest) && product.rest !== null && product.rest !== undefined
-        );
-    
+
         const formData = {
             name: data.name,
             restau: data.restau,
-            ficheId: data.ficheId,
-            products: validProducts
+            products: filteredProducts
         };
-    
+
+        console.log('Submitting data:', formData); // Debug log
+
         try {
-            console.log('Submitting data:', formData); // Debug log
             await post('/BL/commander', formData);
         } catch (error) {
             console.error('Submission error:', error);
@@ -374,9 +371,9 @@ export default function Table({ categories, ficheName, restau }) {
                                                                 <input
                                                                     type="number"
                                                                     className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${data.products.find(p => p.id === product.id)?.rest === '' ||
-                                                                            data.products.find(p => p.id === product.id)?.rest === undefined
-                                                                            ? 'bg-gray-100 cursor-not-allowed'
-                                                                            : ''
+                                                                        data.products.find(p => p.id === product.id)?.rest === undefined
+                                                                        ? 'bg-gray-100 cursor-not-allowed'
+                                                                        : ''
                                                                         }`}
                                                                     placeholder="0"
                                                                     min="0"
