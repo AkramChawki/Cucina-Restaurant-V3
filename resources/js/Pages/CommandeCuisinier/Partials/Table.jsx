@@ -17,6 +17,13 @@ function classNames(...classes) {
 
 export default function Table({ categories, ficheId, restau, requiresRest: propRequiresRest }) {
     const requiresRest = ficheId == 20 || ficheId == 6 ? true : propRequiresRest;
+    const [isAllowedDay, setIsAllowedDay] = useState(true);
+    useEffect(() => {
+        if (ficheId == 6) {
+            const currentDay = new Date().getDay();
+            setIsAllowedDay([0, 3, 5].includes(currentDay));
+        }
+    }, [ficheId]);
 
     const { auth } = usePage().props;
     const { data, setData } = useForm({
@@ -106,7 +113,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (isSubmitting) return;
+        if (isSubmitting || (ficheId == 6 && !isAllowedDay)) return;
         setIsSubmitting(true);
         const filteredProducts = data.products
             .filter(product => {
@@ -125,11 +132,11 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
             ? '/commande-cuisinier/labo'
             : ficheId == 19
                 ? '/commande-cuisinier/menage'
-                :ficheId == 6
-                ? '/BL/commander'
-                : ficheId == 20
-                    ? '/commande-cuisinier/boisson'
-                    : '/commande-cuisinier/commander';
+                : ficheId == 6
+                    ? '/BL/commander'
+                    : ficheId == 20
+                        ? '/commande-cuisinier/boisson'
+                        : '/commande-cuisinier/commander';
 
         try {
             await router.post(endpoint, filteredData);
@@ -400,20 +407,30 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                 ))}
 
                                 <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4" style={{ marginBottom: '20px' }}>
-                                    <div className="max-w-7xl mx-auto flex flex-row space-x-4">
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className={`flex-1 ${isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white py-3 rounded-lg font-semibold transition-colors`}
-                                        >
-                                            {isSubmitting ? 'En cours...' : 'Commander'}
-                                        </button>
-                                        <Link
-                                            href="/"
-                                            className="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-center"
-                                        >
-                                            Annuler
-                                        </Link>
+                                    <div className="max-w-7xl mx-auto flex flex-col space-y-2">
+                                        {ficheId == 6 && !isAllowedDay && (
+                                            <div className="text-red-600 text-center font-medium">
+                                                Les commandes ne sont autorisées que le mercredi, vendredi et dimanche.
+                                            </div>
+                                        )}
+                                        <div className="flex flex-row space-x-4">
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmitting || (ficheId == 6 && !isAllowedDay)}
+                                                className={`flex-1 ${isSubmitting || (ficheId == 6 && !isAllowedDay)
+                                                        ? 'bg-gray-400 cursor-not-allowed'
+                                                        : 'bg-green-600 hover:bg-green-700'
+                                                    } text-white py-3 rounded-lg font-semibold transition-colors`}
+                                            >
+                                                {isSubmitting ? 'En cours...' : 'Commander'}
+                                            </button>
+                                            <Link
+                                                href="/"
+                                                className="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-center"
+                                            >
+                                                Annuler
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
