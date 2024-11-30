@@ -99,36 +99,35 @@ export default function Table({ categories, ficheName, restau }) {
         e.preventDefault();
         if (isSubmitting) return;
         setIsSubmitting(true);
-
-        // Filter out products with no qty and transform them
-        const filteredProducts = data.products
-            .filter(product => {
-                // Only include products where qty is entered and greater than 0
-                const qty = parseFloat(product.qty);
-                const rest = parseFloat(product.rest);
-                return !isNaN(qty) && qty > 0 && !isNaN(rest) && rest >= 0;
-            })
-            .map(product => ({
-                product_id: product.id,
-                qty: parseInt(product.qty),
-                rest: parseFloat(product.rest)
-            }));
-
-        if (filteredProducts.length === 0) {
-            alert('Veuillez ajouter au moins un produit');
-            setIsSubmitting(false);
-            return;
-        }
-
-        const formData = {
-            name: data.name,
-            restau: data.restau,
-            products: filteredProducts
-        };
-
-        console.log('Submitting data:', formData); // Debug log
-
+    
         try {
+            // First, filter out all products with null/empty values
+            const filteredProducts = data.products
+                .filter(product => {
+                    const qty = product.qty !== '' ? parseFloat(product.qty) : null;
+                    const rest = product.rest !== '' ? parseFloat(product.rest) : null;
+                    return qty !== null && qty > 0 && rest !== null && rest >= 0;
+                })
+                .map(product => ({
+                    product_id: product.id,  // Change id to product_id here
+                    qty: parseFloat(product.qty),
+                    rest: parseFloat(product.rest)
+                }));
+    
+            if (filteredProducts.length === 0) {
+                alert('Veuillez ajouter au moins un produit');
+                setIsSubmitting(false);
+                return;
+            }
+    
+            const formData = {
+                name: data.name,
+                restau: data.restau,
+                // Don't include ficheId as it's not needed
+                products: filteredProducts  // Only send filtered products
+            };
+    
+            console.log('Sending data:', formData); // Debug log
             await post('/BL/commander', formData);
         } catch (error) {
             console.error('Submission error:', error);
