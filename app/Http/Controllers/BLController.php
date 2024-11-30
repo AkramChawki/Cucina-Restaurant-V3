@@ -93,7 +93,7 @@ class BLController extends Controller
         $pdfUrl = $this->generatePdfAndSave("pdf.order-summary", [
             "order" => $order,
             "showRest" => $requiresRest
-        ], $pdfName, "BL");
+        ], $pdfName, "bl");
         $order->pdf = $pdfName;
         $order->save();
     }
