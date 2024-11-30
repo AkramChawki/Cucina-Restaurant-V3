@@ -44,70 +44,70 @@ class BLController extends Controller
     }
 
     public function store(Request $request)
-    {
-        set_time_limit(500);
+{
+    set_time_limit(500);
 
-        try {
-            Log::info('Raw request data:', $request->all());
+    try {
+        Log::info('Raw request data:', $request->all());
 
-            // Basic validation first
-            $request->validate([
-                'name' => 'required|string',
-                'restau' => 'required|string',
-                'products' => 'required|array|min:1',
-            ]);
+        // Validate the basic structure first
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'restau' => 'required|string',
+            'products' => 'required|array|min:1',
+        ]);
 
-            // Get products and validate them separately
-            $products = collect($request->products)->map(function ($item) {
+        // Process and validate products
+        $validProducts = collect($request->input('products'))
+            ->filter(function ($product) {
+                return isset($product['product_id']) && 
+                       isset($product['qty']) && 
+                       isset($product['rest']);
+            })
+            ->map(function ($product) {
                 return [
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['qty'],
-                    'rest' => $item['rest']
+                    'product_id' => $product['product_id'],
+                    'qty' => $product['qty'],
+                    'rest' => $product['rest']
                 ];
-            })->toArray();
+            })
+            ->toArray();
 
-            // Now validate the products array
-            foreach ($products as $index => $product) {
-                $this->validate($request, [
-                    "products.{$index}.product_id" => 'required|integer',
-                    "products.{$index}.qty" => 'required|numeric|min:0',
-                    "products.{$index}.rest" => 'required|numeric|min:0',
-                ]);
-            }
-
-            $bl = new BL();
-            $bl->name = $request->name;
-            $bl->restau = $request->restau;
-
-            // Prepare detail and rest arrays
-            $detail = collect($products)->map(function ($item) {
-                return [
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['qty']
-                ];
-            })->toArray();
-
-            $rest = collect($products)->map(function ($item) {
-                return [
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['rest']
-                ];
-            })->toArray();
-
-            $bl->detail = $detail;
-            $bl->rest = $rest;
-            $bl->save();
-
-            $pdfName = $this->generatePdfFileName("BL", $bl);
-            $this->generatePdfAndSave("pdf.bl", ["bl" => $bl], $pdfName, "bl");
-            $bl->pdf = $pdfName;
-            $bl->save();
-
-            return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
-        } catch (\Exception $e) {
-            Log::error('BL Store Error: ' . $e->getMessage());
-            Log::error('Error details:', ['exception' => $e]);
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
+        if (empty($validProducts)) {
+            throw new \Exception('No valid products found in request');
         }
+
+        $bl = new BL();
+        $bl->name = $validated['name'];
+        $bl->restau = $validated['restau'];
+        
+        // Format arrays for storage
+        $bl->detail = array_map(function ($product) {
+            return [
+                'product_id' => $product['product_id'],
+                'qty' => $product['qty']
+            ];
+        }, $validProducts);
+
+        $bl->rest = array_map(function ($product) {
+            return [
+                'product_id' => $product['product_id'],
+                'qty' => $product['rest']
+            ];
+        }, $validProducts);
+
+        $bl->save();
+
+        $pdfName = $this->generatePdfFileName("BL", $bl);
+        $this->generatePdfAndSave("pdf.bl", ["bl" => $bl], $pdfName, "bl");
+        $bl->pdf = $pdfName;
+        $bl->save();
+
+        return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
+
+    } catch (\Exception $e) {
+        Log::error('BL Store Error: ' . $e->getMessage());
+        return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
     }
+}
 }

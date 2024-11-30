@@ -101,32 +101,32 @@ export default function Table({ categories, ficheName, restau }) {
         setIsSubmitting(true);
     
         try {
-            // Filter products with required values
-            const filteredProducts = data.products
-                .filter(product => {
-                    const qty = product.qty !== '' ? parseFloat(product.qty) : null;
-                    const rest = product.rest !== '' ? parseFloat(product.rest) : null;
-                    return qty !== null && qty > 0 && rest !== null && rest >= 0;
-                })
-                .map(product => ({
-                    product_id: parseInt(product.id),
-                    qty: parseFloat(product.qty),
-                    rest: parseFloat(product.rest)
-                }));
+            // First, filter and map in separate steps for clarity
+            const validProducts = data.products.filter(product => {
+                const qty = product.qty !== '' ? parseFloat(product.qty) : null;
+                const rest = product.rest !== '' ? parseFloat(product.rest) : null;
+                return qty !== null && qty > 0 && rest !== null && rest >= 0;
+            });
     
-            if (filteredProducts.length === 0) {
+            if (validProducts.length === 0) {
                 alert('Veuillez ajouter au moins un produit');
                 setIsSubmitting(false);
                 return;
             }
     
+            const formattedProducts = validProducts.map(product => ({
+                product_id: product.id,
+                qty: parseFloat(product.qty),
+                rest: parseFloat(product.rest)
+            }));
+    
             const formData = {
                 name: data.name,
                 restau: data.restau,
-                products: filteredProducts
+                products: formattedProducts
             };
     
-            console.log('Sending data:', formData);
+            console.log('Sending data:', formData); // Debug log
             await post('/BL/commander', formData);
         } catch (error) {
             console.error('Submission error:', error);
