@@ -43,6 +43,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::get('/stock', [InventaireCuisinierController::class, 'stock'])->name('inventaire.stock');
         Route::post('/inv', [InventaireCuisinierController::class, 'inventaire'])->name('inventaire.inv');
         Route::post('/cntrl', [InventaireCuisinierController::class, 'controle'])->name('inventaire.cntrl');
+        Route::post('/fromage', [InventaireCuisinierController::class, 'fromage'])->name('inventaire.fromage');
     });
 
     Route::resource('numbers', NumberController::class);

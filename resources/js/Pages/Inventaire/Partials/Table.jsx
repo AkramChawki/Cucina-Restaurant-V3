@@ -55,6 +55,8 @@ export default function Table({ categories, ficheId, restau }) {
             endpoint = '/inventaire/inv';
         } else if (ficheId == 8) {
             endpoint = '/inventaire/cntrl';
+        } else if (ficheId == 21) {
+            endpoint = '/inventaire/fromage';
         }
 
         router.post(endpoint, filteredData, {

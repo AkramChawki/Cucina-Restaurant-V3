@@ -7,6 +7,7 @@ use App\Models\Inventaire;
 use App\Models\Restaurant;
 use App\Models\Fiche;
 use App\Models\CuisinierCategory;
+use App\Models\Fromage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
@@ -86,6 +87,21 @@ class InventaireCuisinierController extends Controller
         try {
             $order = $this->createOrder(new Controle(), $request);
             $pdfName = $this->generatePdfName($order, "Controle-Interne");
+            $this->savePdf($order, $pdfName, "inventaire");
+
+            return redirect("/")->with('success', 'Order created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+
+        }
+    }
+    public function fromage(Request $request)
+    {
+        set_time_limit(500);
+
+        try {
+            $order = $this->createOrder(new Fromage(), $request);
+            $pdfName = $this->generatePdfName($order, "Inventaire-fromage");
             $this->savePdf($order, $pdfName, "inventaire");
 
             return redirect("/")->with('success', 'Order created successfully.');
