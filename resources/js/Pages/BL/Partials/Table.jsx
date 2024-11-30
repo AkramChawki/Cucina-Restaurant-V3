@@ -107,9 +107,9 @@ export default function Table({ categories, ficheName, restau }) {
                 return !isNaN(qty) && qty > 0;
             })
             .map(product => ({
-                product_id: product.id,  // Changed from 'id' to 'product_id'
-                qty: parseInt(product.qty),  // Using parseInt as per validation
-                ...(requiresRest ? { rest: parseFloat(product.rest) } : {})
+                product_id: product.id,
+                qty: parseInt(product.qty),
+                rest: parseFloat(product.rest) // Always include rest for BL
             }));
     
         if (filteredProducts.length === 0) {
