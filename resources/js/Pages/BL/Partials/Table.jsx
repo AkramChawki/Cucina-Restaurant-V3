@@ -17,16 +17,15 @@ function classNames(...classes) {
 
 export default function Table({ categories, ficheName, restau }) {
     const { auth } = usePage().props;
-    const { data, setData, post } = useForm({
+    const { data, setData } = useForm({
         name: auth.user.name,
         restau: restau || '',
-        ficheId: ficheName,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
                 acc.push({
                     id: product.id,
-                    qty: '',
-                    rest: ''
+                    qty: '',  // Changed from null to empty string
+                    rest: '', // Changed from null to empty string
                 });
             });
             return acc;
@@ -44,19 +43,8 @@ export default function Table({ categories, ficheName, restau }) {
     };
 
     const handleQtyChange = (productId, value) => {
-        if (value === '') {
-            const updatedProducts = data.products.map(product =>
-                product.id === productId ? { ...product, qty: '' } : product
-            );
-            setData('products', updatedProducts);
-            return;
-        }
-        const numValue = parseFloat(value);
-        if (isNaN(numValue) || numValue < 0) return;
-
-        const product = data.products.find(p => p.id === productId);
-        if (!product || product.rest === '' || product.rest === undefined) return;
-
+        value = value.replace(/[^\d.]/g, '');
+        
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: value } : product
         );
@@ -64,15 +52,9 @@ export default function Table({ categories, ficheName, restau }) {
     };
 
     const handleRestChange = (productId, value) => {
-        if (value === '') {
-            const updatedProducts = data.products.map(product =>
-                product.id === productId ? { ...product, rest: '' } : product
-            );
-            setData('products', updatedProducts);
-            return;
-        }
-        const numValue = parseFloat(value);
-        if (isNaN(numValue) || numValue < 0) return;
+        // Remove any non-numeric characters except decimal point
+        value = value.replace(/[^\d.]/g, '');
+        
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, rest: value } : product
         );
@@ -101,12 +83,27 @@ export default function Table({ categories, ficheName, restau }) {
         setIsSubmitting(true);
     
         try {
-            // First, filter and map in separate steps for clarity
+            // Debug log to see what we're starting with
+            console.log('Original products:', data.products);
+    
+            // Filter out products that don't have both qty and rest
             const validProducts = data.products.filter(product => {
+                // Convert strings to numbers and check if they're valid
                 const qty = product.qty !== '' ? parseFloat(product.qty) : null;
                 const rest = product.rest !== '' ? parseFloat(product.rest) : null;
+                
+                // Debug log for each product
+                console.log('Checking product:', { 
+                    id: product.id, 
+                    qty, 
+                    rest, 
+                    isValid: qty !== null && qty > 0 && rest !== null && rest >= 0 
+                });
+    
                 return qty !== null && qty > 0 && rest !== null && rest >= 0;
             });
+    
+            console.log('Filtered products:', validProducts);
     
             if (validProducts.length === 0) {
                 alert('Veuillez ajouter au moins un produit');
@@ -114,11 +111,14 @@ export default function Table({ categories, ficheName, restau }) {
                 return;
             }
     
+            // Transform the data to the correct format
             const formattedProducts = validProducts.map(product => ({
                 product_id: product.id,
                 qty: parseFloat(product.qty),
                 rest: parseFloat(product.rest)
             }));
+    
+            console.log('Final formatted products:', formattedProducts);
     
             const formData = {
                 name: data.name,
@@ -126,7 +126,6 @@ export default function Table({ categories, ficheName, restau }) {
                 products: formattedProducts
             };
     
-            console.log('Sending data:', formData); // Debug log
             await post('/BL/commander', formData);
         } catch (error) {
             console.error('Submission error:', error);
