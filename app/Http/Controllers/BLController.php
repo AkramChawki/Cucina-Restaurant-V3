@@ -53,7 +53,6 @@ class BLController extends Controller
             'products.*.qty' => 'required|numeric|min:0',
             'products.*.rest' => 'required|numeric|min:0',
         ]);
-        dd($validatedData);
         $bl = $this->createBL($request);
         $pdfName = $this->generatePdfName($bl);
         $this->savePdf($bl, $pdfName);

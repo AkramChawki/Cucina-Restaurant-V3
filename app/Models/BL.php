@@ -10,6 +10,8 @@ class BL extends Model
     use HasFactory;
 
     protected $casts = [
+        'detail' => 'array',
+        'rest' => 'array',
     ];
 
     public function products()
