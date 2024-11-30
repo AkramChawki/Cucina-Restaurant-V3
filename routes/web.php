@@ -75,8 +75,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
 
 
     Route::prefix('BL')->group(function () {
-        Route::get('/', [BLController::class, 'index'])->name('BL.index');
-        Route::get('/commander', [BLController::class, 'create'])->name('BL.create');
         Route::post('/commander', [BLController::class, 'store'])->name('BL.store');
     });
 

@@ -125,6 +125,8 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
             ? '/commande-cuisinier/labo'
             : ficheId == 19
                 ? '/commande-cuisinier/menage'
+                :ficheId == 6
+                ? '/BL/commander'
                 : ficheId == 20
                     ? '/commande-cuisinier/boisson'
                     : '/commande-cuisinier/commander';
