@@ -6,6 +6,8 @@ use App\Models\BL;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
+use Illuminate\Support\Facades\Log;
+
 
 class BLController extends Controller
 {
@@ -42,9 +44,10 @@ class BLController extends Controller
     }
 
     public function store(Request $request)
-    {
-        set_time_limit(500);
+{
+    set_time_limit(500);
 
+    try {
         $validatedData = $request->validate([
             'name' => 'required|string',
             'restau' => 'required|string',
@@ -84,6 +87,10 @@ class BLController extends Controller
         $bl->pdf = $pdfName;
         $bl->save();
 
-        return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
+        return redirect()->route('BL.index')->with('success', 'Commande créée avec succès');
+    } catch (\Exception $e) {
+        log::error('BL Store Error: ' . $e->getMessage());
+        return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
     }
+}
 }

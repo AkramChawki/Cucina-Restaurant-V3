@@ -99,7 +99,7 @@ export default function Table({ categories, ficheName, restau }) {
         e.preventDefault();
         if (isSubmitting) return;
         setIsSubmitting(true);
-
+    
         const filteredProducts = data.products
             .filter(product => {
                 const qty = parseFloat(product.qty);
@@ -111,15 +111,26 @@ export default function Table({ categories, ficheName, restau }) {
                 qty: parseFloat(product.qty),
                 rest: parseFloat(product.rest)
             }));
-
+    
         if (filteredProducts.length === 0) {
             alert('Veuillez ajouter au moins un produit');
             setIsSubmitting(false);
             return;
         }
-
+    
         try {
-            await post('/BL/commander', { ...data, products: filteredProducts });
+            post(route('BL.store'), {
+                ...data, 
+                products: filteredProducts,
+                onSuccess: () => {
+                    // Handle successful submission
+                    console.log('Success');
+                },
+                onError: (errors) => {
+                    console.error('Submission errors:', errors);
+                    setIsSubmitting(false);
+                },
+            });
         } catch (error) {
             console.error('Submission error:', error);
             setIsSubmitting(false);
