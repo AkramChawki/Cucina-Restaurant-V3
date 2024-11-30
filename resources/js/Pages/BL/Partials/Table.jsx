@@ -101,7 +101,7 @@ export default function Table({ categories, ficheName, restau }) {
         setIsSubmitting(true);
     
         try {
-            // First, filter out all products with null/empty values
+            // Filter products with required values
             const filteredProducts = data.products
                 .filter(product => {
                     const qty = product.qty !== '' ? parseFloat(product.qty) : null;
@@ -109,7 +109,7 @@ export default function Table({ categories, ficheName, restau }) {
                     return qty !== null && qty > 0 && rest !== null && rest >= 0;
                 })
                 .map(product => ({
-                    product_id: product.id,  // Change id to product_id here
+                    product_id: parseInt(product.id),
                     qty: parseFloat(product.qty),
                     rest: parseFloat(product.rest)
                 }));
@@ -123,11 +123,10 @@ export default function Table({ categories, ficheName, restau }) {
             const formData = {
                 name: data.name,
                 restau: data.restau,
-                // Don't include ficheId as it's not needed
-                products: filteredProducts  // Only send filtered products
+                products: filteredProducts
             };
     
-            console.log('Sending data:', formData); // Debug log
+            console.log('Sending data:', formData);
             await post('/BL/commander', formData);
         } catch (error) {
             console.error('Submission error:', error);

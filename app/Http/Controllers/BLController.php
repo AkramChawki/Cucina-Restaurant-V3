@@ -48,36 +48,51 @@ class BLController extends Controller
         set_time_limit(500);
 
         try {
-            Log::info('Received request data:', $request->all()); // Debug log
+            Log::info('Raw request data:', $request->all());
 
-            $validatedData = $request->validate([
+            // Basic validation first
+            $request->validate([
                 'name' => 'required|string',
                 'restau' => 'required|string',
                 'products' => 'required|array|min:1',
-                'products.*.product_id' => 'required|integer',
-                'products.*.qty' => 'required|numeric|gt:0',
-                'products.*.rest' => 'required|numeric|min:0',
             ]);
 
-            $bl = new BL();
-            $bl->name = $validatedData['name'];
-            $bl->restau = $validatedData['restau'];
-
-            // Format both arrays at once from validated data
-            $detail = [];
-            $rest = [];
-
-            foreach ($validatedData['products'] as $product) {
-                $detail[] = [
-                    'product_id' => $product['product_id'],
-                    'qty' => $product['qty']
+            // Get products and validate them separately
+            $products = collect($request->products)->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['qty'],
+                    'rest' => $item['rest']
                 ];
+            })->toArray();
 
-                $rest[] = [
-                    'product_id' => $product['product_id'],
-                    'qty' => $product['rest']
-                ];
+            // Now validate the products array
+            foreach ($products as $index => $product) {
+                $this->validate($request, [
+                    "products.{$index}.product_id" => 'required|integer',
+                    "products.{$index}.qty" => 'required|numeric|min:0',
+                    "products.{$index}.rest" => 'required|numeric|min:0',
+                ]);
             }
+
+            $bl = new BL();
+            $bl->name = $request->name;
+            $bl->restau = $request->restau;
+
+            // Prepare detail and rest arrays
+            $detail = collect($products)->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['qty']
+                ];
+            })->toArray();
+
+            $rest = collect($products)->map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'qty' => $item['rest']
+                ];
+            })->toArray();
 
             $bl->detail = $detail;
             $bl->rest = $rest;
@@ -91,6 +106,7 @@ class BLController extends Controller
             return Inertia::location("https://restaurant.cucinanapoli.com/public/storage/bl/$pdfName");
         } catch (\Exception $e) {
             Log::error('BL Store Error: ' . $e->getMessage());
+            Log::error('Error details:', ['exception' => $e]);
             return back()->withErrors(['error' => 'Une erreur est survenue lors de la création de la commande']);
         }
     }
