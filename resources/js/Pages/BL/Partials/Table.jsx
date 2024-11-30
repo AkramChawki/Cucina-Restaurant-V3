@@ -17,7 +17,7 @@ function classNames(...classes) {
 
 export default function Table({ categories, ficheName, restau }) {
     const { auth } = usePage().props;
-    const { data, setData } = useForm({
+    const { data, setData, post } = useForm({
         name: auth.user.name,
         restau: restau || '',
         products: categories.reduce((acc, category) => {
