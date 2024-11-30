@@ -1,18 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 
-export default function Form({ restaurant, employes }) {
-  const [selectedRestau, setSelectedRestau] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  console.log(employes);
+export default function Form({ restaurant, presences, currentMonth }) {
+  const today = new Date();
+  const defaultMonth = {
+    month: today.getMonth() + 1,
+    year: today.getFullYear()
+  };
+
+  const [selectedRestau, setSelectedRestau] = useState(restaurant?.slug || '');
+  const [monthDate, setMonthDate] = useState(
+    new Date(
+      (currentMonth?.year || defaultMonth.year),
+      (currentMonth?.month || defaultMonth.month) - 1
+    )
+  );
 
   const daysInMonth = Array.from(
-    { length: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate() },
+    { length: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate() },
     (_, i) => i + 1
   );
 
-  const formatDate = (day) => {
-    return `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const handleStatusChange = (employeId, day, status) => {
+    router.post(route('employes.updateAttendance'), {
+      employe_id: employeId,
+      day: day,
+      status: status,
+      month: monthDate.getMonth() + 1,
+      year: monthDate.getFullYear()
+    }, {
+      preserveScroll: true,
+      preserveState: true,
+    });
   };
 
   return (
@@ -23,13 +42,13 @@ export default function Form({ restaurant, employes }) {
           onChange={(e) => setSelectedRestau(e.target.value)}
           className="border rounded px-3 py-2"
         >
-          <option key={restaurant.id} value={restaurant.slug}>{restaurant.name}</option>
+          <option value={restaurant?.slug || ''}>{restaurant?.name || 'Select Restaurant'}</option>
         </select>
 
         <input
           type="month"
-          value={`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`}
-          onChange={(e) => setCurrentMonth(new Date(e.target.value))}
+          value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
+          onChange={(e) => setMonthDate(new Date(e.target.value))}
           className="border rounded px-3 py-2"
         />
       </div>
@@ -46,22 +65,24 @@ export default function Form({ restaurant, employes }) {
             </tr>
           </thead>
           <tbody>
-            {employes.map(employe => (
+            {presences.map(({ employe, presence }) => (
               <tr key={employe.id}>
                 <td className="border px-4 py-2">{employe.id}</td>
                 <td className="border px-4 py-2">{`${employe.first_name} ${employe.last_name}`}</td>
                 {daysInMonth.map(day => (
                   <td key={day} className="border px-2 py-1">
                     <select
-                      value={''}
+                      value={presence.attendance_data[day] || ''}
                       onChange={(e) => handleStatusChange(employe.id, day, e.target.value)}
                       className="w-full border rounded px-2 py-1 text-sm"
                     >
                       <option value="">-</option>
                       <option value="present">P</option>
                       <option value="absent">A</option>
-                      <option value="late">R</option>
-                      <option value="excused">E</option>
+                      <option value="conge-paye">CP</option>
+                      <option value="conge-non-paye">CNP</option>
+                      <option value="repos">R</option>
+                      <option value="continue">CC</option>
                     </select>
                   </td>
                 ))}

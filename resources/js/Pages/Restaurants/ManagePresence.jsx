@@ -1,10 +1,12 @@
 import React from 'react'
 import Form from './Partials/Presence/Form'
 
-export default function ManagePresence({ restaurant, employes }) {
+export default function ManagePresence({ restaurant, presences, currentMonth }) {
   return (
     <>
-      <Form restaurant={restaurant} employes={employes}/>
+      <Form restaurant={restaurant}
+        presences={presences}
+        currentMonth={currentMonth} />
     </>
   )
 }

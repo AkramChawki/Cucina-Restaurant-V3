@@ -56,11 +56,21 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
 
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraisons.index');
 
-    Route::get('/employes', [EmployeController::class, 'employe'])->name('employes.employe');
+    Route::get('/employes', [EmployeController::class, 'index'])->name('employes.employe');
+
+    Route::get('/ajouter-employe', [EmployeController::class, 'ajouteremploye'])->name('employes.ajouteremploye');
     Route::get('/add-employe', [EmployeController::class, 'employeAdd'])->name('employes.employeAdd');
     Route::post('/employees', [EmployeController::class, 'store'])->name('employes.store');
+
+    Route::get('/modifier-employe', [EmployeController::class, 'modifieremploye'])->name('employes.modifieremploye');
+    Route::get('/edit-employe', [EmployeController::class, 'employeEdit'])->name('employes.employeEdit');
+    Route::get('//employe/{id}/edit', [EmployeController::class, 'employeUpdate'])->name('employes.employeUpdate');
+    Route::put('/employes/{id}', [EmployeController::class, 'update'])->name('employes.update');
+
     Route::get('/attendance', [EmployeController::class, 'attendance'])->name('employes.attendance');
     Route::get('/manage-attendance', [EmployeController::class, 'manageAttendance'])->name('employes.manageAttendance');
+    Route::post('/employes/update-attendance', [EmployeController::class, 'updateAttendance'])
+    ->name('employes.updateAttendance');
 
 
     Route::prefix('BL')->group(function () {
