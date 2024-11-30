@@ -5,7 +5,7 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>BL</title>
+	<title>Invoice</title>
 	<style>
 		@media print {
 			@page {
@@ -26,13 +26,13 @@
 
 		table {
 			width: 100%;
-			bbl-collapse: collapse;
+			border-collapse: collapse;
 		}
 
 		table,
 		table th,
 		table td {
-			bbl: 1px solid silver;
+			border: 1px solid silver;
 		}
 
 		table th,
@@ -56,7 +56,7 @@
 
 		.inv-title {
 			padding: 10px;
-			bbl: 1px solid silver;
+			border: 1px solid silver;
 			text-align: center;
 			margin-bottom: 30px;
 		}
@@ -121,12 +121,20 @@
 <body>
 	<div class="container">
 		<div class="inv-title">
-			<h1>BL</h1>
+			<h1>Commande</h1>
 		</div>
 		<img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" class="inv-logo" />
 		<div class="inv-header">
 			<div>
-			    @if ($bl->restau == "Anoual")
+			    @if ($order->restau == null)
+				<h2>Cucina Napoli - Bureau</h2>
+				<ul>
+					<li>rue 28 num 56 Lotissement Mestouna Hay Hassani</li>
+					<li>Casablance</li>
+					<li>+212 6 64 68 52 75 | admin@cucinanapoli.com</li>
+				</ul>
+				@endif
+			    @if ($order->restau == "Anoual")
 				<h2>Cucina Napoli - Anoual</h2>
 				<ul>
 					<li>4 BD Anoual</li>
@@ -134,16 +142,16 @@
 					<li>+212 5 20 33 83 50 | anoual@cucinanapoli.com</li>
 				</ul>
 				@endif
-				@if ($bl->restau == "Palmier")
-				<h2>Cucina Napoli = Palmier</h2>
+				@if ($order->restau == "Palmier")
+				<h2>Cucina Napoli - Palmier</h2>
 				<ul>
 					<li>13 rue Ahmed Naciri, Angle Rue Saria Ibnou Zounaim</li>
 					<li>Casablanca</li>
 					<li>+212 5 20 57 24 34 | palmier@cucinanapoli.com</li>
 				</ul>
 				@endif
-				@if ($bl->restau == "Ziraoui")
-				<h2>Cucina Napoli = Ziraoui</h2>
+				@if ($order->restau == "Ziraoui")
+				<h2>Cucina Napoli - Ziraoui</h2>
 				<ul>
 					<li>267, Bd Ziraoui</li>
 					<li>Casablanca</li>
@@ -155,11 +163,11 @@
 				<table>
 					<tr>
 						<th>Date</th>
-						<td>{{$bl->created_at}}</td>
+						<td>{{$order->created_at}}</td>
 					</tr>
 					<tr>
 						<th>Commande par</th>
-						<td>{{$bl->name}}</td>
+						<td>{{$order->name}}</td>
 					</tr>
 				</table>
 			</div>
@@ -167,13 +175,16 @@
 		<div class="inv-body">
 			<table>
 				<thead>
-					<th>Image</th>
-					<th>Produit</th>
-					<th>Qty</th>
-					<th>Unite</th>
-				</thead>
-				<tbody>
-          @foreach ($bl->products() as $p)
+                    <th>Image</th>
+                    <th>Produit</th>
+                    @if(isset($showRest) && $showRest)
+                    <th>Rest</th>
+                    @endif
+                    <th>Qty</th>
+                    <th>Unite</th>
+                </thead>
+                <tbody>
+					@foreach ($order->products() as $p)
 					<tr>
 						<td>
 							<img src="https://admin.cucinanapoli.com/storage/{{ $p->image }}" alt="" style="display:block;" width="40px" height="40px">
@@ -181,10 +192,13 @@
 						<td>
 							<h4>{{ $p->designation }}</h4>
 						</td>
+						@if(isset($showRest) && $showRest)
+						<td>{{ $p->rest ?? '-' }}</td>
+						@endif
 						<td>{{ $p->qty }}</td>
 						<td>{{ $p->unite }}</td>
 					</tr>
-          @endforeach
+					@endforeach
 				</tbody>
 			</table>
 		</div>
