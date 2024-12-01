@@ -49,10 +49,10 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ public_path('logo.png') }}" alt="Logo" height="60">
+        <img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" alt="Logo" height="60">
     </div>
 
-    <div class="title">ANNEXE 4</div>
+    <div class="title">Cucina Napoli</div>
     <div class="title">FICHE INDIVIDUELLE DE RENSEIGNEMENT DU PERSONNEL</div>
 
     <div class="section">
@@ -61,18 +61,20 @@
         </div>
 
         <div class="field">
-            Date et lieu de naissance : {{ $employee->DDN }}
+            Date de naissance : {{ $employee->DDN }}
         </div>
 
         <div class="field">
             Situation matrimoniale : {{ ucfirst($employee->marital_status) }}
+        </div>
+        <div class="field">
+            Date d'embauche : {{ ucfirst($employee->embauche) }}
         </div>
 
         <div class="addresses">
             <div class="field">Adresses :</div>
             <div class="field">Lieu de résidence : {{ $employee->address }}, {{ $employee->city }}, {{ $employee->country }}</div>
             <div class="field">Contact téléphonique : {{ $employee->telephone }}</div>
-            <div class="field">Adresse postale : {{ $employee->address }}</div>
         </div>
     </div>
 
