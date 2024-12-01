@@ -148,7 +148,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Audit
+                                Audit Hygien
                             </a>
                             <Link
                                 href="/audit"
