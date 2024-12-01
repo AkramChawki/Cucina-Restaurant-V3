@@ -10,7 +10,8 @@ class Presence extends Model
         'employe_id',
         'month',
         'year',
-        'attendance_data'
+        'attendance_data',
+        'jours'
     ];
 
     protected $casts = [
