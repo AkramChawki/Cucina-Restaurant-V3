@@ -14,6 +14,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('livraisons:aggregate')->twiceDailyAt(3, 16, 30);
         $schedule->command('records:delete-old')->cron('0 0 */14 * *');
+        $schedule->command('presence:calculate-jours')
+            ->monthlyOn(1, '00:01')
+            ->runInBackground();
     }
 
     /**
