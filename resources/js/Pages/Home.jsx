@@ -171,7 +171,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Inventaire Interne
+                                Inventaire Economat
                             </a>
                             <Link
                                 href="/inventaire"
