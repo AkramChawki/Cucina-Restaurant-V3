@@ -62,7 +62,7 @@ export default function Detaills({ fiches, rubriqueTitle }) {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Livriason
+                                    Livraison Restaurant
                                 </a>
                                 <Link
                                     href="/livraisons"
@@ -83,7 +83,7 @@ export default function Detaills({ fiches, rubriqueTitle }) {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Labo
+                                    Commande Labo
                                 </a>
                                 <Link
                                     href="/labo"
@@ -104,7 +104,7 @@ export default function Detaills({ fiches, rubriqueTitle }) {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Menage
+                                    Commande Menage
                                 </a>
                                 <Link
                                     href="/menage"
