@@ -124,7 +124,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Controle Interne
+                                Etat de stock
                             </a>
                             <Link
                                 href="/inventaire"
