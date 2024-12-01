@@ -5,14 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Employe;
 use App\Models\Presence;
 use App\Models\Restaurant;
+use App\Traits\PdfGeneratorTrait;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class EmployeController extends Controller
 {
-    function index() {
+    use PdfGeneratorTrait;
+    function index()
+    {
         return Inertia::render('Restaurants/Employe',);
-        
     }
     public function ajouteremploye()
     {
@@ -41,17 +43,31 @@ class EmployeController extends Controller
             $data['id_card_back'] = $request->file('id_card_back')->store('id-cards', 'public');
         }
 
-        Employe::create($data);
+        $employee = Employe::create($data);
+
+        $pdfFileName = $this->generatePdfFileName('fiche', $employee);
+        $pdfUrl = $this->generatePdfAndSave(
+            'pdfs.employee-info',
+            ['employee' => $employee],
+            $pdfFileName,
+            'employee-files'
+        );
+
+        $employee->update([
+            'pdf' => str_replace(asset('storage/'), '', $pdfUrl)
+        ]);
 
         return redirect('/')->with('success', 'Employee added successfully.');
     }
 
-    function modifieremploye() {
+    function modifieremploye()
+    {
         $restaurants = Restaurant::all();
         return Inertia::render('Restaurants/ModifierEmploye', ["restaurants" => $restaurants]);
     }
 
-    function employeEdit(Request $request) {
+    function employeEdit(Request $request)
+    {
         $restau = $request->query('restau');
         $employes = Employe::where('restau', $restau)->get();
         return Inertia::render('Restaurants/EditEmploye', [
@@ -59,7 +75,8 @@ class EmployeController extends Controller
         ]);
     }
 
-    function employeUpdate($id)  {
+    function employeUpdate($id)
+    {
 
         $restaurants = Restaurant::all();
         $employe = Employe::findOrFail($id);
@@ -69,16 +86,26 @@ class EmployeController extends Controller
         ]);
     }
 
-    function update($id, Request $request)  {
+    function update($id, Request $request)
+    {
         $employe = Employe::findOrFail($id);
-        
+
         // Get only the fields that were actually sent in the request
         $data = $request->only([
-            'first_name', 'last_name', 'DDN', 'telephone', 
-            'address', 'city', 'country', 'marital_status',
-            'username', 'restau', 'embauche', 'depart'
+            'first_name',
+            'last_name',
+            'DDN',
+            'telephone',
+            'address',
+            'city',
+            'country',
+            'marital_status',
+            'username',
+            'restau',
+            'embauche',
+            'depart'
         ]);
-    
+
         // Add validation for only the fields that were sent
         $rules = [
             'first_name' => 'required|string|max:255',
@@ -94,27 +121,27 @@ class EmployeController extends Controller
             'embauche' => 'required|date',
             'depart' => 'nullable|date'
         ];
-    
+
         // Only validate image files if they were actually uploaded
         if ($request->hasFile('profile_photo')) {
             $rules['profile_photo'] = 'nullable|image|max:10240';
             $data['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
         }
-    
+
         if ($request->hasFile('id_card_front')) {
             $rules['id_card_front'] = 'nullable|image|max:10240';
             $data['id_card_front'] = $request->file('id_card_front')->store('id-cards', 'public');
         }
-    
+
         if ($request->hasFile('id_card_back')) {
             $rules['id_card_back'] = 'nullable|image|max:10240';
             $data['id_card_back'] = $request->file('id_card_back')->store('id-cards', 'public');
         }
-    
+
         $validated = $request->validate($rules);
-        
+
         $employe->update($data);
-    
+
         return redirect('/')->with('success', 'Employee added successfully.');
     }
 
@@ -125,44 +152,44 @@ class EmployeController extends Controller
     }
 
     public function manageAttendance(Request $request)
-{
-    $restau = $request->query('restau');
-    $month = $request->input('month', now()->month);
-    $year = $request->input('year', now()->year);
+    {
+        $restau = $request->query('restau');
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
 
-    // Get restaurant info
-    $restaurant = Restaurant::where('slug', $restau)->first();
+        // Get restaurant info
+        $restaurant = Restaurant::where('slug', $restau)->first();
 
-    // Get employees with presence records
-    $employes = Employe::where('restau', $restau)->get();
-    
-    $presences = collect($employes)->map(function ($employe) use ($month, $year) {
-        $presence = Presence::firstOrCreate(
-            [
-                'employe_id' => $employe->id,
+        // Get employees with presence records
+        $employes = Employe::where('restau', $restau)->get();
+
+        $presences = collect($employes)->map(function ($employe) use ($month, $year) {
+            $presence = Presence::firstOrCreate(
+                [
+                    'employe_id' => $employe->id,
+                    'month' => $month,
+                    'year' => $year,
+                ],
+                [
+                    'attendance_data' => []
+                ]
+            );
+
+            return [
+                'employe' => $employe,
+                'presence' => $presence
+            ];
+        });
+
+        return Inertia::render('Restaurants/ManagePresence', [
+            'restaurant' => $restaurant,  // Pass the restaurant object
+            'presences' => $presences,
+            'currentMonth' => [
                 'month' => $month,
-                'year' => $year,
-            ],
-            [
-                'attendance_data' => []
+                'year' => $year
             ]
-        );
-
-        return [
-            'employe' => $employe,
-            'presence' => $presence
-        ];
-    });
-
-    return Inertia::render('Restaurants/ManagePresence', [
-        'restaurant' => $restaurant,  // Pass the restaurant object
-        'presences' => $presences,
-        'currentMonth' => [
-            'month' => $month,
-            'year' => $year
-        ]
-    ]);
-}
+        ]);
+    }
 
     public function updateAttendance(Request $request)
     {

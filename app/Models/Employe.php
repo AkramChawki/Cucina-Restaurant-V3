@@ -24,7 +24,8 @@ class Employe extends Model
         'id_card_back',
         'restau',
         'embauche',
-        'depart'
+        'depart',
+        'pdf'
     ];
 
     protected $dates = ['DDN', 'embauche', 'depart'];
