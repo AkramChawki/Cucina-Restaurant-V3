@@ -71,7 +71,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Restaurant
+                                Gestion Restaurant
                             </a>
                             <Link
                                 href="/restaurants-rubriques"
@@ -148,7 +148,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Audit Hygien
+                                Audit Hygiene
                             </a>
                             <Link
                                 href="/audit"

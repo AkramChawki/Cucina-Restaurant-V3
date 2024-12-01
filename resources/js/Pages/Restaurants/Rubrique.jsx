@@ -62,7 +62,7 @@ export default function Rubrique() {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Restaurant
+                                    Menu En Ligne
                                 </a>
                                 <Link
                                     href="/restaurants"
@@ -83,7 +83,7 @@ export default function Rubrique() {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Presence
+                                    Pointage
                                 </a>
                                 <Link
                                     href={route('employes.attendance')}
@@ -104,7 +104,7 @@ export default function Rubrique() {
                                     href="#"
                                     className="my-2 text-5xl font-bold text-black"
                                 >
-                                    Employe
+                                    Creation Employe
                                 </a>
                                 <Link
                                     href="/employes"
