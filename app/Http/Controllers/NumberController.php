@@ -13,11 +13,6 @@ class NumberController extends Controller
         return Inertia::render('Numeros/Numeros');
     }
 
-    public function create()
-    {
-        return Inertia::render('Numeros/Ajouter');
-    }
-
     public function store(Request $request)
     {
         foreach ($request->numbers as $number) {
