@@ -46,7 +46,11 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/fromage', [InventaireCuisinierController::class, 'fromage'])->name('inventaire.fromage');
     });
 
-    Route::resource('numbers', NumberController::class);
+    Route::prefix('numbers')->group(function () {
+        Route::get('/', [NumberController::class, 'index'])->name('numbers.index');
+        Route::get('/create', [NumberController::class, 'create'])->name('numbers.create');
+        Route::post('/', [NumberController::class, 'store'])->name('numbers.store');
+    });
 
 
     Route::get('/restaurants-rubriques', [RestaurantController::class, 'index'])->name('restaurants.index');
