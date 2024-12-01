@@ -47,7 +47,7 @@ class EmployeController extends Controller
 
         $pdfFileName = $this->generatePdfFileName('fiche', $employee);
         $pdfUrl = $this->generatePdfAndSave(
-            'pdfs.employee-info',
+            'pdf.employee-info',
             ['employee' => $employee],
             $pdfFileName,
             'employee-files'
