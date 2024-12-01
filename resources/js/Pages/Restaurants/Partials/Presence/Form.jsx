@@ -34,62 +34,106 @@ export default function Form({ restaurant, presences, currentMonth }) {
     });
   };
 
-  return (
-    <div className="p-6">
-      <div className="mb-6 flex gap-4 items-center">
-        <select
-          value={selectedRestau}
-          onChange={(e) => setSelectedRestau(e.target.value)}
-          className="border rounded px-3 py-2"
-        >
-          <option value={restaurant?.slug || ''}>{restaurant?.name || 'Select Restaurant'}</option>
-        </select>
+  const getStatusColor = (status) => {
+    const colors = {
+      'present': 'bg-green-100 text-green-800',
+      'absent': 'bg-red-100 text-red-800',
+      'conge-paye': 'bg-blue-100 text-blue-800',
+      'conge-non-paye': 'bg-orange-100 text-orange-800',
+      'repos': 'bg-gray-100 text-gray-800',
+      'continue': 'bg-yellow-100 text-yellow-800',
+    };
+    return colors[status] || '';
+  };
 
-        <input
-          type="month"
-          value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
-          onChange={(e) => setMonthDate(new Date(e.target.value))}
-          className="border rounded px-3 py-2"
-        />
+  return (
+    <div className="p-4 sm:p-6">
+      {/* Header Section */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-gray-900">Gestion des Présences</h2>
+            <p className="mt-1 text-sm text-gray-600">
+              {restaurant?.name} - {monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <select
+              value={selectedRestau}
+              onChange={(e) => setSelectedRestau(e.target.value)}
+              className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+            >
+              <option value={restaurant?.slug || ''}>{restaurant?.name || 'Select Restaurant'}</option>
+            </select>
+
+            <input
+              type="month"
+              value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
+              onChange={(e) => setMonthDate(new Date(e.target.value))}
+              className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse bg-white">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="border px-4 py-2 text-left">ID</th>
-              <th className="border px-4 py-2 text-left">Nom</th>
-              {daysInMonth.map(day => (
-                <th key={day} className="border px-4 py-2 text-center w-12">{day}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {presences.map(({ employe, presence }) => (
-              <tr key={employe.id}>
-                <td className="border px-4 py-2">{employe.id}</td>
-                <td className="border px-4 py-2">{`${employe.first_name} ${employe.last_name}`}</td>
+      {/* Legend */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+          {[
+            { label: 'Présent', value: 'present', short: 'P' },
+            { label: 'Absent', value: 'absent', short: 'A' },
+            { label: 'Congé Payé', value: 'conge-paye', short: 'CP' },
+            { label: 'Congé Non Payé', value: 'conge-non-paye', short: 'CNP' },
+            { label: 'Repos', value: 'repos', short: 'R' },
+            { label: 'Continue', value: 'continue', short: 'CC' },
+          ].map(status => (
+            <div key={status.value} className={`flex items-center p-2 rounded ${getStatusColor(status.value)}`}>
+              <span className="text-sm font-medium">{status.short} - {status.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th scope="col" className="sticky left-16 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
                 {daysInMonth.map(day => (
-                  <td key={day} className="border px-2 py-1">
-                    <select
-                      value={presence.attendance_data[day] || ''}
-                      onChange={(e) => handleStatusChange(employe.id, day, e.target.value)}
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    >
-                      <option value="">-</option>
-                      <option value="present">P</option>
-                      <option value="absent">A</option>
-                      <option value="conge-paye">CP</option>
-                      <option value="conge-non-paye">CNP</option>
-                      <option value="repos">R</option>
-                      <option value="continue">CC</option>
-                    </select>
-                  </td>
+                  <th key={day} scope="col" className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">{day}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {presences.map(({ employe, presence }) => (
+                <tr key={employe.id}>
+                  <td className="sticky left-0 z-10 bg-white px-4 py-2 text-sm text-gray-900">{employe.id}</td>
+                  <td className="sticky left-16 z-10 bg-white px-4 py-2 text-sm font-medium text-gray-900">{`${employe.first_name} ${employe.last_name}`}</td>
+                  {daysInMonth.map(day => (
+                    <td key={day} className="px-1 py-1 text-sm">
+                      <select
+                        value={presence.attendance_data[day] || ''}
+                        onChange={(e) => handleStatusChange(employe.id, day, e.target.value)}
+                        className={`w-full border-0 rounded py-1 text-sm focus:ring-1 focus:ring-green-500 ${getStatusColor(presence.attendance_data[day])}`}
+                      >
+                        <option value="">-</option>
+                        <option value="present">P</option>
+                        <option value="absent">A</option>
+                        <option value="conge-paye">CP</option>
+                        <option value="conge-non-paye">CNP</option>
+                        <option value="repos">R</option>
+                        <option value="continue">CC</option>
+                      </select>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
