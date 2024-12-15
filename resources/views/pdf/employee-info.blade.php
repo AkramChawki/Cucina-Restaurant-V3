@@ -1,55 +1,69 @@
-<!-- resources/views/pdfs/employee-info.blade.php -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <title>FICHE INDIVIDUELLE DE RENSEIGNEMENT DU PERSONNEL</title>
     <style>
+        @page {
+            margin: 20px;
+            size: A4 portrait;
+        }
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 40px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 15px;
+            font-size: 12px;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+        }
+        .header img {
+            height: 45px;
+            width: auto;
         }
         .title {
             text-align: center;
             font-weight: bold;
-            font-size: 16px;
-            margin: 20px 0;
-            padding: 10px;
+            font-size: 14px;
+            margin: 10px 0;
+            padding: 5px;
             background-color: aqua;
         }
         .section {
-            margin: 15px 0;
+            margin: 10px 0;
         }
         .field {
-            margin: 10px 0;
+            margin: 5px 0;
         }
         .photos {
             display: flex;
             justify-content: space-between;
-            margin: 20px 0;
+            margin: 15px 0;
+            gap: 10px;
         }
         .photo {
-            width: 30%;
+            flex: 1;
             text-align: center;
         }
         .photo img {
-            max-width: 100%;
-            height: auto;
+            width: 180px;
+            height: 120px;
+            object-fit: cover;
         }
         .photo-label {
-            font-size: 12px;
-            margin-top: 5px;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        .addresses {
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" alt="Logo" height="60">
+        <img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" alt="Logo">
     </div>
 
     <div class="title">Cucina Napoli</div>
@@ -57,24 +71,24 @@
 
     <div class="section">
         <div class="field">
-            Nom et prénom : {{ $employee->first_name }} {{ $employee->last_name }}
+            <strong>Nom et prénom :</strong> {{ $employee->first_name }} {{ $employee->last_name }}
         </div>
 
         <div class="field">
-            Date de naissance : {{ $employee->DDN }}
+            <strong>Date de naissance :</strong> {{ $employee->DDN }}
         </div>
 
         <div class="field">
-            Situation matrimoniale : {{ ucfirst($employee->marital_status) }}
+            <strong>Situation matrimoniale :</strong> {{ ucfirst($employee->marital_status) }}
         </div>
         <div class="field">
-            Date d'embauche : {{ ucfirst($employee->embauche) }}
+            <strong>Date d'embauche :</strong> {{ ucfirst($employee->embauche) }}
         </div>
 
         <div class="addresses">
-            <div class="field">Adresses :</div>
-            <div class="field">Lieu de résidence : {{ $employee->address }}, {{ $employee->city }}, {{ $employee->country }}</div>
-            <div class="field">Contact téléphonique : {{ $employee->telephone }}</div>
+            <div class="field"><strong>Adresses :</strong></div>
+            <div class="field"><strong>Lieu de résidence :</strong> {{ $employee->address }}, {{ $employee->city }}, {{ $employee->country }}</div>
+            <div class="field"><strong>Contact téléphonique :</strong> {{ $employee->telephone }}</div>
         </div>
     </div>
 
