@@ -20,11 +20,20 @@ class LaboController extends Controller
 
     private function isRestInputRequired()
     {
+        if (in_array(request()->query('ficheId'), [6, 20])) {
+            return true;
+        }
         $tz = 'Africa/Casablanca';
         $now = Carbon::now($tz);
+        $currentTime = $now->timestamp;
         $startTime = $now->copy()->setTime(20, 0, 0);
-        $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
-        return $now->between($startTime, $endTime);
+        if ($now->hour < 3) {
+            $startTime->subDay();
+        }
+        $endTime = $startTime->copy()->addDay()->setTime(3, 0, 0);
+        $startTimestamp = $startTime->timestamp;
+        $endTimestamp = $endTime->timestamp;
+        return $currentTime >= $startTimestamp && $currentTime <= $endTimestamp;
     }
 
     public function store(Request $request)
