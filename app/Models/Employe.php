@@ -46,4 +46,14 @@ class Employe extends Model
         'restau' => 'required|string',
         'embauche' => 'required|date',
     ];
+    public function user()
+    {
+        return $this->hasOne(User::class);
+    }
+
+    // Helper method to get full name
+    public function getFullNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
 }

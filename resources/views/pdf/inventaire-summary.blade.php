@@ -159,7 +159,15 @@
 					</tr>
 					<tr>
 						<th>Inventaire par</th>
-						<td>{{$order->name}}</td>
+						<td>
+							@php
+								$user = App\Models\User::with('employe')->where('name', $order->name)->first();
+								$fullName = $user && $user->employe 
+									? $user->employe->first_name . ' ' . $user->employe->last_name 
+									: $order->name;
+							@endphp
+							{{$fullName}}
+						</td>
 					</tr>
 				</table>
 			</div>

@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'employe_id',
     ];
 
     /**
@@ -43,4 +44,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function employe()
+    {
+        return $this->belongsTo(Employe::class);
+    }
+
+    public function getFullNameAttribute()
+    {
+        return $this->employe 
+            ? $this->employe->first_name . ' ' . $this->employe->last_name 
+            : $this->name;
+    }
 }
