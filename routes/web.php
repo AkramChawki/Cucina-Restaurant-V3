@@ -5,7 +5,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RubriqueController;
 use App\Http\Controllers\CommandeCuisinierController;
 use App\Http\Controllers\LaboController;
-use App\Http\Controllers\MenageController;
 use App\Http\Controllers\InventaireCuisinierController;
 use App\Http\Controllers\NumberController;
 use App\Http\Controllers\RestaurantController;
@@ -20,9 +19,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/detailles', [HomeController::class, 'detailles'])->name('detailles');
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraison.index');
-    Route::get('/labo', [LaboController::class, 'index'])->name('labo.index');
-    Route::get('/menage', [MenageController::class, 'index'])->name('menage.index');
-    Route::get('/boisson', [BoissonController::class, 'index'])->name('boisson.index');
 
     Route::prefix('rubrique')->group(function () {
         Route::get('/{rubriqueTitle}', [RubriqueController::class, 'show'])->name('rubrique.show');
@@ -33,7 +29,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::get('/commander', [CommandeCuisinierController::class, 'create'])->name('commande-cuisinier.create');
         Route::post('/commander', [CommandeCuisinierController::class, 'store'])->name('commande-cuisinier.store');
         Route::post('/labo', [LaboController::class, 'store'])->name('labo.store');
-        Route::post('/menage', [MenageController::class, 'store'])->name('menage.store');
         Route::post('/boisson', [BoissonController::class, 'store'])->name('boisson.store');
     });
 
@@ -57,8 +52,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::get('/restaurant', [RestaurantController::class, 'show'])->name('restaurants.show');
     Route::post('/restaurant/{id}/toggle-visibility', [RestaurantController::class, 'toggleVisibility'])->name('restaurants.toggleVisibility');
     Route::post('/product/{id}/toggle-restaurant', [ProductController::class, 'toggleRestaurant'])->name('products.toggleRestaurant');
-
-    Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraisons.index');
 
     Route::get('/employes', [EmployeController::class, 'index'])->name('employes.employe');
 
@@ -87,8 +80,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/form', [AuditController::class, 'store'])->name('audit.store');
     });
 
-    Route::get('/labo', [LaboController::class, 'index'])->name('labo.index');
-    Route::get('/menage', [MenageController::class, 'index'])->name('menage.index');
 });
 
 require __DIR__ . '/auth.php';

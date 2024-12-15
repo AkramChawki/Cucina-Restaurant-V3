@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Labo;
 use App\Models\Livraison;
-use App\Models\Menage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -21,12 +20,10 @@ class DetaillesController extends Controller
                     ($livraison->restaurant_group === 'Ziraoui' ? ' (Ziraoui)' : '');
                 return $livraison;
             });
-        $menages = Menage::orderBy('created_at', 'desc')->get();
 
         return Inertia::render('Detaills', [
             'labos' => $labos,
             'livraisons' => $livraisons,
-            'menages' => $menages,
         ]);
     }
 }

@@ -19,7 +19,6 @@ class DeleteOldRecords extends Command
         'App\Models\Inventaire' => ['period' => 'months', 'value' => 3],
         'App\Models\Labo' => ['period' => 'weeks', 'value' => 2],
         'App\Models\Livraison' => ['period' => 'days', 'value' => 3],
-        'App\Models\Menage' => ['period' => 'weeks', 'value' => 2],
     ];
 
     public function handle()
@@ -73,9 +72,6 @@ class DeleteOldRecords extends Command
                 break;
             case 'Livraison':
                 $this->deleteFile('public/livraisons/' . $record->pdf);
-                break;
-            case 'Menage':
-                $this->deleteFile('public/menage/' . $record->pdf);
                 break;
         }
     }

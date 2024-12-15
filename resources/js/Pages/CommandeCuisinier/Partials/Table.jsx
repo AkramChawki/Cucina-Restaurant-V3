@@ -130,13 +130,11 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
 
         let endpoint = ficheId == 17
             ? '/commande-cuisinier/labo'
-            : ficheId == 19
-                ? '/commande-cuisinier/menage'
-                : ficheId == 6
-                    ? '/BL/commander'
-                    : ficheId == 20
-                        ? '/commande-cuisinier/boisson'
-                        : '/commande-cuisinier/commander';
+            : ficheId == 6
+                ? '/BL/commander'
+                : ficheId == 20
+                    ? '/commande-cuisinier/boisson'
+                    : '/commande-cuisinier/commander';
 
         try {
             await router.post(endpoint, filteredData);
@@ -418,8 +416,8 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                 type="submit"
                                                 disabled={isSubmitting || (ficheId == 6 && !isAllowedDay)}
                                                 className={`flex-1 ${isSubmitting || (ficheId == 6 && !isAllowedDay)
-                                                        ? 'bg-gray-400 cursor-not-allowed'
-                                                        : 'bg-green-600 hover:bg-green-700'
+                                                    ? 'bg-gray-400 cursor-not-allowed'
+                                                    : 'bg-green-600 hover:bg-green-700'
                                                     } text-white py-3 rounded-lg font-semibold transition-colors`}
                                             >
                                                 {isSubmitting ? 'En cours...' : 'Commander'}
