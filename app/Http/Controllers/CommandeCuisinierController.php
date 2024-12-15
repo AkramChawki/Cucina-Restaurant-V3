@@ -20,16 +20,23 @@ class CommandeCuisinierController extends Controller
         $tz = 'Africa/Casablanca';
         $now = Carbon::now($tz);
 
-        // Set start time to 8 PM (20:00) of current day
-        $startTime = $now->copy()->setTime(20, 0, 0);
+        // For products that always require rest
+        if (request()->query('ficheId') == 20 || request()->query('ficheId') == 6) {
+            return true;
+        }
 
-        // Set end time to 3 AM (03:00) of next day
-        $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
+        // If current time is after midnight but before 3 AM
+        if ($now->hour < 3) {
+            $startTime = $now->copy()->subDay()->setTime(20, 0, 0);
+            $endTime = $now->copy()->setTime(3, 0, 0);
+        } else {
+            // If current time is between 20:00 and 23:59
+            $startTime = $now->copy()->setTime(20, 0, 0);
+            $endTime = $now->copy()->addDay()->setTime(3, 0, 0);
+        }
 
         // Check if current time is between start and end time
-        $requiresRest = $now->between($startTime, $endTime);
-
-        return $requiresRest;
+        return $now->between($startTime, $endTime);
     }
 
     public function index(Request $request)
