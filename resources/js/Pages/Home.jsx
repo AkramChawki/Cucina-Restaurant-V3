@@ -2,6 +2,13 @@ import { Head, Link, usePage } from "@inertiajs/react";
 
 function Home({ rubriques }) {
     const { auth } = usePage().props;
+    
+    const formatRubriqueTitle = (title) => {
+        if (title === "Restaurant") {
+            return "Gestion Restaurant";
+        }
+        return `Commande ${title}`;
+    };
 
     return (
         <>
@@ -99,7 +106,7 @@ function Home({ rubriques }) {
                                         href="#"
                                         className="my-2 text-5xl font-bold text-black"
                                     >
-                                        {rubrique.title}
+                                        {formatRubriqueTitle(rubrique.title)}
                                     </a>
                                     <Link
                                         href={`/rubrique/${rubrique.title}`}
