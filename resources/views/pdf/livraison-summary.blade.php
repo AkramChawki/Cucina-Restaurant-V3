@@ -31,7 +31,7 @@
     </style>
 </head>
 <body>
-    <h1>Commande Pour - {{ $type }}</h1>
+    <h1>{{ $type }}</h1>
     <p>Date: {{ now()->toDateString() }}</p>
 
     @foreach ($data as $restau)
