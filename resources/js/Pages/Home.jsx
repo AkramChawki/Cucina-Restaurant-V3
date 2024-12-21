@@ -189,6 +189,29 @@ function Home({ rubriques }) {
                         </div>
                     </div>
                 )}
+                {auth.user.role.includes("Fiche-controle") && (
+                    <div className="relative flex">
+                        <img
+                            src="/images/restau/white.jpeg"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-center object-cover"
+                        />
+                        <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                            <a
+                                href="#"
+                                className="my-2 text-5xl font-bold text-black"
+                            >
+                                Fiche de Controle
+                            </a>
+                            <Link
+                                href="/fiche-controle"
+                                className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                            >
+                                Accéder
+                            </Link>
+                        </div>
+                    </div>
+                )}
                 {auth.user.role.includes("Inventaire") && (
                     <div className="relative flex">
                         <img
