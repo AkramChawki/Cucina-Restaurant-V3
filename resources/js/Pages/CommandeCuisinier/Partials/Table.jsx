@@ -71,32 +71,17 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
             setData('products', updatedProducts);
             return;
         }
-
+    
         const numValue = parseFloat(value);
         if (isNaN(numValue) || numValue < 0) return;
-
+    
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
             if (!product || product.rest === '' || product.rest === undefined) return;
         }
-
-        // Find product CR value
-        let productCR = null;
-        for (const category of categories) {
-            const product = category.products.find(p => p.id === productId);
-            if (product && product.cr) {
-                productCR = product.cr;
-                break;
-            }
-        }
-
-        let adjustedValue = value;
-        if (productCR) {
-            adjustedValue = calculateCRQuantity(numValue, productCR);
-        }
-
+    
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: adjustedValue.toString() } : product
+            product.id === productId ? { ...product, qty: value } : product
         );
         setData('products', updatedProducts);
     };
@@ -136,19 +121,39 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        
         const filteredProducts = data.products
             .filter(product => {
                 const qty = parseFloat(product.qty);
                 return !isNaN(qty) && qty > 0;
             })
-            .map(product => ({
-                product_id: product.id,
-                qty: parseFloat(product.qty),
-                ...(requiresRest && { rest: parseFloat(product.rest) })
-            }));
-
+            .map(product => {
+                // Find product CR value
+                let productCR = null;
+                for (const category of categories) {
+                    const foundProduct = category.products.find(p => p.id === product.id);
+                    if (foundProduct && foundProduct.cr) {
+                        productCR = foundProduct.cr;
+                        break;
+                    }
+                }
+    
+                const qty = parseFloat(product.qty);
+                let adjustedQty = qty;
+                
+                if (productCR) {
+                    adjustedQty = calculateCRQuantity(qty, productCR);
+                }
+    
+                return {
+                    product_id: product.id,
+                    qty: adjustedQty,
+                    ...(requiresRest && { rest: parseFloat(product.rest) })
+                };
+            });
+    
         const filteredData = { ...data, products: filteredProducts };
-
+    
         let endpoint = ficheId == 17
             ? '/commande-cuisinier/labo'
             : ficheId == 6
@@ -156,7 +161,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                 : ficheId == 20
                     ? '/commande-cuisinier/boisson'
                     : '/commande-cuisinier/commander';
-
+    
         try {
             await router.post(endpoint, filteredData);
         } catch (error) {
