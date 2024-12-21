@@ -13,6 +13,7 @@ use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\BoissonController;
+use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
 
@@ -87,6 +88,15 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
             ->name('produit-non-conforme.form');
         Route::post('/form', [ProduitNonConformeController::class, 'store'])
             ->name('produit-non-conforme.store');
+    });
+
+    Route::prefix('fiche-controle')->middleware(['auth'])->group(function () {
+        Route::get('/', [FicheControleController::class, 'index'])
+            ->name('fiche-controle.index');
+        Route::get('/form', [FicheControleController::class, 'showForm'])
+            ->name('fiche-controle.form');
+        Route::post('/form', [FicheControleController::class, 'store'])
+            ->name('fiche-controle.store');
     });
 
 });
