@@ -64,9 +64,18 @@ export default function RestaurantForm() {
 
     function submit(e) {
         e.preventDefault();
+        
+        console.log('Submitting form with data:', data); // Debug log
+    
         post("/fiche-controle/form", {
             preserveState: true,
             preserveScroll: true,
+            onSuccess: () => {
+                console.log('Form submitted successfully');
+            },
+            onError: (errors) => {
+                console.error('Form submission errors:', errors);
+            }
         });
     }
 

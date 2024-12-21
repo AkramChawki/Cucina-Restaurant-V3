@@ -32,44 +32,42 @@ class FicheControleController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'date' => 'required|date',
-            'restau' => 'required|string|max:255',
-            'type' => 'required|in:laboratoire,restaurant',
-            'postes' => 'required_if:type,laboratoire|array',
-            'salle' => 'required_if:type,restaurant|array',
-            'poste_pizza' => 'required_if:type,restaurant|array',
-            'toilette' => 'required_if:type,restaurant|array',
-            'cuisine' => 'required_if:type,restaurant|array',
-            'lavabo_clients' => 'required_if:type,restaurant|array',
-            'support_mural_salle' => 'required_if:type,restaurant|array',
-            'support_mural_cuisine' => 'required_if:type,restaurant|array',
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'date' => 'required|date',
+        'restau' => 'required|string|max:255',
+        'type' => 'required|in:laboratoire,restaurant',
+    ]);
+
+    try {
+        // First create with temporary PDF
+        $validated['pdf'] = 'temp.pdf';
+        $data = $request->except(['name', 'date', 'restau', 'type']);
+        
+        $ficheControle = FicheControle::create([
+            'name' => $validated['name'],
+            'date' => $validated['date'],
+            'restau' => $validated['restau'],
+            'type' => $validated['type'],
+            'data' => $data,
+            'pdf' => 'temp.pdf', // Add temporary PDF value
         ]);
 
-        try {
-            // Store all form data in the data JSON field
-            $data = $request->except(['name', 'date', 'restau', 'type']);
-            
-            $ficheControle = FicheControle::create([
-                'name' => $validated['name'],
-                'date' => $validated['date'],
-                'restau' => $validated['restau'],
-                'type' => $validated['type'],
-                'data' => $data,
-            ]);
+        // Generate and update PDF
+        $pdfName = $this->generatePdfName($ficheControle);
+        $this->savePdf($ficheControle, $pdfName);
 
-            // Generate PDF
-            $pdfName = $this->generatePdfName($ficheControle);
-            $this->savePdf($ficheControle, $pdfName);
+        // Update with correct PDF name
+        $ficheControle->pdf = $pdfName;
+        $ficheControle->save();
 
-            return redirect("/")->with('success', 'Fiche de contrôle créée avec succès.');
-        } catch (\Exception $e) {
-            Log::error('Failed to create fiche de controle', ['error' => $e->getMessage()]);
-            return redirect()->back()->with('error', 'Échec de l\'enregistrement.');
-        }
+        return redirect("/")->with('success', 'Fiche de contrôle créée avec succès.');
+    } catch (\Exception $e) {
+        Log::error('Failed to create fiche de controle', ['error' => $e->getMessage()]);
+        return redirect()->back()->with('error', 'Échec de l\'enregistrement.');
     }
+}
 
     private function generatePdfName($ficheControle)
     {
