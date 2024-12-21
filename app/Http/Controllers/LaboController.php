@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CuisinierProduct;
 use App\Models\Labo;
 use App\Traits\PdfGeneratorTrait;
 use Carbon\Carbon;
@@ -16,6 +17,18 @@ class LaboController extends Controller
     {
         $labos = Labo::orderBy('created_at', 'desc')->get();
         return inertia('Labo', ['labos' => $labos]);
+    }
+
+    private function calculateCRQuantity($qty, $cr) 
+    {
+        if (!$cr) return $qty;
+        
+        if ($qty <= $cr) {
+            return $cr;
+        }
+        
+        $multiplier = ceil($qty / $cr);
+        return $cr * $multiplier;
     }
 
     private function isRestInputRequired()
@@ -78,10 +91,20 @@ class LaboController extends Controller
 
         $validated = $request->validate($validationRules);
 
-        $detail = collect($validated['products'])->map(function ($item) {
+        // Fetch all products with their CR values
+        $products = CuisinierProduct::whereIn('id', collect($validated['products'])->pluck('product_id'))
+                                   ->get()
+                                   ->keyBy('id');
+
+        $detail = collect($validated['products'])->map(function ($item) use ($products) {
+            $product = $products[$item['product_id']] ?? null;
+            $qty = $item['qty'];
+            if ($product && $product->cr) {
+                $qty = $this->calculateCRQuantity($qty, $product->cr);
+            }
             return [
                 'product_id' => $item['product_id'],
-                'qty' => $item['qty']
+                'qty' => $qty
             ];
         })->toArray();
 

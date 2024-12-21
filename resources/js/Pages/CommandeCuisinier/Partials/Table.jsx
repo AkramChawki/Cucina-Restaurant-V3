@@ -51,6 +51,18 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
         }
     };
 
+    const calculateCRQuantity = (qty, cr) => {
+        if (!cr) return qty;
+
+        const numQty = parseFloat(qty);
+        if (numQty <= cr) {
+            return cr;
+        }
+
+        const multiplier = Math.ceil(numQty / cr);
+        return cr * multiplier;
+    };
+
     const handleQtyChange = (productId, value) => {
         if (value === '') {
             const updatedProducts = data.products.map(product =>
@@ -59,14 +71,32 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
             setData('products', updatedProducts);
             return;
         }
+
         const numValue = parseFloat(value);
         if (isNaN(numValue) || numValue < 0) return;
+
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
             if (!product || product.rest === '' || product.rest === undefined) return;
         }
+
+        // Find product CR value
+        let productCR = null;
+        for (const category of categories) {
+            const product = category.products.find(p => p.id === productId);
+            if (product && product.cr) {
+                productCR = product.cr;
+                break;
+            }
+        }
+
+        let adjustedValue = value;
+        if (productCR) {
+            adjustedValue = calculateCRQuantity(numValue, productCR);
+        }
+
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: value } : product
+            product.id === productId ? { ...product, qty: adjustedValue.toString() } : product
         );
         setData('products', updatedProducts);
     };
@@ -369,8 +399,10 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                                 </label>
                                                                 <input
                                                                     type="number"
-                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' ||
-                                                                        data.products.find(p => p.id === product.id)?.rest === undefined)
+                                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-center ${requiresRest && (
+                                                                        data.products.find(p => p.id === product.id)?.rest === '' ||
+                                                                        data.products.find(p => p.id === product.id)?.rest === undefined
+                                                                    )
                                                                         ? 'bg-gray-100 cursor-not-allowed'
                                                                         : ''
                                                                         }`}
@@ -380,12 +412,19 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                                     onChange={(e) => handleQtyChange(product.id, e.target.value)}
                                                                     onWheel={handleInputInteraction}
                                                                     onTouchStart={handleInputInteraction}
-                                                                    disabled={requiresRest && (data.products.find(p => p.id === product.id)?.rest === '' ||
-                                                                        data.products.find(p => p.id === product.id)?.rest === undefined)}
+                                                                    disabled={requiresRest && (
+                                                                        data.products.find(p => p.id === product.id)?.rest === '' ||
+                                                                        data.products.find(p => p.id === product.id)?.rest === undefined
+                                                                    )}
                                                                 />
                                                                 <div className="text-center text-sm text-gray-500 mt-1">
                                                                     unité ({product.unite})
                                                                 </div>
+                                                                {product.cr && (
+                                                                    <div className="text-center text-xs text-gray-500 mt-1">
+                                                                        Conditionnement requis: {product.cr}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>

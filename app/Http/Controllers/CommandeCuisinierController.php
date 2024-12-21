@@ -6,6 +6,7 @@ use App\Models\CuisinierOrder;
 use App\Models\Restaurant;
 use App\Models\Fiche;
 use App\Models\CuisinierCategory;
+use App\Models\CuisinierProduct;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
@@ -14,6 +15,18 @@ use Carbon\Carbon;
 class CommandeCuisinierController extends Controller
 {
     use PdfGeneratorTrait;
+
+    private function calculateCRQuantity($qty, $cr) 
+    {
+        if (!$cr) return $qty;
+        
+        if ($qty <= $cr) {
+            return $cr;
+        }
+        
+        $multiplier = ceil($qty / $cr);
+        return $cr * $multiplier;
+    }
 
     private function isRestInputRequired()
     {
@@ -108,11 +121,9 @@ class CommandeCuisinierController extends Controller
     {
         set_time_limit(500);
         $requiresRest = $this->isRestInputRequired();
-
-
+        
         try {
             $order = $this->createOrder($request, $requiresRest);
-
             if ($order) {
                 $pdfName = $this->generatePdfName($order);
                 $this->savePdf($order, $pdfName);
@@ -128,7 +139,6 @@ class CommandeCuisinierController extends Controller
 
     private function createOrder(Request $request, $requiresRest)
     {
-
         $validationRules = [
             'name' => 'required|string',
             'restau' => 'required|string',
@@ -143,10 +153,16 @@ class CommandeCuisinierController extends Controller
 
         $validated = $request->validate($validationRules);
 
-        $detail = collect($validated['products'])->map(function ($item) {
+        // Fetch all products with their CR values
+        $products = CuisinierProduct::whereIn('id', collect($validated['products'])->pluck('product_id'))
+                                   ->get()
+                                   ->keyBy('id');
+
+        $detail = collect($validated['products'])->map(function ($item) use ($products) {
+            $product = $products[$item['product_id']];
             return [
                 'product_id' => $item['product_id'],
-                'qty' => $item['qty']
+                'qty' => $this->calculateCRQuantity($item['qty'], $product->cr)
             ];
         })->toArray();
 
@@ -170,7 +186,6 @@ class CommandeCuisinierController extends Controller
         $order->detail = $detail;
         $order->rest = $rest;
         $order->save();
-
 
         return $order;
     }

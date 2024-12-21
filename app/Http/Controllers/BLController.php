@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BL;
+use App\Models\CuisinierProduct;
 use App\Traits\PdfGeneratorTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -11,6 +12,18 @@ use Inertia\Inertia;
 class BLController extends Controller
 {
     use PdfGeneratorTrait;
+
+    private function calculateCRQuantity($qty, $cr) 
+    {
+        if (!$cr) return $qty;
+        
+        if ($qty <= $cr) {
+            return $cr;
+        }
+        
+        $multiplier = ceil($qty / $cr);
+        return $cr * $multiplier;
+    }
 
     private function isRestInputRequired()
     {
@@ -50,10 +63,20 @@ class BLController extends Controller
 
         $validated = $request->validate($validationRules);
 
-        $detail = collect($validated['products'])->map(function ($item) {
+        // Fetch all products with their CR values
+        $products = CuisinierProduct::whereIn('id', collect($validated['products'])->pluck('product_id'))
+                                   ->get()
+                                   ->keyBy('id');
+
+        $detail = collect($validated['products'])->map(function ($item) use ($products) {
+            $product = $products[$item['product_id']] ?? null;
+            $qty = $item['qty'];
+            if ($product && $product->cr) {
+                $qty = $this->calculateCRQuantity($qty, $product->cr);
+            }
             return [
                 'product_id' => $item['product_id'],
-                'qty' => $item['qty']
+                'qty' => $qty
             ];
         })->toArray();
 
@@ -68,10 +91,10 @@ class BLController extends Controller
             return null;
         }
 
-        $order = new BL();  // or new Boisson() for BoissonController
+        $order = new BL();
         $order->name = $validated['name'];
         $order->restau = $validated['restau'];
-        $order->detail = $detail;  // No json_encode needed due to casting
+        $order->detail = $detail;
         $order->rest = $rest;
         $order->save();
 
