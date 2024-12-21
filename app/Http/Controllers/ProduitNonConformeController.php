@@ -16,13 +16,13 @@ class ProduitNonConformeController extends Controller
     public function index()
     {
         $restaurants = Restaurant::all();
-        return Inertia::render('ProduitNonConforme/Index', ["restaurants" => $restaurants]);
+        return Inertia::render('PNC/PNC', ["restaurants" => $restaurants]);
     }
 
     public function showForm(Request $request)
     {
         $restau = $request->query('restau');
-        return Inertia::render('ProduitNonConforme/Form', ["restau" => $restau]);
+        return Inertia::render('PNC/PNCform', ["restau" => $restau]);
     }
 
     public function store(Request $request)
