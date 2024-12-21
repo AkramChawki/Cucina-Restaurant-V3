@@ -81,9 +81,12 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/form', [AuditController::class, 'store'])->name('audit.store');
     });
     Route::prefix('produit-non-conforme')->group(function () {
-        Route::get('/', [ProduitNonConformeController::class, 'index'])->name('produit-non-conforme.index');
-        Route::get('/form', [ProduitNonConformeController::class, 'showForm'])->name('produit-non-conforme.form');
-        Route::post('/form', [ProduitNonConformeController::class, 'store'])->name('produit-non-conforme.store');
+        Route::get('/', [ProduitNonConformeController::class, 'index'])
+            ->name('produit-non-conforme.index');
+        Route::get('/form', [ProduitNonConformeController::class, 'showForm'])
+            ->name('produit-non-conforme.form');
+        Route::post('/form', [ProduitNonConformeController::class, 'store'])
+            ->name('produit-non-conforme.store');
     });
 
 });

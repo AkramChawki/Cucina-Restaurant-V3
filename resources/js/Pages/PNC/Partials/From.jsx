@@ -28,6 +28,12 @@ export default function Form() {
         post("/produit-non-conforme/form", {
             preserveState: true,
             preserveScroll: true,
+            onSuccess: () => {
+                console.log('Form submitted successfully');
+            },
+            onError: (errors) => {
+                console.error('Form submission errors:', errors);
+            }
         });
     }
 

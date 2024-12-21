@@ -7,6 +7,8 @@ use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
+use Illuminate\Support\Facades\Log;
+
 
 class ProduitNonConformeController extends Controller
 {
@@ -25,28 +27,33 @@ class ProduitNonConformeController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'date' => 'required|date',
-            'restau' => 'required|string|max:255',
-            'type' => 'required|string|in:cuisinier,pizzaiolo',
-            'produit' => 'required|string|max:255',
-            'date_production' => 'required|date',
-            'probleme' => 'required|string|max:255',
-        ]);
+{
+    Log::info('Received form submission', $request->all());
 
-        try {
-            $produit = ProduitNonConforme::create($validated);
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'date' => 'required|date',
+        'restau' => 'required|string|max:255',
+        'type' => 'required|string|in:cuisinier,pizzaiolo',
+        'produit' => 'required|string|max:255',
+        'date_production' => 'required|date',
+        'probleme' => 'required|string|max:255',
+    ]);
 
-            $pdfName = $this->generatePdfName($produit);
-            $this->savePdf($produit, $pdfName);
+    try {
+        $produit = ProduitNonConforme::create($validated);
+        
+        Log::info('Created product record', ['id' => $produit->id]);
 
-            return redirect("/")->with('success', 'Produit non conforme enregistré avec succès.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Échec de l\'enregistrement.');
-        }
+        $pdfName = $this->generatePdfName($produit);
+        $this->savePdf($produit, $pdfName);
+
+        return redirect("/")->with('success', 'Produit non conforme enregistré avec succès.');
+    } catch (\Exception $e) {
+        Log::error('Failed to create product record', ['error' => $e->getMessage()]);
+        return redirect()->back()->with('error', 'Échec de l\'enregistrement.');
     }
+}
 
     private function generatePdfName($produit)
     {
