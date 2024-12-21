@@ -7,9 +7,7 @@
     <title>Invoice</title>
     <style>
         @media print {
-            @page {
-                size: A3;
-            }
+            @page { size: A3; }
         }
 
         ul {
@@ -28,21 +26,16 @@
             border-collapse: collapse;
         }
 
-        table,
-        table th,
-        table td {
+        table, table th, table td {
             border: 1px solid silver;
         }
 
-        table th,
-        table td {
+        table th, table td {
             text-align: right;
             padding: 8px;
         }
 
-        h1,
-        h4,
-        p {
+        h1, h4, p {
             margin: 0;
         }
 
@@ -72,11 +65,11 @@
             margin-bottom: 20px;
         }
 
-        .inv-header> :nth-child(1) {
+        .inv-header > :nth-child(1) {
             flex: 2;
         }
 
-        .inv-header> :nth-child(2) {
+        .inv-header > :nth-child(2) {
             flex: 1;
         }
 
@@ -97,31 +90,6 @@
 
         .inv-body {
             margin-bottom: 30px;
-        }
-
-        .signature-section {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 50px;
-            padding: 20px;
-        }
-
-        .signature-box {
-            flex: 1;
-            margin: 0 15px;
-            text-align: center;
-        }
-
-        .signature-line {
-            border: 1px solid silver;
-            height: 100px;
-            margin: 10px 0;
-        }
-
-        .signature-label {
-            font-size: 14px;
-            color: #333;
-            margin-top: 5px;
         }
     </style>
 </head>
@@ -198,8 +166,6 @@
                     @endif
                     <th>Qty</th>
                     <th>Unite</th>
-                    <th>Envoie</th>
-                    <th>Reception</th>
                 </thead>
                 <tbody>
                     @foreach ($order->products() as $p)
@@ -215,27 +181,10 @@
                         @endif
                         <td>{{ $p->qty }}</td>
                         <td>{{ $p->unite }}</td>
-                        <td></td>
-                        <td></td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
-
-        <div class="signature-section">
-            <div class="signature-box">
-                <div class="signature-line"></div>
-                <div class="signature-label">Signature de l'expediteur</div>
-            </div>
-            <div class="signature-box">
-                <div class="signature-line"></div>
-                <div class="signature-label">Signature du transporteur</div>
-            </div>
-            <div class="signature-box">
-                <div class="signature-line"></div>
-                <div class="signature-label">Signature du recepteur</div>
-            </div>
         </div>
     </div>
 </body>

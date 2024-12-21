@@ -7,6 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
         }
         table {
             width: 100%;
@@ -28,6 +29,27 @@
             max-width: 50px;
             max-height: 50px;
         }
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            padding: 20px;
+        }
+        .signature-box {
+            flex: 1;
+            margin: 0 15px;
+            text-align: center;
+        }
+        .signature-line {
+            border: 1px solid silver;
+            height: 100px;
+            margin: 10px 0;
+        }
+        .signature-label {
+            font-size: 14px;
+            color: #333;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +68,8 @@
                         <th>Rest</th>
                     @endif
                     <th>Unit</th>
+                    <th>Envoie</th>
+                    <th>Reception</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,10 +87,27 @@
                             <td>{{ $product['has_rest'] ? $product['rest'] : '-' }}</td>
                         @endif
                         <td>{{ $product['unite'] }}</td>
+                        <td></td>
+                        <td></td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Signature de l'expediteur</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Signature du transporteur</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Signature du recepteur</div>
+            </div>
+        </div>
     @endforeach
 </body>
 </html>
