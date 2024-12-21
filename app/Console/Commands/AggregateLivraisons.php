@@ -39,7 +39,7 @@ class AggregateLivraisons extends Command
         if ($now->hour == 3 && $now->minute == 00) {
             $startDate = Carbon::yesterday('Africa/Casablanca')->setTime(16, 30, 0);
             $endDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
-        } elseif ($now->hour == 16 && $now->minute == 30) {
+        } elseif ($now->hour == 16 && $now->minute == 00) {
             $startDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
             $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 30, 0);
         }
