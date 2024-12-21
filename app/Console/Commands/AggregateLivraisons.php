@@ -6,14 +6,30 @@ use Illuminate\Console\Command;
 use App\Models\CuisinierOrder;
 use App\Models\CuisinierProduct;
 use App\Models\Livraison;
+use App\Models\BL;
+use App\Models\Labo;
 use Carbon\Carbon;
 
 class AggregateLivraisons extends Command
 {
     protected $signature = 'livraisons:aggregate';
-    protected $description = 'Aggregate yesterday\'s orders into livraisons and send summary email';
+    protected $description = 'Aggregate orders into livraisons by restaurant and type';
 
-    private $validTypes = ["MALAK", "SALAH", "HIBA", "SABAH", "NAJIB"];
+    private $validTypes = [
+        'BL Economat',
+        'BL Poisson',
+        'BL Labo',
+        'BL Viande',
+        'BL Sauces',
+        'BL Boite Pizza',
+        'BL Arancini et Ravioli',
+        'BL Dessert',
+        'BL Charcuterie et frommage',
+        'BL Legume et jus',
+        'BL Pate a pizza',
+        'BL Conserve et pates'
+    ];
+
     private $summaryData = [];
 
     public function handle()
@@ -28,107 +44,105 @@ class AggregateLivraisons extends Command
             $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 30, 0);
         }
 
-        $orders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+        // Get orders from all sources
+        $cuisinierOrders = CuisinierOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+        $blOrders = BL::whereBetween('created_at', [$startDate, $endDate])->get();
+        $laboOrders = Labo::whereBetween('created_at', [$startDate, $endDate])->get();
 
-        // Separate aggregation for Ziraoui and other restaurants
-        $aggregatedDataZiraoui = array_fill_keys($this->validTypes, []);
-        $aggregatedDataOthers = array_fill_keys($this->validTypes, []);
-
-        foreach ($orders as $order) {
-            $restau = $order->restau;
-
-            if (is_null($restau)) {
-                continue;
-            }
-
-            // Check if restaurant contains "Ziraoui"
-            $isZiraoui = str_contains($restau, 'Ziraoui');
-
-            foreach ($order->detail as $item) {
-                $productId = $item['product_id'];
-                $qty = (int)$item['qty'];
-                $rest = null;
-                
-                if ($order->rest) {
-                    $restItem = collect($order->rest)->firstWhere('product_id', $productId);
-                    if ($restItem) {
-                        $rest = (int)$restItem['qty'];
-                    }
-                }
-            
-                $product = CuisinierProduct::find($productId);
-            
-                if ($product && in_array($product->type, $this->validTypes)) {
-                    $type = $product->type;
-                    $targetAggregation = $isZiraoui ? $aggregatedDataZiraoui : $aggregatedDataOthers;
-            
-                    if (!isset($targetAggregation[$type][$restau][$productId])) {
-                        $targetAggregation[$type][$restau][$productId] = [
-                            'designation' => $product->designation,
-                            'qty' => 0,
-                            'rest' => 0,
-                            'image' => $product->image,
-                            'unite' => $product->unite,
-                            'has_rest' => false
-                        ];
-                    }
-            
-                    $targetAggregation[$type][$restau][$productId]['qty'] += $qty;
-                    if ($rest !== null) {
-                        $targetAggregation[$type][$restau][$productId]['rest'] += $rest;
-                        $targetAggregation[$type][$restau][$productId]['has_rest'] = true;
-                    }
-            
-                    if ($isZiraoui) {
-                        $aggregatedDataZiraoui = $targetAggregation;
-                    } else {
-                        $aggregatedDataOthers = $targetAggregation;
-                    }
-                }
-            }
-        }
-
-        // Process Ziraoui data if not empty
-        if (!empty(array_filter($aggregatedDataZiraoui))) {
-            $this->processAggregatedData($aggregatedDataZiraoui, $startDate, 'Ziraoui');
+        // Initialize aggregated data per restaurant
+        $restaurants = ['Anoual', 'Palmier', 'To Go', 'Ziraoui'];
+        $aggregatedData = [];
+        foreach ($restaurants as $restaurant) {
+            $aggregatedData[$restaurant] = array_fill_keys($this->validTypes, []);
         }
         
-        // Process other restaurants data if not empty
-        if (!empty(array_filter($aggregatedDataOthers))) {
-            $this->processAggregatedData($aggregatedDataOthers, $startDate, 'Others');
+        // Special handling for Labo (no restaurant)
+        $aggregatedData['Labo'] = array_fill_keys($this->validTypes, []);
+
+        // Process each type of order
+        foreach ($cuisinierOrders as $order) {
+            if ($order->restau) {
+                $this->processOrder($order, $aggregatedData[$order->restau]);
+            }
+        }
+
+        foreach ($blOrders as $order) {
+            if ($order->restau) {
+                $this->processOrder($order, $aggregatedData[$order->restau]);
+            }
+        }
+
+        foreach ($laboOrders as $order) {
+            $this->processOrder($order, $aggregatedData['Labo']);
+        }
+
+        // Generate livraisons for each restaurant
+        foreach ($aggregatedData as $restaurant => $typeData) {
+            if (!empty(array_filter($typeData))) {
+                $this->processAggregatedData($typeData, $startDate, $restaurant);
+            }
         }
     }
 
-    private function processAggregatedData($aggregatedData, $startDate, $group)
+    private function processOrder($order, &$aggregatedData)
     {
-        foreach ($aggregatedData as $type => $restaus) {
-            if (!empty($restaus)) {
-                $formattedData = [];
-                foreach ($restaus as $restau => $products) {
-                    $restauProducts = [];
-                    foreach ($products as $productId => $data) {
-                        $restauProducts[] = [
-                            'product_id' => $productId,
-                            'designation' => $data['designation'] ?? 'Unknown Product',
-                            'qty' => (string)$data['qty'],
-                            'rest' => (string)($data['rest'] ?? 0),
-                            'has_rest' => $data['has_rest'] ?? false,
-                            'image' => $data['image'] ?? null,
-                            'unite' => $data['unite'] ?? null
-                        ];
-                    }
-                    $formattedData[] = [
-                        'restau' => $restau,
-                        'products' => $restauProducts
+        $isLaboOrder = $order instanceof Labo;
+
+        foreach ($order->detail as $item) {
+            $productId = $item['product_id'];
+            $qty = (int)$item['qty'];
+            
+            $product = CuisinierProduct::find($productId);
+        
+            if ($product && in_array($product->type, $this->validTypes)) {
+                $type = $product->type;
+
+                if ($isLaboOrder) {
+                    $type = 'BL Labo';
+                }
+        
+                if (!isset($aggregatedData[$type][$productId])) {
+                    $aggregatedData[$type][$productId] = [
+                        'designation' => $product->designation,
+                        'qty' => 0,
+                        'image' => $product->image,
+                        'unite' => $product->unite
                     ];
                 }
+        
+                $aggregatedData[$type][$productId]['qty'] += $qty;
+            }
+        }
+    }
+
+    private function processAggregatedData($aggregatedData, $startDate, $restaurant)
+    {
+        foreach ($aggregatedData as $type => $products) {
+            if (!empty($products)) {
+                $formattedData = [];
+                $productList = [];
+
+                foreach ($products as $productId => $data) {
+                    $productList[] = [
+                        'product_id' => $productId,
+                        'designation' => $data['designation'],
+                        'qty' => (string)$data['qty'],
+                        'image' => $data['image'],
+                        'unite' => $data['unite']
+                    ];
+                }
+                
+                $formattedData[] = [
+                    'restau' => $restaurant,
+                    'products' => $productList
+                ];
 
                 if (!in_array($type, $this->validTypes)) {
                     $this->error("Invalid type: $type. Skipping this entry.");
                     continue;
                 }
 
-                $pdfUrl = $this->generatePdfForType($type, $formattedData, $group);
+                $pdfUrl = $this->generatePdfForType($type, $formattedData, $restaurant);
 
                 try {
                     $livraison = Livraison::create([
@@ -136,40 +150,26 @@ class AggregateLivraisons extends Command
                         'type' => $type,
                         'data' => $formattedData,
                         'pdf_url' => $pdfUrl,
-                        'restaurant_group' => $group
+                        'restaurant_group' => $restaurant
                     ]);
 
-                    $this->summaryData[] = [
-                        'type' => $type,
-                        'pdf_url' => $pdfUrl,
-                        'data' => $formattedData,
-                        'restaurant_group' => $group
-                    ];
-
-                    $this->info("Livraison data for Type $type ($group) aggregated and stored successfully for " . $startDate->toDateString());
+                    $this->info("Livraison data for Type $type ($restaurant) aggregated and stored successfully");
                 } catch (\Exception $e) {
-                    $this->error("Failed to create Livraison for Type $type ($group): " . $e->getMessage());
-                    $this->error("Data: " . json_encode([
-                        'date' => $startDate->toDateString(),
-                        'type' => $type,
-                        'data' => $formattedData,
-                        'pdf_url' => $pdfUrl
-                    ]));
+                    $this->error("Failed to create Livraison for Type $type ($restaurant): " . $e->getMessage());
                 }
             }
         }
     }
 
-    private function generatePdfForType($type, $data, $group)
+    private function generatePdfForType($type, $data, $restaurant)
     {
         $view = 'pdf.livraison-summary';
-        $fileName = 'livraison_summary_' . ($group ? $group . '_' : '') . $type . '_' . now()->format('Y-m-d_H-i') . '.pdf';
+        $fileName = 'livraison_summary_' . str_slug($type) . '_' . str_slug($restaurant) . '_' . now()->format('Y-m-d_H-i') . '.pdf';
         $directory = 'livraisons';
 
         return $this->generate_pdf_and_save($view, [
             'type' => $type,
             'data' => $data,
-            'is_ziraoui' => $group === 'Ziraoui'
         ], $fileName, $directory);
     }
 
