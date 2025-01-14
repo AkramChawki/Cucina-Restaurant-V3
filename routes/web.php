@@ -11,7 +11,6 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
-use App\Http\Controllers\BoissonController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
@@ -29,16 +28,16 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::get('/commander', [CommandeCuisinierController::class, 'create'])->name('commande-cuisinier.create');
         Route::post('/commander', [CommandeCuisinierController::class, 'store'])->name('commande-cuisinier.store');
         Route::post('/labo', [LaboController::class, 'store'])->name('labo.store');
-        Route::post('/boisson', [BoissonController::class, 'store'])->name('boisson.store');
     });
 
 
     Route::prefix('inventaire')->group(function () {
         Route::get('/', [InventaireCuisinierController::class, 'index'])->name('inventaire.index');
         Route::get('/stock', [InventaireCuisinierController::class, 'stock'])->name('inventaire.stock');
-        Route::post('/inv', [InventaireCuisinierController::class, 'inventaire'])->name('inventaire.inv');
-        Route::post('/cntrl', [InventaireCuisinierController::class, 'controle'])->name('inventaire.cntrl');
-        Route::post('/fromage', [InventaireCuisinierController::class, 'fromage'])->name('inventaire.fromage');
+        Route::post('/economat', [InventaireCuisinierController::class, 'economat'])->name('inventaire.economat');
+        Route::post('/restaurant', [InventaireCuisinierController::class, 'restaurant'])->name('inventaire.restaurant');
+        Route::post('/flash', [InventaireCuisinierController::class, 'flash'])->name('inventaire.flash');
+        Route::post('/labo', [InventaireCuisinierController::class, 'labo'])->name('inventaire.labo');
     });
 
     Route::prefix('numeros')->group(function () {

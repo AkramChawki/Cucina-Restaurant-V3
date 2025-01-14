@@ -51,12 +51,14 @@ export default function Table({ categories, ficheId, restau }) {
             delete filteredData.restau;
         }
         let endpoint = '';
-        if (ficheId == 7) {
-            endpoint = '/inventaire/inv';
-        } else if (ficheId == 8) {
-            endpoint = '/inventaire/cntrl';
-        } else if (ficheId == 21) {
-            endpoint = '/inventaire/fromage';
+        if (ficheId == 24) {
+            endpoint = '/inventaire/economat';
+        } else if (ficheId == 25) {
+            endpoint = '/inventaire/restaurant';
+        } else if (ficheId == 22) {
+            endpoint = '/inventaire/flash';
+        } else if (ficheId == 23) {
+            endpoint = '/inventaire/labo';
         }
 
         router.post(endpoint, filteredData, {

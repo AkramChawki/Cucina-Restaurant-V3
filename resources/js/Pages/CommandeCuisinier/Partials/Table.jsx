@@ -158,9 +158,8 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
             ? '/commande-cuisinier/labo'
             : ficheId == 6
                 ? '/BL/commander'
-                : ficheId == 20
-                    ? '/commande-cuisinier/boisson'
-                    : '/commande-cuisinier/commander';
+                : '/commande-cuisinier/commander';
+                    
     
         try {
             await router.post(endpoint, filteredData);

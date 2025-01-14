@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Controle;
 use App\Models\Inventaire;
+use App\Models\InvLabo;
 use App\Models\Restaurant;
 use App\Models\Fiche;
 use App\Models\CuisinierCategory;
@@ -65,13 +66,13 @@ class InventaireCuisinierController extends Controller
         ]);
     }
 
-    public function inventaire(Request $request)
+    public function economat(Request $request)
     {
         set_time_limit(500);
 
         try {
             $order = $this->createOrder(new Inventaire(), $request);
-            $pdfName = $this->generatePdfName($order, "Inventaire-Interne");
+            $pdfName = $this->generatePdfName($order, "Inventaire-Economat");
             $this->savePdf($order, $pdfName, "inventaire");
 
             return redirect("/")->with('success', 'Order created successfully.');
@@ -80,13 +81,13 @@ class InventaireCuisinierController extends Controller
         }
     }
 
-    public function controle(Request $request)
+    public function restaurant(Request $request)
     {
         set_time_limit(500);
 
         try {
             $order = $this->createOrder(new Controle(), $request);
-            $pdfName = $this->generatePdfName($order, "Controle-Interne");
+            $pdfName = $this->generatePdfName($order, "Inventaire-Restaurant");
             $this->savePdf($order, $pdfName, "inventaire");
 
             return redirect("/")->with('success', 'Order created successfully.');
@@ -95,14 +96,29 @@ class InventaireCuisinierController extends Controller
 
         }
     }
-    public function fromage(Request $request)
+    public function flash(Request $request)
     {
         set_time_limit(500);
 
         try {
             $order = $this->createOrder(new Fromage(), $request);
-            $pdfName = $this->generatePdfName($order, "Inventaire-fromage");
+            $pdfName = $this->generatePdfName($order, "Inventaire-Flash");
             $this->savePdf($order, $pdfName, "inventaire");
+
+            return redirect("/")->with('success', 'Order created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while processing your request.');
+
+        }
+    }
+    public function labo(Request $request)
+    {
+        set_time_limit(500);
+
+        try {
+            $order = $this->createOrder(new InvLabo(), $request);
+            $pdfName = $this->generatePdfName($order, "Inventaire-Labo");
+            $this->savePdf($order, $pdfName, "inventaire-labo");
 
             return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
