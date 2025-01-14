@@ -25,6 +25,7 @@ export default function Formulaire({ restau }) {
         erreurCuisine: "",
         erreurServeur: "",
         erreurCaisse: "",
+        perteEmporte: "",
         giveawayPizza: "",
         giveawayPasta: "",
         glovoC: "",
@@ -200,6 +201,15 @@ export default function Formulaire({ restau }) {
                                 value={data.erreurCaisse}
                                 onChange={(e) => setData('erreurCaisse', e.target.value)}
                                 error={errors.erreurCaisse}
+                            />
+
+                            <FormField
+                                label="Perte Emporte"
+                                name="perteEmporte"
+                                type="number"
+                                value={data.perteEmporte}
+                                onChange={(e) => setData('perteEmporte', e.target.value)}
+                                error={errors.perteEmporte}
                             />
 
                             <FormField

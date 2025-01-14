@@ -30,6 +30,7 @@ return new class extends Migration
             $table->float("erreurCuisine")->nullable();
             $table->float("erreurServeur")->nullable();
             $table->float("erreurCaisse")->nullable();
+            $table->float("perteEmporte")->nullable();
             $table->float("giveawayPizza")->nullable();
             $table->float("giveawayPasta")->nullable();
             $table->float("glovoC")->nullable();

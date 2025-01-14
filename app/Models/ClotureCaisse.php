@@ -27,6 +27,7 @@ class ClotureCaisse extends Model
         'erreurCuisine',
         'erreurServeur',
         'erreurCaisse',
+        'perteEmporte',
         'giveawayPizza',
         'giveawayPasta',
         'glovoC',
@@ -35,7 +36,6 @@ class ClotureCaisse extends Model
         'appC',
         'shooting',
         'ComGlovo',
-        'ComLivraison',
         'signature',
     ];
 

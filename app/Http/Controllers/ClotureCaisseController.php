@@ -49,6 +49,7 @@ class ClotureCaisseController extends Controller
             'erreurCuisine' => 'nullable|numeric',
             'erreurServeur' => 'nullable|numeric',
             'erreurCaisse' => 'nullable|numeric',
+            'perteEmporte' => 'nullable|numeric',
             'giveawayPizza' => 'nullable|numeric',
             'giveawayPasta' => 'nullable|numeric',
             'glovoC' => 'nullable|numeric',
