@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string("restau");
             $table->string("date");
             $table->string("time");
+            $table->string("caissierE");
+            $table->string("caissierS");
             $table->float("montant");
             $table->float("montantE");
             $table->float("glovoE");

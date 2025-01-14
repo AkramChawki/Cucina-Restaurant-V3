@@ -17,13 +17,29 @@ class ClotureCaisseController extends Controller
         return Inertia::render('ClotureCaisse/ClotureCaisse', ["restaurants" => $restaurants]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('ClotureCaisse/Ajouter');
+        if (!$request->has('restau')) {
+            return redirect('/cloture-caisse');
+        }
+        
+        return Inertia::render('ClotureCaisse/Ajouter', [
+            'restau' => $request->query('restau')
+        ]);
     }
 
     public function store(Request $request)
     {
+        // Validate the request
+        $request->validate([
+            'restau' => 'required|string',
+            'date' => 'required',
+            'time' => 'required',
+            'caissierE' => 'required',
+            'caissierS' => 'required',
+            'signature' => 'required'
+        ]);
+
         $image = $request->signature;
         $Commision_glovo = ($request->glovoC - (0.28 * 1.2 * ($request->glovoE + $request->glovoC)));
         $Commision_livraison = ($request->LivC - (0.15 * 1.2 * ($request->LivE + $request->LivC)));
