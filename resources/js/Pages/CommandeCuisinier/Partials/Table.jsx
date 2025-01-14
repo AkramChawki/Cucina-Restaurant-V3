@@ -373,6 +373,11 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                             alt={product.designation}
                                                         />
                                                     </div>
+                                                    {product.moy && (
+                                                    <div className="bg-red-600 text-white py-2 text-center">
+                                                        {product.moy}
+                                                    </div>
+                                                )}
                                                     <div className="p-4">
                                                         <h3 className="text-lg font-semibold text-center mb-4">
                                                             {product.designation}
