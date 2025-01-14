@@ -1,5 +1,5 @@
 import { Link, useForm, usePage } from "@inertiajs/react";
-import React from "react";
+import React, { useRef } from "react";
 
 export default function Form() {
     const { auth } = usePage().props;
