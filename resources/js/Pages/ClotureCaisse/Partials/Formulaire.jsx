@@ -2,9 +2,7 @@ import { Link, useForm, usePage } from "@inertiajs/react";
 import React, { useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 
-export default function Formulaire() {
-    const queryParameters = new URLSearchParams(window.location.search);
-    const restau = queryParameters.get("restau");
+export default function Formulaire({restau}) {
     const { auth } = usePage().props
     const [sign, setSign] = useState();
     const [url, setUrl] = useState();

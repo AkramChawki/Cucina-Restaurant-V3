@@ -8,7 +8,7 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Name({ ficheId, restaurants }) {
+export default function Name({ restaurants }) {
     const [restaurant, setRestaurant] = React.useState("");
 
     const handleChange = React.useCallback((event) => {
@@ -43,7 +43,7 @@ export default function Name({ ficheId, restaurants }) {
                 {restaurant && (
                     <>
                         <a
-                            href={`/commande-cuisinier/commander?ficheId=${ficheId}&restau=${restaurant}`}
+                            href={`/cloture-caisse/ajouter?restau=${restaurant}`}
                             className="inline-flex w-full mt-8 text-left items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
                         >
                             Suivant
