@@ -61,7 +61,7 @@ export default function Rubrique({ fiches, rubriqueTitle }) {
                                 {fiche.name}
                             </a>
                             <Link
-                                href={fiche.id === 21 ? "/inventaire" : "/commande-cuisinier"}
+                                href="/commande-cuisinier"
                                 data={{ ficheId: fiche.id }}
                                 className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
                             >
