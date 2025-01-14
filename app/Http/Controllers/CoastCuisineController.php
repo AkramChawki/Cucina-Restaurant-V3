@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoastCuisine;
+use App\Models\CuisinierCategory;
 use App\Models\Restaurant;
 use App\Models\CuisinierProduct;
 use Illuminate\Http\Request;
@@ -25,30 +26,47 @@ class CoastCuisineController extends Controller
         $currentMonth = $request->get('month', now()->month);
         $currentYear = $request->get('year', now()->year);
 
-        // Get products where fiche_id = 1
+        // Get products for fiche_id = 1 and group them by category
         $products = CuisinierProduct::whereHas('fiches', function($query) {
             $query->where('fiche_id', 1);
-        })->get();
+        })->with('cuisinier_category')->get();
 
+        // Group products by category
+        $groupedProducts = $products->groupBy('category_id');
+        
         // Get existing coast cuisine data
-        $coastData = CoastCuisine::getMonthlyData($restaurant->id, $currentMonth, $currentYear);
+        $coastData = CoastCuisine::where('restaurant_id', $restaurant->id)
+            ->where('month', $currentMonth)
+            ->where('year', $currentYear)
+            ->get()
+            ->groupBy('product_id');
 
-        // Transform data for frontend
-        $transformedProducts = $products->map(function($product) use ($coastData) {
-            $productData = $coastData->get($product->id, collect());
-            
-            $values = [];
-            foreach($productData as $data) {
-                $values[$data->day] = $data->value;
+        // Prepare categories with their products
+        $categories = collect();
+        foreach($groupedProducts as $categoryId => $categoryProducts) {
+            $category = CuisinierCategory::find($categoryId);
+            if ($category) {
+                // Transform products to include their values
+                $transformedProducts = $categoryProducts->map(function($product) use ($coastData) {
+                    $values = [];
+                    if (isset($coastData[$product->id])) {
+                        foreach($coastData[$product->id] as $data) {
+                            $values[$data->day] = $data->value;
+                        }
+                    }
+                    return [
+                        'id' => $product->id,
+                        'designation' => $product->designation,
+                        'unite' => $product->unite,
+                        'values' => $values,
+                        'image' => $product->image
+                    ];
+                });
+                
+                $category->products = $transformedProducts;
+                $categories->push($category);
             }
-
-            return [
-                'id' => $product->id,
-                'designation' => $product->designation,
-                'unite' => $product->unite,
-                'values' => $values
-            ];
-        });
+        }
 
         return Inertia::render('FluxReel/CoastCuisine/CoastCuisineRestau', [
             'restaurant' => $restaurant,
