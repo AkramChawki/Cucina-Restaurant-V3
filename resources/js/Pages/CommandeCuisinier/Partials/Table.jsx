@@ -375,7 +375,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                     </div>
                                                     {product.moy && (
                                                     <div className="bg-red-600 text-white py-2 text-center">
-                                                        {product.moy}
+                                                      Moyenne : {product.moy}
                                                     </div>
                                                 )}
                                                     <div className="p-4">
