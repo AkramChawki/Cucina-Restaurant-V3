@@ -1,1 +1,0 @@
-import{j as r,F as o}from"./app-6aed09c9.js";import t from"./Form-684b5751.js";function f({restaurant:e,presences:a,currentMonth:n}){return r(o,{children:r(t,{restaurant:e,presences:a,currentMonth:n})})}export{f as default};

@@ -2,29 +2,36 @@ import { Link, useForm, usePage } from "@inertiajs/react";
 import React, { useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 
-export default function Formulaire({restau}) {
-    const { auth } = usePage().props
+export default function Formulaire({ restau }) {
+    const { auth } = usePage().props;
     const [sign, setSign] = useState();
     const [url, setUrl] = useState();
-
 
     const { data, setData, post, processing, errors } = useForm({
         name: auth.user.name,
         restau: restau,
         date: "",
         time: "",
-        caissierE: "",
-        caissierS: "",
+        responsable: "",
         montant: "",
         montantE: "",
-        glovoE: "",
-        glovoC: "",
         cartebancaire: "",
-        LivE: "",
-        LivC: "",
+        cartebancaireLivraison: "",
         virement: "",
         cheque: "",
-        Compensation: "",
+        compensation: "",
+        familleAcc: "",
+        erreurPizza: "",
+        erreurCuisine: "",
+        erreurServeur: "",
+        erreurCaisse: "",
+        giveawayPizza: "",
+        giveawayPasta: "",
+        glovoC: "",
+        glovoE: "",
+        appE: "",
+        appC: "",
+        shooting: "",
         signature: "",
     });
 
@@ -33,6 +40,7 @@ export default function Formulaire({restau}) {
         setUrl("");
         setData("signature", "");
     };
+
     const handleGenerate = () => {
         setUrl(sign.getTrimmedCanvas().toDataURL("image/png"));
         setData("signature", sign.getTrimmedCanvas().toDataURL("image/png"));
@@ -42,306 +50,228 @@ export default function Formulaire({restau}) {
         e.preventDefault();
         post("/cloture-caisse");
     }
+
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 px-10 py-10">
             <form onSubmit={handleSubmit} className="space-y-8 divide-y divide-gray-200">
+                {/* General Information */}
                 <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                     <div>
-                        <div>
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                Cloture Caisse
-                            </h3>
-                        </div>
-
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                            Cloture Caisse
+                        </h3>
                         <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="date"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Date
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="date"
-                                            name="date"
-                                            id="date"
-                                            value={data.date} onChange={e => setData('date', e.target.value)}
-                                            className="flex-1 block  w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.date && <div>{errors.date}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="heur"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Heure
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="time"
-                                            name="time"
-                                            id="time"
-                                            value={data.time} onChange={e => setData('time', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.time && <div>{errors.time}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="caissierE"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Caissier Entrant
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="text"
-                                            name="caissierE"
-                                            id="caissierE"
-                                            value={data.caissierE} onChange={e => setData('caissierE', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.caissierE && <div>{errors.caissierE}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="caissierS"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Caissier Sortant
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="text"
-                                            name="caissierS"
-                                            id="caissierS"
-                                            value={data.caissierS} onChange={e => setData('caissierS', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.caissierS && <div>{errors.caissierS}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="montant"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Montant Caisse
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="montant"
-                                            id="montant"
-                                            value={data.montant} onChange={e => setData('montant', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.montant && <div>{errors.montant}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="montantE"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Montant Espece
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="montantE"
-                                            id="montantE"
-                                            value={data.montantE} onChange={e => setData('montantE', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.montantE && <div>{errors.montantE}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="glovoE"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Glovo Espece
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="glovoE"
-                                            id="glovoE"
-                                            value={data.glovoE} onChange={e => setData('glovoE', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.glovoE && <div>{errors.glovoE}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="glovoC"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Glovo Carte
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="glovoC"
-                                            id="glovoC"
-                                            value={data.glovoC} onChange={e => setData('glovoC', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.glovoC && <div>{errors.glovoC}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="cartebancaire"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Carte Bancaire
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="cartebancaire"
-                                            id="cartebancaire"
-                                            value={data.cartebancaire} onChange={e => setData('cartebancaire', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.cartebancaire && <div>{errors.cartebancaire}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="LivE"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Livraison.ma Espece
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="LivE"
-                                            id="LivE"
-                                            value={data.LivE} onChange={e => setData('LivE', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.LivE && <div>{errors.LivE}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="LivC"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Livraison.ma Carte
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="LivC"
-                                            id="LivC"
-                                            value={data.LivC} onChange={e => setData('LivC', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.LivC && <div>{errors.LivC}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="encaissement"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Virement Instantané
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="virement"
-                                            id="virement"
-                                            value={data.virement} onChange={e => setData('virement', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.virement && <div>{errors.virement}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="encaissement"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Chèque
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="cheque"
-                                            id="cheque"
-                                            value={data.cheque} onChange={e => setData('cheque', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.cheque && <div>{errors.cheque}</div>}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label
-                                    htmlFor="encaissement"
-                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                                >
-                                    Compensation
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
-                                    <div className="max-w-lg flex rounded-md shadow-sm">
-                                        <input
-                                            type="number"
-                                            name="compensation"
-                                            id="compensation"
-                                            value={data.Compensation} onChange={e => setData('Compensation', e.target.value)}
-                                            className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
-                                        />
-                                        {errors.Compensation && <div>{errors.Compensation}</div>}
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Date Field */}
+                            <FormField
+                                label="Date"
+                                name="date"
+                                type="date"
+                                value={data.date}
+                                onChange={(e) => setData('date', e.target.value)}
+                                error={errors.date}
+                            />
+
+                            {/* Time Field */}
+                            <FormField
+                                label="Heure"
+                                name="time"
+                                type="time"
+                                value={data.time}
+                                onChange={(e) => setData('time', e.target.value)}
+                                error={errors.time}
+                            />
+
+                            {/* Responsible Field */}
+                            <FormField
+                                label="Responsable"
+                                name="responsable"
+                                type="text"
+                                value={data.responsable}
+                                onChange={(e) => setData('responsable', e.target.value)}
+                                error={errors.responsable}
+                            />
+
+                            {/* Montants */}
+                            <FormField
+                                label="Montant Caisse"
+                                name="montant"
+                                type="number"
+                                value={data.montant}
+                                onChange={(e) => setData('montant', e.target.value)}
+                                error={errors.montant}
+                            />
+
+                            <FormField
+                                label="Montant Espèce"
+                                name="montantE"
+                                type="number"
+                                value={data.montantE}
+                                onChange={(e) => setData('montantE', e.target.value)}
+                                error={errors.montantE}
+                            />
+
+                            {/* Payment Methods */}
+                            <FormField
+                                label="Carte Bancaire"
+                                name="cartebancaire"
+                                type="number"
+                                value={data.cartebancaire}
+                                onChange={(e) => setData('cartebancaire', e.target.value)}
+                                error={errors.cartebancaire}
+                            />
+
+                            <FormField
+                                label="Carte Bancaire Livraison"
+                                name="cartebancaireLivraison"
+                                type="number"
+                                value={data.cartebancaireLivraison}
+                                onChange={(e) => setData('cartebancaireLivraison', e.target.value)}
+                                error={errors.cartebancaireLivraison}
+                            />
+
+                            <FormField
+                                label="Virement"
+                                name="virement"
+                                type="number"
+                                value={data.virement}
+                                onChange={(e) => setData('virement', e.target.value)}
+                                error={errors.virement}
+                            />
+
+                            <FormField
+                                label="Chèque"
+                                name="cheque"
+                                type="number"
+                                value={data.cheque}
+                                onChange={(e) => setData('cheque', e.target.value)}
+                                error={errors.cheque}
+                            />
+
+                            <FormField
+                                label="Compensation"
+                                name="compensation"
+                                type="number"
+                                value={data.compensation}
+                                onChange={(e) => setData('compensation', e.target.value)}
+                                error={errors.compensation}
+                            />
+
+                            {/* Errors and Giveaways */}
+                            <FormField
+                                label="Famille & Accompagnant"
+                                name="familleAcc"
+                                type="number"
+                                value={data.familleAcc}
+                                onChange={(e) => setData('familleAcc', e.target.value)}
+                                error={errors.familleAcc}
+                            />
+
+                            <FormField
+                                label="Erreur Pizza"
+                                name="erreurPizza"
+                                type="number"
+                                value={data.erreurPizza}
+                                onChange={(e) => setData('erreurPizza', e.target.value)}
+                                error={errors.erreurPizza}
+                            />
+
+                            <FormField
+                                label="Erreur Cuisine"
+                                name="erreurCuisine"
+                                type="number"
+                                value={data.erreurCuisine}
+                                onChange={(e) => setData('erreurCuisine', e.target.value)}
+                                error={errors.erreurCuisine}
+                            />
+
+                            <FormField
+                                label="Erreur Serveur"
+                                name="erreurServeur"
+                                type="number"
+                                value={data.erreurServeur}
+                                onChange={(e) => setData('erreurServeur', e.target.value)}
+                                error={errors.erreurServeur}
+                            />
+
+                            <FormField
+                                label="Erreur Caisse"
+                                name="erreurCaisse"
+                                type="number"
+                                value={data.erreurCaisse}
+                                onChange={(e) => setData('erreurCaisse', e.target.value)}
+                                error={errors.erreurCaisse}
+                            />
+
+                            <FormField
+                                label="Giveaway Pizza"
+                                name="giveawayPizza"
+                                type="number"
+                                value={data.giveawayPizza}
+                                onChange={(e) => setData('giveawayPizza', e.target.value)}
+                                error={errors.giveawayPizza}
+                            />
+
+                            <FormField
+                                label="Giveaway Pasta"
+                                name="giveawayPasta"
+                                type="number"
+                                value={data.giveawayPasta}
+                                onChange={(e) => setData('giveawayPasta', e.target.value)}
+                                error={errors.giveawayPasta}
+                            />
+
+                            {/* Glovo and App */}
+                            <FormField
+                                label="Glovo Carte"
+                                name="glovoC"
+                                type="number"
+                                value={data.glovoC}
+                                onChange={(e) => setData('glovoC', e.target.value)}
+                                error={errors.glovoC}
+                            />
+
+                            <FormField
+                                label="Glovo Espèce"
+                                name="glovoE"
+                                type="number"
+                                value={data.glovoE}
+                                onChange={(e) => setData('glovoE', e.target.value)}
+                                error={errors.glovoE}
+                            />
+
+                            <FormField
+                                label="App Espèce"
+                                name="appE"
+                                type="number"
+                                value={data.appE}
+                                onChange={(e) => setData('appE', e.target.value)}
+                                error={errors.appE}
+                            />
+
+                            <FormField
+                                label="App Carte"
+                                name="appC"
+                                type="number"
+                                value={data.appC}
+                                onChange={(e) => setData('appC', e.target.value)}
+                                error={errors.appC}
+                            />
+
+                            <FormField
+                                label="Shooting"
+                                name="shooting"
+                                type="number"
+                                value={data.shooting}
+                                onChange={(e) => setData('shooting', e.target.value)}
+                                error={errors.shooting}
+                            />
                         </div>
                     </div>
                 </div>
+
+                {/* Signature Section */}
                 <div>
-                    <label
-                        htmlFor="signature"
-                        className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                    >
+                    <label htmlFor="signature" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                         Signature
                     </label>
                     <div className="border-solid border-2 border-black w-[300px] mx-auto">
@@ -355,40 +285,69 @@ export default function Formulaire({restau}) {
                             ref={(data) => setSign(data)}
                         />
                     </div>
-                    <div className="flex justify-center">
-                        <a
+                    <div className="flex justify-center gap-4">
+                        <button
+                            type="button"
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             onClick={handleClear}
                         >
-                            Clear
-                        </a>
-                        <a
+                            Effacer
+                        </button>
+                        <button
+                            type="button"
                             className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             onClick={handleGenerate}
                         >
-                            Sauvgarder
-                        </a>
+                            Sauvegarder
+                        </button>
                     </div>
-                    <br />
-                    <br />
-                    <img src={url} className="mx-auto" />
+                    {url && (
+                        <div className="mt-4">
+                            <img src={url} className="mx-auto" alt="Signature" />
+                        </div>
+                    )}
                 </div>
-                <div className="flex justify-end">
-                    <a
+
+                {/* Form Actions */}
+                <div className="flex justify-end pt-5">
+                    <Link
                         href="/"
-                        type="button"
                         className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
-                        Cancel
-                    </a>
+                        Annuler
+                    </Link>
                     <button
                         type="submit"
                         className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        disabled={processing}
                     >
-                        Save
+                        Enregistrer
                     </button>
                 </div>
             </form>
+        </div>
+    );
+}
+
+function FormField({ label, name, type, value, onChange, error }) {
+    return (
+        <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
+                {label}
+            </label>
+            <div className="mt-1 sm:mt-0 sm:col-span-2">
+                <div className="max-w-lg flex rounded-md shadow-sm">
+                    <input
+                        type={type}
+                        name={name}
+                        id={name}
+                        value={value}
+                        onChange={onChange}
+                        className="flex-1 block w-full focus:ring-green-500 focus:border-green-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                    />
+                </div>
+                {error && <div className="mt-1 text-sm text-red-600">{error}</div>}
+            </div>
         </div>
     );
 }
