@@ -27,14 +27,11 @@ class CoastCuisineController extends Controller
         $currentMonth = $request->get('month', now()->month);
         $currentYear = $request->get('year', now()->year);
 
-        // Get the fiche with ID 1
+        // Get products from fiche_id = 1
         $fiche = Fiche::find(1);
-
-        // Get all products with their categories for this fiche
         $products = $fiche->cuisinier_products()
             ->with('cuisinier_category')
-            ->get()
-            ->groupBy('category_id');
+            ->get();
 
         // Get existing coast cuisine data
         $coastData = CoastCuisine::where('restaurant_id', $restaurant->id)
@@ -43,13 +40,15 @@ class CoastCuisineController extends Controller
             ->get()
             ->groupBy('product_id');
 
-        // Transform the data for the frontend
+        // Group products by category and transform them
         $categories = collect();
+        $groupedProducts = $products->groupBy('category_id');
 
-        foreach ($products as $categoryId => $categoryProducts) {
+        foreach ($groupedProducts as $categoryId => $products) {
             $category = CuisinierCategory::find($categoryId);
             if ($category) {
-                $transformedProducts = $categoryProducts->map(function ($product) use ($coastData) {
+                // Transform products for this category
+                $transformedProducts = $products->map(function ($product) use ($coastData) {
                     return [
                         'id' => $product->id,
                         'designation' => $product->designation,
@@ -59,8 +58,9 @@ class CoastCuisineController extends Controller
                             ? $coastData[$product->id]->pluck('value', 'day')->toArray()
                             : []
                     ];
-                });
+                })->values();
 
+                // Add category with its transformed products
                 $categories->push([
                     'id' => $category->id,
                     'name' => $category->name,
@@ -71,14 +71,13 @@ class CoastCuisineController extends Controller
 
         return Inertia::render('FluxReel/CoastCuisine/CoastCuisineRestau', [
             'restaurant' => $restaurant,
-            'products' => $transformedProducts,
+            'categories' => $categories,
             'currentMonth' => [
                 'month' => (int)$currentMonth,
                 'year' => (int)$currentYear
             ]
         ]);
     }
-
     public function updateValue(Request $request)
     {
         $request->validate([
