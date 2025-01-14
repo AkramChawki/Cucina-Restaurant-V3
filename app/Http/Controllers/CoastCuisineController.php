@@ -68,7 +68,7 @@ class CoastCuisineController extends Controller
                 ]);
             }
         }
-        dd($categories);
+        dd($products);
         // return Inertia::render('FluxReel/CoastCuisine/CoastCuisineRestau', [
         //     'restaurant' => $restaurant,
         //     'categories' => $categories,
