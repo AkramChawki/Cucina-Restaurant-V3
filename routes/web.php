@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClotureCaisseController;
 use App\Http\Controllers\EmployeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RubriqueController;
@@ -89,6 +90,12 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
             ->name('fiche-controle.form');
         Route::post('/form', [FicheControleController::class, 'store'])
             ->name('fiche-controle.store');
+    });
+
+    Route::controller(ClotureCaisseController::class)->group(function () {
+        Route::get('/cloture-caisse', 'index');
+        Route::post('/cloture-caisse', 'store');
+        Route::get('/cloture-caisse/ajouter', 'create');
     });
 
 });
