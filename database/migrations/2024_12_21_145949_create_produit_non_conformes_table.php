@@ -13,11 +13,12 @@ return new class extends Migration
             $table->string("name");
             $table->date("date");
             $table->string("restau");
-            $table->string("type"); // cuisinier ou pizzaiolo
+            $table->string("type");
             $table->string("produit");
             $table->date("date_production");
-            $table->string("probleme"); // probleme lie au produit
+            $table->string("probleme");
             $table->string("pdf");
+            $table->json("images")->nullable();
             $table->timestamps();
         });
     }

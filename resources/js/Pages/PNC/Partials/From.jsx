@@ -5,6 +5,7 @@ export default function Form() {
     const { auth } = usePage().props;
     const queryParameters = new URLSearchParams(window.location.search);
     const restau = queryParameters.get("restau");
+    const fileInputRef = useRef(null);
 
     const { data, setData, post, processing, errors } = useForm({
         name: auth.user.name,
@@ -14,6 +15,7 @@ export default function Form() {
         produit: "",
         date_production: "",
         probleme: "",
+        images: [],
     });
 
     const problemeOptions = [
@@ -23,13 +25,34 @@ export default function Form() {
         "produit abime"
     ];
 
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        setData("images", files);
+    };
+
     function submit(e) {
         e.preventDefault();
+        // Create FormData to handle file uploads
+        const formData = new FormData();
+        Object.keys(data).forEach(key => {
+            if (key === 'images') {
+                data.images.forEach(file => {
+                    formData.append('images[]', file);
+                });
+            } else {
+                formData.append(key, data[key]);
+            }
+        });
         post("/produit-non-conforme/form", {
+            data: formData,
             preserveState: true,
             preserveScroll: true,
+            forceFormData: true,
             onSuccess: () => {
                 console.log('Form submitted successfully');
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
             },
             onError: (errors) => {
                 console.error('Form submission errors:', errors);
@@ -165,6 +188,34 @@ export default function Form() {
                                             </option>
                                         ))}
                                     </select>
+                                </div>
+                            </div>
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                                <label
+                                    htmlFor="images"
+                                    className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                                >
+                                    Photos
+                                </label>
+                                <div className="mt-1 sm:mt-0 sm:col-span-2">
+                                    <input
+                                        type="file"
+                                        name="images"
+                                        id="images"
+                                        ref={fileInputRef}
+                                        multiple
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="max-w-lg block w-full shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                    {errors.images && (
+                                        <p className="mt-2 text-sm text-red-600">
+                                            {errors.images}
+                                        </p>
+                                    )}
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        Sélectionnez une ou plusieurs photos (JPG, PNG). Maximum 2MB par image.
+                                    </p>
                                 </div>
                             </div>
                         </div>

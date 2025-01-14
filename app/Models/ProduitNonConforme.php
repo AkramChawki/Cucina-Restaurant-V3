@@ -17,11 +17,13 @@ class ProduitNonConforme extends Model
         'produit',
         'date_production',
         'probleme',
-        'pdf'
+        'pdf',
+        'images'
     ];
 
     protected $casts = [
         'date' => 'date',
         'date_production' => 'date',
+        'images' => 'array'
     ];
 }

@@ -86,6 +86,48 @@
             text-align: right;
             margin-top: 20px;
         }
+
+        /* New styles for images section */
+        .images-section {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .images-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .image-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .no-images {
+            color: #666;
+            font-style: italic;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -129,6 +171,28 @@
             <div class="field">
                 <span class="label">Enregistré par:</span>
                 <span class="value">{{ $produit->name }}</span>
+            </div>
+
+            <!-- New Images Section -->
+            <div class="images-section">
+                <div class="images-title">Photos du Produit Non Conforme</div>
+                @if($produit->images && count($produit->images) > 0)
+                    <div class="images-grid">
+                        @foreach($produit->images as $imagePath)
+                            <div class="image-container">
+                                <img 
+                                    src="{{ public_path('storage/' . $imagePath) }}" 
+                                    class="product-image" 
+                                    alt="Photo du produit non conforme"
+                                >
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="no-images">
+                        Aucune photo n'a été fournie pour ce rapport.
+                    </div>
+                @endif
             </div>
 
             <div class="timestamp">
