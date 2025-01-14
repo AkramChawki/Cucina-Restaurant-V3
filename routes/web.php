@@ -12,6 +12,7 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
+use App\Http\Controllers\CoastCuisineController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
@@ -97,6 +98,17 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::get('/cloture-caisse/ajouter', 'create');
         Route::post('/cloture-caisse', 'store');
     });
+
+    Route::get('/coast-cuisine', [CoastCuisineController::class, 'index'])
+        ->name('coast-cuisine.index');
+
+    // Show the form for a specific restaurant
+    Route::get('/coast-cuisine/{restaurant:slug}', [CoastCuisineController::class, 'show'])
+        ->name('coast-cuisine.show');
+
+    // Update value endpoint
+    Route::post('/coast-cuisine/update-value', [CoastCuisineController::class, 'updateValue'])
+        ->name('coast-cuisine.update-value');
 
 });
 
