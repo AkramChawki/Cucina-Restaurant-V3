@@ -81,6 +81,7 @@ class CoastCuisineController extends Controller
             ['value' => $request->value]
         );
 
-        return response()->json(['status' => 'success']);
+        return redirect()->back()->with('success', 'Employee added successfully.');
+
     }
 }

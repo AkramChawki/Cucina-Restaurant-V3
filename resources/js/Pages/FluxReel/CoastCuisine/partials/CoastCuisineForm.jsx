@@ -22,6 +22,9 @@ export default function CoastCuisineForm({ restaurant, products, currentMonth })
         }, {
             preserveScroll: true,
             preserveState: true,
+            onSuccess: () => {
+                router.reload();
+            }
         });
     };
 
@@ -58,7 +61,6 @@ export default function CoastCuisineForm({ restaurant, products, currentMonth })
                         <thead className="bg-gray-50">
                             <tr>
                                 <th scope="col" className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
-                                <th scope="col" className="sticky left-48 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unité</th>
                                 {daysInMonth.map(day => (
                                     <th 
                                         key={day} 
@@ -73,11 +75,17 @@ export default function CoastCuisineForm({ restaurant, products, currentMonth })
                         <tbody className="bg-white divide-y divide-gray-200">
                             {products.map((product) => (
                                 <tr key={product.id}>
-                                    <td className="sticky left-0 z-10 bg-white px-4 py-2 text-sm font-medium text-gray-900">
-                                        {product.designation}
-                                    </td>
-                                    <td className="sticky left-48 z-10 bg-white px-4 py-2 text-sm text-gray-500">
-                                        {product.unite}
+                                    <td className="sticky left-0 z-10 bg-white px-4 py-2">
+                                        <div className="flex items-center">
+                                            <img
+                                                src={`https://admin.cucinanapoli.com/storage/${product.image}`}
+                                                alt={product.designation}
+                                                className="h-12 w-12 object-cover rounded-md mr-3"
+                                            />
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {product.designation}
+                                            </span>
+                                        </div>
                                     </td>
                                     {daysInMonth.map(day => (
                                         <td key={day} className="px-1 py-1 text-sm">
