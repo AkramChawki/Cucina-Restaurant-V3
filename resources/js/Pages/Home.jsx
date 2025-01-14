@@ -190,7 +190,7 @@ function Home({ rubriques }) {
                         </div>
                     </div>
                 )}
-                {auth.user.role.includes("Etat de Stock") && (
+                {auth.user.role.includes("Inventaire Restaurant") && (
                     <div className="relative flex">
                         <img
                             src="/images/restau/white.jpeg"
@@ -202,7 +202,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Etat de stock
+                                Inventaire Restaurant
                             </a>
                             <Link
                                 href="/inventaire"
