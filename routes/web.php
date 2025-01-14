@@ -13,6 +13,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
 use App\Http\Controllers\CoastCuisineController;
+use App\Http\Controllers\CoastPizzaController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
@@ -109,6 +110,17 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     // Update value endpoint
     Route::post('/coast-cuisine/update-value', [CoastCuisineController::class, 'updateValue'])
         ->name('coast-cuisine.update-value');
+
+    Route::get('/coast-pizza', [CoastPizzaController::class, 'index'])
+        ->name('coast-pizza.index');
+
+    // Show the form for a specific restaurant
+    Route::get('/coast-pizza/{restaurant:slug}', [CoastPizzaController::class, 'show'])
+        ->name('coast-pizza.show');
+
+    // Update value endpoint
+    Route::post('/coast-pizza/update-value', [CoastPizzaController::class, 'updateValue'])
+        ->name('coast-pizza.update-value');
 
 });
 
