@@ -1,0 +1,1 @@
+import{j as i}from"./app-d25ddbbc.js";import s from"./CoastCuisineForm-84ee5de3.js";function m({restaurant:o,products:r,currentMonth:t}){return i(s,{restaurant:o,products:r,currentMonth:t})}export{m as default};

@@ -249,7 +249,7 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Fiche de Controle
+                                Fiche de Controle Hygiene
                             </a>
                             <Link
                                 href="/fiche-controle"

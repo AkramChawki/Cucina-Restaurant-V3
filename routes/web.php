@@ -12,7 +12,9 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
+use App\Http\Controllers\CoastConsomableController;
 use App\Http\Controllers\CoastCuisineController;
+use App\Http\Controllers\CoastEconomatController;
 use App\Http\Controllers\CoastPizzaController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
@@ -121,6 +123,28 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     // Update value endpoint
     Route::post('/coast-pizza/update-value', [CoastPizzaController::class, 'updateValue'])
         ->name('coast-pizza.update-value');
+
+    Route::get('/coast-economat', [CoastEconomatController::class, 'index'])
+        ->name('coast-economat.index');
+
+    // Show the form for a specific restaurant
+    Route::get('/coast-economat/{restaurant:slug}', [CoastEconomatController::class, 'show'])
+        ->name('coast-economat.show');
+
+    // Update value endpoint
+    Route::post('/coast-economat/update-value', [CoastEconomatController::class, 'updateValue'])
+        ->name('coast-economat.update-value');
+
+    Route::get('/coast-consomable', [CoastConsomableController::class, 'index'])
+        ->name('coast-consomable.index');
+
+    // Show the form for a specific restaurant
+    Route::get('/coast-consomable/{restaurant:slug}', [CoastConsomableController::class, 'show'])
+        ->name('coast-consomable.show');
+
+    // Update value endpoint
+    Route::post('/coast-consomable/update-value', [CoastConsomableController::class, 'updateValue'])
+        ->name('coast-consomable.update-value');
 
 });
 
