@@ -6,6 +6,7 @@ use App\Models\CoastCuisine;
 use App\Models\CuisinierCategory;
 use App\Models\Restaurant;
 use App\Models\CuisinierProduct;
+use App\Models\Fiche;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,7 +15,7 @@ class CoastCuisineController extends Controller
     public function index()
     {
         $restaurants = Restaurant::all(['id', 'name', 'slug']);
-        
+
         return Inertia::render('FluxReel/CoastCuisine/CoastCuisineRestau', [
             'restaurants' => $restaurants
         ]);
@@ -26,14 +27,15 @@ class CoastCuisineController extends Controller
         $currentMonth = $request->get('month', now()->month);
         $currentYear = $request->get('year', now()->year);
 
-        // Get products for fiche_id = 1 and group them by category
-        $products = CuisinierProduct::whereHas('fiches', function($query) {
-            $query->where('fiche_id', 1);
-        })->with('cuisinier_category')->get();
+        // Get the fiche with ID 1
+        $fiche = Fiche::find(1);
 
-        // Group products by category
-        $groupedProducts = $products->groupBy('category_id');
-        
+        // Get all products with their categories for this fiche
+        $products = $fiche->cuisinier_products()
+            ->with('cuisinier_category')
+            ->get()
+            ->groupBy('category_id');
+
         // Get existing coast cuisine data
         $coastData = CoastCuisine::where('restaurant_id', $restaurant->id)
             ->where('month', $currentMonth)
@@ -41,30 +43,29 @@ class CoastCuisineController extends Controller
             ->get()
             ->groupBy('product_id');
 
-        // Prepare categories with their products
+        // Transform the data for the frontend
         $categories = collect();
-        foreach($groupedProducts as $categoryId => $categoryProducts) {
+
+        foreach ($products as $categoryId => $categoryProducts) {
             $category = CuisinierCategory::find($categoryId);
             if ($category) {
-                // Transform products to include their values
-                $transformedProducts = $categoryProducts->map(function($product) use ($coastData) {
-                    $values = [];
-                    if (isset($coastData[$product->id])) {
-                        foreach($coastData[$product->id] as $data) {
-                            $values[$data->day] = $data->value;
-                        }
-                    }
+                $transformedProducts = $categoryProducts->map(function ($product) use ($coastData) {
                     return [
                         'id' => $product->id,
                         'designation' => $product->designation,
                         'unite' => $product->unite,
-                        'values' => $values,
-                        'image' => $product->image
+                        'image' => $product->image,
+                        'values' => isset($coastData[$product->id])
+                            ? $coastData[$product->id]->pluck('value', 'day')->toArray()
+                            : []
                     ];
                 });
-                
-                $category->products = $transformedProducts;
-                $categories->push($category);
+
+                $categories->push([
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'products' => $transformedProducts
+                ]);
             }
         }
 
