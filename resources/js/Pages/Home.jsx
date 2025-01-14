@@ -142,7 +142,7 @@ function Home({ rubriques }) {
                         </div>
                     </div>
                 )}
-                {auth.user.role.includes("Labo") && (
+                {auth.user.role.includes("INV Labo") && (
                     <div className="relative flex">
                         <img
                             src="/images/restau/white.jpeg"
@@ -166,7 +166,7 @@ function Home({ rubriques }) {
                         </div>
                     </div>
                 )}
-                {auth.user.role.includes("Economat") && (
+                {auth.user.role.includes("INV Economat") && (
                     <div className="relative flex">
                         <img
                             src="/images/restau/white.jpeg"
