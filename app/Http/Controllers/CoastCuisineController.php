@@ -28,10 +28,7 @@ class CoastCuisineController extends Controller
         $currentYear = $request->get('year', now()->year);
 
         // Get products from fiche_id = 1
-        $fiche = Fiche::find(1);
-        $products = $fiche->cuisinier_products()
-            ->with('cuisinier_category')
-            ->get();
+        $products = Fiche::find(1)->cuisinier_products;
 
         // Get existing coast cuisine data
         $coastData = CoastCuisine::where('restaurant_id', $restaurant->id)
@@ -40,43 +37,27 @@ class CoastCuisineController extends Controller
             ->get()
             ->groupBy('product_id');
 
-        // Group products by category and transform them
-        $categories = collect();
-        $groupedProducts = $products->groupBy('category_id');
+        // Transform products to include their values
+        $transformedProducts = $products->map(function ($product) use ($coastData) {
+            return [
+                'id' => $product->id,
+                'designation' => $product->designation,
+                'unite' => $product->unite,
+                'image' => $product->image,
+                'values' => isset($coastData[$product->id])
+                    ? $coastData[$product->id]->pluck('value', 'day')->toArray()
+                    : []
+            ];
+        });
 
-        foreach ($groupedProducts as $categoryId => $products) {
-            $category = CuisinierCategory::find($categoryId);
-            if ($category) {
-                // Transform products for this category
-                $transformedProducts = $products->map(function ($product) use ($coastData) {
-                    return [
-                        'id' => $product->id,
-                        'designation' => $product->designation,
-                        'unite' => $product->unite,
-                        'image' => $product->image,
-                        'values' => isset($coastData[$product->id])
-                            ? $coastData[$product->id]->pluck('value', 'day')->toArray()
-                            : []
-                    ];
-                })->values();
-
-                // Add category with its transformed products
-                $categories->push([
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'products' => $transformedProducts
-                ]);
-            }
-        }
-        dd($products);
-        // return Inertia::render('FluxReel/CoastCuisine/CoastCuisineRestau', [
-        //     'restaurant' => $restaurant,
-        //     'categories' => $categories,
-        //     'currentMonth' => [
-        //         'month' => (int)$currentMonth,
-        //         'year' => (int)$currentYear
-        //     ]
-        // ]);
+        return Inertia::render('FluxReel/CoastCuisine/CoastCuisine', [
+            'restaurant' => $restaurant,
+            'products' => $transformedProducts,
+            'currentMonth' => [
+                'month' => (int)$currentMonth,
+                'year' => (int)$currentYear
+            ]
+        ]);
     }
     public function updateValue(Request $request)
     {
