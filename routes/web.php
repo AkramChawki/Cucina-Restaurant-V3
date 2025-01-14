@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::get('/detailles', [HomeController::class, 'detailles'])->name('detailles');
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraison.index');
 
     Route::prefix('rubrique')->group(function () {

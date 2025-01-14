@@ -16,9 +16,4 @@ class HomeController extends Controller
         return Inertia::render('Home', ["rubriques" => $rubriques]);
     }
 
-    public function detailles()
-    {
-        return Inertia::render('Detaills');
-    }
-
 }

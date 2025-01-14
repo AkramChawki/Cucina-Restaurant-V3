@@ -272,10 +272,10 @@ function Home({ rubriques }) {
                                 href="#"
                                 className="my-2 text-5xl font-bold text-black"
                             >
-                                Detailles
+                                Livraison Restaurant
                             </a>
                             <Link
-                                href="/detailles"
+                                href="/livraisons"
                                 className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
                             >
                                 Accéder
