@@ -122,7 +122,7 @@ export default function Formulaire({ restau }) {
                             />
 
                             <FormField
-                                label="Carte Bancaire Livraison"
+                                label="Carte Bancaire a Livraison"
                                 name="cartebancaireLivraison"
                                 type="number"
                                 value={data.cartebancaireLivraison}
@@ -250,7 +250,7 @@ export default function Formulaire({ restau }) {
                             />
 
                             <FormField
-                                label="App Espèce"
+                                label="Application mobile Espèce"
                                 name="appE"
                                 type="number"
                                 value={data.appE}
@@ -259,7 +259,7 @@ export default function Formulaire({ restau }) {
                             />
 
                             <FormField
-                                label="App Carte"
+                                label="Application mobile Carte"
                                 name="appC"
                                 type="number"
                                 value={data.appC}
@@ -268,7 +268,7 @@ export default function Formulaire({ restau }) {
                             />
 
                             <FormField
-                                label="Shooting"
+                                label="Shooting Marketing"
                                 name="shooting"
                                 type="number"
                                 value={data.shooting}
