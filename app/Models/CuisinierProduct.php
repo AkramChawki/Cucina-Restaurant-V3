@@ -20,4 +20,9 @@ class CuisinierProduct extends Model
     {
         return $this->belongsTo(CuisinierCategory::class);
     }
+
+    public function fiches()
+    {
+        return $this->belongsToMany(Fiche::class, 'fiche_cuisinier_product', 'cuisinier_product_id', 'fiche_id');
+    }
 }
