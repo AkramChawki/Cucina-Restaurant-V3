@@ -24,9 +24,11 @@ class InventaireCuisinierController extends Controller
         $exception = Fiche::with('rubrique')
             ->where('id', $ficheId)
             ->where(function ($query) {
-                $query->where('name', 'like', '%Inventaire Interne%');
+                $query->where('name', 'like', '%Inventaire Interne%')
+                    ->orWhereIn('id', [23, 24]);  // Added exception for fiche IDs 23 and 24
             })
             ->first();
+
         if ($exception) {
             $products = Fiche::find($ficheId)->cuisinier_products->groupBy('cuisinier_category_id');
             $categories = collect([]);
@@ -93,7 +95,6 @@ class InventaireCuisinierController extends Controller
             return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
-
         }
     }
     public function flash(Request $request)
@@ -108,7 +109,6 @@ class InventaireCuisinierController extends Controller
             return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
-
         }
     }
     public function labo(Request $request)
@@ -123,7 +123,6 @@ class InventaireCuisinierController extends Controller
             return redirect("/")->with('success', 'Order created successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while processing your request.');
-
         }
     }
 
