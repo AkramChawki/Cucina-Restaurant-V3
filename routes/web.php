@@ -94,8 +94,8 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
 
     Route::controller(ClotureCaisseController::class)->group(function () {
         Route::get('/cloture-caisse', 'index');
-        Route::post('/cloture-caisse', 'store');
         Route::get('/cloture-caisse/ajouter', 'create');
+        Route::post('/cloture-caisse', 'store');
     });
 
 });

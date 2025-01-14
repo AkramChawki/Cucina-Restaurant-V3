@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClotureCaisse;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +13,8 @@ class ClotureCaisseController extends Controller
 {
     public function index()
     {
-        return Inertia::render('ClotureCaisse/ClotureCaisse');
+        $restaurants = Restaurant::all();
+        return Inertia::render('ClotureCaisse/ClotureCaisse', ["restaurants" => $restaurants]);
     }
 
     public function create()
