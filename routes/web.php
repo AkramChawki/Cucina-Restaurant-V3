@@ -11,7 +11,6 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
-use App\Http\Controllers\AuditController;
 use App\Http\Controllers\BoissonController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
@@ -76,11 +75,6 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/commander', [BLController::class, 'store'])->name('BL.store');
     });
 
-    Route::prefix('audit')->group(callback: function () {
-        Route::get('/', [AuditController::class, 'index'])->name('audit.index');
-        Route::get('/form', [AuditController::class, 'showForm'])->name('audit.form');
-        Route::post('/form', [AuditController::class, 'store'])->name('audit.store');
-    });
     Route::prefix('produit-non-conforme')->group(function () {
         Route::get('/', [ProduitNonConformeController::class, 'index'])
             ->name('produit-non-conforme.index');
