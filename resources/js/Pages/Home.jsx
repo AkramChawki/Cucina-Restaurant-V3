@@ -69,7 +69,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Restaurant") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -97,7 +97,7 @@ function Home({ rubriques }) {
                                 key={id}
                             >
                                 <img
-                                    src="/images/restau/white.jpeg"
+                                    src="/images/restau/flower.jpg"
                                     alt=""
                                     className="absolute inset-0 w-full h-full object-center object-cover"
                                 />
@@ -121,7 +121,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Flash") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -145,7 +145,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("INV Labo") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -169,7 +169,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("INV Economat") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -193,7 +193,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Inventaire Restaurant") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -217,7 +217,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("PNC") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -240,7 +240,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Fiche-controle") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -263,7 +263,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Livraison") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -286,7 +286,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Cloture Caisse") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
@@ -309,7 +309,7 @@ function Home({ rubriques }) {
                 {auth.user.role.includes("Numero") && (
                     <div className="relative flex">
                         <img
-                            src="/images/restau/white.jpeg"
+                            src="/images/restau/flower.jpg"
                             alt=""
                             className="absolute inset-0 w-full h-full object-center object-cover"
                         />
