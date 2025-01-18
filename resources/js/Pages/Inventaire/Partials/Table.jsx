@@ -24,7 +24,7 @@ export default function Table({ categories, ficheId, restau }) {
         ficheId: ficheId,
         products: categories.reduce((acc, category) => {
             category.products.forEach(product => {
-                acc.push({ id: product.id, qty: 0 });
+                acc.push({ id: product.id, qty: null });
             });
             return acc;
         }, [])
@@ -39,9 +39,7 @@ export default function Table({ categories, ficheId, restau }) {
 
         const filteredProducts = data.products
         .filter(product => {
-            const qtyStr = (product.qty || '0').toString();
-            const numValue = parseFloat(qtyStr.replace(',', '.'));
-            return !isNaN(numValue);
+            return product.qty !== null && product.qty !== undefined;
         })
         .map(product => ({
             product_id: product.id,
