@@ -133,11 +133,11 @@ class InventaireCuisinierController extends Controller
             'restau' => 'nullable|string',
             'products' => 'required|array',
             'products.*.product_id' => 'required|integer',
-            'products.*.qty' => 'required|numeric|min:0',
+            'products.*.qty' => 'required|numeric',
         ]);
 
         $detail = array_filter($validatedData['products'], function ($product) {
-            return $product['qty'] > 0;
+            return $product['qty'] >= 0;
         });
 
         $order = new $model();
