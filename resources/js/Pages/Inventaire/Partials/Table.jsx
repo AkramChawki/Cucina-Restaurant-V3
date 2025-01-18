@@ -79,7 +79,8 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleQtyChange = (productId, value) => {
-        const numValue = value === '' ? 0 : parseFloat(value);
+        const normalizedValue = typeof value === 'string' ? value.replace(',', '.') : value;
+        const numValue = normalizedValue === '' ? 0 : parseFloat(normalizedValue);
         if (isNaN(numValue)) return;
         const validValue = Math.max(0, numValue);
         const updatedProducts = data.products.map(product =>

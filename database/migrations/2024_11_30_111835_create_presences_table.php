@@ -14,7 +14,7 @@ return new class extends Migration
             $table->integer('month');
             $table->integer('year');
             $table->json('attendance_data');
-            $table->integer('jours')->nullable();
+            $table->float('jours')->nullable();
             $table->timestamps();
             $table->unique(['employe_id', 'month', 'year']);
         });
