@@ -37,10 +37,16 @@ export default function Table({ categories, ficheId, restau }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const filteredProducts = data.products.filter(product => parseFloat(product.qty) > 0).map(product => ({
+        const filteredProducts = data.products
+        .filter(product => {
+            const numValue = parseFloat(product.qty.toString().replace(',', '.'));
+            return !isNaN(numValue) && numValue > 0;
+        })
+        .map(product => ({
             product_id: product.id,
-            qty: parseFloat(product.qty)
+            qty: parseFloat(product.qty.toString().replace(',', '.'))
         }));
+
         const filteredData = {
             name: data.name,
             restau: data.restau || null,
@@ -79,23 +85,19 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleQtyChange = (productId, value) => {
-        // If empty and showing placeholder, treat as empty
+        // Empty input handling
         if (value === '') {
             const updatedProducts = data.products.map(product =>
-                product.id === productId ? { ...product, qty: '' } : product
+                product.id === productId ? { ...product, qty: ''} : product
             );
             setData('products', updatedProducts);
             return;
         }
-        
+    
+        // Convert any dots to commas for display
         const displayValue = value.replace('.', ',');
         
-        const calcValue = value.replace(',', '.');
-        const numValue = parseFloat(calcValue);
-        
-        if (isNaN(numValue)) return;
-        
-        const validValue = Math.max(0, numValue);
+        // Store the display value (with comma)
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: displayValue } : product
         );
@@ -337,14 +339,16 @@ export default function Table({ categories, ficheId, restau }) {
                                                                     </label>
                                                                     <div className="relative rounded-md">
                                                                         <input
-                                                                            type="number"
-                                                                            step="0.01"
+                                                                            type="text"  // Changed from "number"
                                                                             className="block w-full py-2 px-4 border rounded-md text-center transition-colors duration-200 border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                                                             placeholder="0"
-                                                                            value={data.products.find(p => p.id === product.id)?.qty === 0 ? '' : data.products.find(p => p.id === product.id)?.qty}
+                                                                            value={data.products.find(p => p.id === product.id)?.qty || ''}
                                                                             onChange={(e) => {
                                                                                 const value = e.target.value;
-                                                                                handleQtyChange(product.id, value);
+                                                                                // Allow only numbers, comma, and period
+                                                                                if (/^[0-9]*[,.]?[0-9]*$/.test(value) || value === '') {
+                                                                                    handleQtyChange(product.id, value);
+                                                                                }
                                                                             }}
                                                                             onFocus={() => handleFocus(product.id)}
                                                                             onBlur={() => handleBlur(product.id)}

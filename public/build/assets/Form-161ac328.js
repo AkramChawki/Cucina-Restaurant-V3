@@ -1,1 +1,0 @@
-import{a,F as t,j as r}from"./app-b9293b40.js";import e from"./LaboratoireForm-c888c7fa.js";import m from"./RestaurantForm-bf5c373f.js";import{F as s}from"./Footer-66d91545.js";import"./lodash-7d5a1b70.js";function u(){const o=new URLSearchParams(window.location.search).get("type");return a(t,{children:[o==="laboratoire"?r(e,{}):r(m,{}),r(s,{})]})}export{u as default};
