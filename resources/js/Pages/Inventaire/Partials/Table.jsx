@@ -39,13 +39,15 @@ export default function Table({ categories, ficheId, restau }) {
 
         const filteredProducts = data.products
         .filter(product => {
-            const numValue = parseFloat(product.qty.toString().replace(',', '.'));
-            return !isNaN(numValue) && numValue > 0;
+            const qtyStr = (product.qty || '0').toString();
+            const numValue = parseFloat(qtyStr.replace(',', '.'));
+            return !isNaN(numValue);
         })
         .map(product => ({
             product_id: product.id,
-            qty: parseFloat(product.qty.toString().replace(',', '.'))
+            qty: parseFloat((product.qty || '0').toString().replace(',', '.'))
         }));
+
 
         const filteredData = {
             name: data.name,
