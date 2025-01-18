@@ -79,12 +79,25 @@ export default function Table({ categories, ficheId, restau }) {
     };
 
     const handleQtyChange = (productId, value) => {
-        const normalizedValue = typeof value === 'string' ? value.replace(',', '.') : value;
-        const numValue = normalizedValue === '' ? 0 : parseFloat(normalizedValue);
+        // If empty and showing placeholder, treat as empty
+        if (value === '') {
+            const updatedProducts = data.products.map(product =>
+                product.id === productId ? { ...product, qty: '' } : product
+            );
+            setData('products', updatedProducts);
+            return;
+        }
+        
+        const displayValue = value.replace('.', ',');
+        
+        const calcValue = value.replace(',', '.');
+        const numValue = parseFloat(calcValue);
+        
         if (isNaN(numValue)) return;
+        
         const validValue = Math.max(0, numValue);
         const updatedProducts = data.products.map(product =>
-            product.id === productId ? { ...product, qty: validValue } : product
+            product.id === productId ? { ...product, qty: displayValue } : product
         );
         setData('products', updatedProducts);
     };
@@ -328,9 +341,11 @@ export default function Table({ categories, ficheId, restau }) {
                                                                             step="0.01"
                                                                             className="block w-full py-2 px-4 border rounded-md text-center transition-colors duration-200 border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                                                             placeholder="0"
-                                                                            min={0}
-                                                                            value={data.products.find(p => p.id === product.id)?.qty}
-                                                                            onChange={(e) => handleQtyChange(product.id, parseFloat(e.target.value))}
+                                                                            value={data.products.find(p => p.id === product.id)?.qty === 0 ? '' : data.products.find(p => p.id === product.id)?.qty}
+                                                                            onChange={(e) => {
+                                                                                const value = e.target.value;
+                                                                                handleQtyChange(product.id, value);
+                                                                            }}
                                                                             onFocus={() => handleFocus(product.id)}
                                                                             onBlur={() => handleBlur(product.id)}
                                                                             onWheel={handleInputInteraction}
