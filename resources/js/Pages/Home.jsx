@@ -2,7 +2,7 @@ import { Head, Link, usePage } from "@inertiajs/react";
 
 function Home({ rubriques }) {
     const { auth } = usePage().props;
-    
+
     const formatRubriqueTitle = (title) => {
         if (title === "Restaurant") {
             return "Gestion Restaurant";
@@ -10,7 +10,7 @@ function Home({ rubriques }) {
         return `Commande ${title}`;
     };
 
-    const CardOverlay = ({ title, link, children = null }) => (
+    const CardOverlay = ({ title, link }) => (
         <div className="relative group h-80 overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:scale-[1.02]">
             <div className="absolute inset-0">
                 <img
@@ -18,7 +18,6 @@ function Home({ rubriques }) {
                     alt=""
                     className="h-full w-full object-cover object-center"
                 />
-                {/* Dark overlay with gradient */}
                 <div className="absolute inset-0 bg-gradient-to-b from-green-600/40 to-green-900/80 mix-blend-multiply" />
             </div>
             <div className="relative h-full flex flex-col items-center justify-center text-center p-8">
@@ -31,7 +30,6 @@ function Home({ rubriques }) {
                 >
                     Accéder
                 </Link>
-                {children}
             </div>
         </div>
     );
@@ -39,7 +37,7 @@ function Home({ rubriques }) {
     return (
         <>
             <Head title="Accueil" />
-            
+
             {/* Hero Section */}
             <div className="relative min-h-screen">
                 <main className="relative bg-light-gray">
@@ -95,7 +93,7 @@ function Home({ rubriques }) {
                                 link="/restaurants-rubriques"
                             />
                         )}
-                        
+
                         {rubriques.map(
                             (rubrique, id) =>
                                 auth.user.role.includes(rubrique.title) && (
@@ -110,32 +108,28 @@ function Home({ rubriques }) {
                         {auth.user.role.includes("Flash") && (
                             <CardOverlay
                                 title="Inventaire Flash"
-                                link="/inventaire"
-                                children={<input type="hidden" name="ficheId" value="22" />}
+                                link="/inventaire?ficheId=22"
                             />
                         )}
 
                         {auth.user.role.includes("INV Labo") && (
                             <CardOverlay
                                 title="Inventaire Labo"
-                                link="/inventaire"
-                                children={<input type="hidden" name="ficheId" value="23" />}
+                                link="/inventaire?ficheId=23"
                             />
                         )}
 
                         {auth.user.role.includes("INV Economat") && (
                             <CardOverlay
                                 title="Inventaire Economat"
-                                link="/inventaire"
-                                children={<input type="hidden" name="ficheId" value="24" />}
+                                link="/inventaire?ficheId=24"
                             />
                         )}
 
                         {auth.user.role.includes("Inventaire Restaurant") && (
                             <CardOverlay
                                 title="Inventaire Restaurant"
-                                link="/inventaire"
-                                children={<input type="hidden" name="ficheId" value="25" />}
+                                link="/inventaire?ficheId=25"
                             />
                         )}
 

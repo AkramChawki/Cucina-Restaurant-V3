@@ -1,1 +1,0 @@
-import{j as r,F as e}from"./app-8c02ef37.js";import n from"./Restaurant-43e0a2eb.js";import"./description-e3e30344.js";function i({restaurant:t,products:a}){return r(e,{children:r(n,{restaurant:t,products:a})})}export{i as default};
