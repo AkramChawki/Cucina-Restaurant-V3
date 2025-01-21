@@ -12,6 +12,7 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
+use App\Http\Controllers\BMLController;
 use App\Http\Controllers\CoastConsomableController;
 use App\Http\Controllers\CoastCuisineController;
 use App\Http\Controllers\CoastEconomatController;
@@ -145,6 +146,17 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     // Update value endpoint
     Route::post('/coast-consomable/update-value', [CoastConsomableController::class, 'updateValue'])
         ->name('coast-consomable.update-value');
+
+    Route::get('/bml', [BMLController::class, 'index'])
+        ->name('bml.index');
+
+    // Show the form for a specific restaurant
+    Route::get('/bml/{restaurant:slug}', [BMLController::class, 'show'])
+        ->name('bml.show');
+
+    // Update value endpoint
+    Route::post('/bml/update-value', [BMLController::class, 'updateValue'])
+        ->name('bml.update-value');
 
 });
 

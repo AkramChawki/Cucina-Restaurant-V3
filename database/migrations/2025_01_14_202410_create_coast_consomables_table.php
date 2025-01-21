@@ -21,7 +21,6 @@ return new class extends Migration
             $table->float('value')->default(0);
             $table->timestamps();
             
-            // Composite unique index to prevent duplicate entries
             $table->unique(['restaurant_id', 'product_id', 'month', 'year', 'day']);
         });
     }

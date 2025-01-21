@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coast_economats', function (Blueprint $table) {
+        Schema::create('b_m_l_s', function (Blueprint $table) {
             $table->id();
             $table->foreignId('restaurant_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('cuisinier_products')->onDelete('cascade');
+            $table->string('fournisseur');
+            $table->string('designation');
+            $table->decimal('quantity', 10, 2);
+            $table->decimal('price', 10, 2);
             $table->integer('month');
             $table->integer('year');
-            $table->integer('day');
-            $table->float('value')->default(0);
             $table->timestamps();
-            
-            $table->unique(['restaurant_id', 'product_id', 'month', 'year', 'day']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('coast_economats');
+        Schema::dropIfExists('b_m_l_s');
     }
 };

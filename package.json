@@ -22,6 +22,7 @@
     "dependencies": {
         "@heroicons/react": "v1",
         "lodash": "^4.17.21",
+        "lucide-react": "^0.473.0",
         "react-multivalue-text-input": "^2.5.0",
         "react-signature-canvas": "^1.0.7"
     }
