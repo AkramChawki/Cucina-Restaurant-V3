@@ -71,15 +71,15 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
             setData('products', updatedProducts);
             return;
         }
-    
+
         const numValue = parseFloat(value);
         if (isNaN(numValue) || numValue < 0) return;
-    
+
         if (requiresRest) {
             const product = data.products.find(p => p.id === productId);
             if (!product || product.rest === '' || product.rest === undefined) return;
         }
-    
+
         const updatedProducts = data.products.map(product =>
             product.id === productId ? { ...product, qty: value } : product
         );
@@ -121,7 +121,7 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        
+
         const filteredProducts = data.products
             .filter(product => {
                 const qty = parseFloat(product.qty);
@@ -137,30 +137,30 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                         break;
                     }
                 }
-    
+
                 const qty = parseFloat(product.qty);
                 let adjustedQty = qty;
-                
+
                 if (productCR) {
                     adjustedQty = calculateCRQuantity(qty, productCR);
                 }
-    
+
                 return {
                     product_id: product.id,
                     qty: adjustedQty,
                     ...(requiresRest && { rest: parseFloat(product.rest) })
                 };
             });
-    
+
         const filteredData = { ...data, products: filteredProducts };
-    
-        let endpoint = ficheId == 17
+
+        let endpoint = (ficheId >= 26 && ficheId <= 33)
             ? '/commande-cuisinier/labo'
             : ficheId == 6
                 ? '/BL/commander'
                 : '/commande-cuisinier/commander';
-                    
-    
+
+
         try {
             await router.post(endpoint, filteredData);
         } catch (error) {
@@ -372,11 +372,11 @@ export default function Table({ categories, ficheId, restau, requiresRest: propR
                                                             alt={product.designation}
                                                         />
                                                     </div>
-                                                    {product.moy && (
-                                                    <div className="bg-red-600 text-white py-2 text-center">
-                                                      Moyenne : {product.moy}
-                                                    </div>
-                                                )}
+                                                    {product.moy && !(ficheId >= 26 && ficheId <= 33) && (
+                                                        <div className="bg-red-600 text-white py-2 text-center">
+                                                            Moyenne : {product.moy}
+                                                        </div>
+                                                    )}
                                                     <div className="p-4">
                                                         <h3 className="text-lg font-semibold text-center mb-4">
                                                             {product.designation}

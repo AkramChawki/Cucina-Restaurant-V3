@@ -64,7 +64,7 @@ class ClotureCaisseController extends Controller
         
         $Commision_glovo = 0;
         if ($request->glovoC > 0 || $request->glovoE > 0) {
-            $Commision_glovo = ($request->glovoC - (0.28 * 1.2 * ($request->glovoE + $request->glovoC)));
+            $Commision_glovo = ($request->glovoC - (0.26 * 1.2 * ($request->glovoE + $request->glovoC)));
         }
 
         $image = str_replace('data:image/png;base64,', '', $image);

@@ -54,7 +54,7 @@
 </head>
 <body>
     <h1>{{ $type }}</h1>
-    <p>Date: {{ now()->toDateString() }}</p>
+    <p>Date: {{ now()->format('Y-m-d H:i') }}</p>
 
     @foreach ($data as $restau)
         <h2>{{ $restau['restau'] }}</h2>
