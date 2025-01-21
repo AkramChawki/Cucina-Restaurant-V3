@@ -3,13 +3,6 @@ import { Head, Link, usePage } from "@inertiajs/react";
 function Home({ rubriques }) {
     const { auth } = usePage().props;
 
-    const formatRubriqueTitle = (title) => {
-        if (title === "Restaurant") {
-            return "Gestion Restaurant";
-        }
-        return `Commande ${title}`;
-    };
-
     const CardOverlay = ({ title, link }) => (
         <div className="relative group h-80 overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:scale-[1.02]">
             <div className="absolute inset-0">
@@ -87,92 +80,41 @@ function Home({ rubriques }) {
             <div id="access" className="bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {auth.user.role.includes("Restaurant") && (
+                        {auth.user.role.includes("Cost Cuisine") && (
                             <CardOverlay
-                                title="Gestion Restaurant"
-                                link="/restaurants-rubriques"
+                                title="Cost Cuisine"
+                                link="/cost-cuisine"
                             />
                         )}
 
-                        {rubriques.map(
-                            (rubrique, id) =>
-                                auth.user.role.includes(rubrique.title) && (
-                                    <CardOverlay
-                                        key={id}
-                                        title={formatRubriqueTitle(rubrique.title)}
-                                        link={`/rubrique/${rubrique.title}`}
-                                    />
-                                )
-                        )}
-
-                        {auth.user.role.includes("Flash") && (
+                        {auth.user.role.includes("Cost Pizza") && (
                             <CardOverlay
-                                title="Inventaire Flash"
-                                link="/inventaire?ficheId=22"
+                                title="Cost Pizza"
+                                link="/cost-pizza"
                             />
                         )}
 
-                        {auth.user.role.includes("INV Labo") && (
+                        {auth.user.role.includes("Cost Economat") && (
                             <CardOverlay
-                                title="Inventaire Labo"
-                                link="/inventaire?ficheId=23"
+                                title="Cost Economat"
+                                link="/cost-economat"
                             />
                         )}
 
-                        {auth.user.role.includes("INV Economat") && (
+                        {auth.user.role.includes("Cost Consomable") && (
                             <CardOverlay
-                                title="Inventaire Economat"
-                                link="/inventaire?ficheId=24"
+                                title="cost-consomable"
+                                link="/cost-consomable"
                             />
                         )}
 
-                        {auth.user.role.includes("Inventaire Restaurant") && (
+                        {auth.user.role.includes("BML") && (
                             <CardOverlay
-                                title="Inventaire Restaurant"
-                                link="/inventaire?ficheId=25"
+                                title="BML"
+                                link="/bml"
                             />
                         )}
 
-                        {auth.user.role.includes("PNC") && (
-                            <CardOverlay
-                                title="Produit Non Conformes"
-                                link="/produit-non-conforme"
-                            />
-                        )}
-
-                        {auth.user.role.includes("Fiche-controle") && (
-                            <CardOverlay
-                                title="Fiche de Controle Hygiene"
-                                link="/fiche-controle"
-                            />
-                        )}
-
-                        {auth.user.role.includes("Livraison") && (
-                            <CardOverlay
-                                title="Livraison Restaurant"
-                                link="/livraisons"
-                            />
-                        )}
-
-                        {auth.user.role.includes("Flux Reel") && (
-                            <CardOverlay
-                                title="Flux Reel"
-                                link="/flux-reel"
-                            />
-                        )}
-                        {auth.user.role.includes("Cloture Caisse") && (
-                            <CardOverlay
-                                title="Cloture Caisse"
-                                link="/cloture-caisse"
-                            />
-                        )}
-
-                        {auth.user.role.includes("Numero") && (
-                            <CardOverlay
-                                title="Numero"
-                                link="/numeros"
-                            />
-                        )}
                     </div>
                 </div>
             </div>
@@ -198,7 +140,6 @@ function Home({ rubriques }) {
                                 />
                             </svg>
                         </a>
-                        {/* ... other social icons ... */}
                     </div>
                     <div className="mt-8 md:mt-0 md:order-1">
                         <p className="text-center text-base text-gray-400">

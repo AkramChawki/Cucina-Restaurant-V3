@@ -15,5 +15,9 @@ class HomeController extends Controller
         $rubriques = Rubrique::all();
         return Inertia::render('Home', ["rubriques" => $rubriques]);
     }
+    public function FluxReel()
+    {
+        return Inertia::render('FluxReel/FluxReel',);
+    }
 
 }

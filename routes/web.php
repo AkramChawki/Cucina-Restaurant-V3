@@ -13,10 +13,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
 use App\Http\Controllers\BMLController;
-use App\Http\Controllers\CoastConsomableController;
-use App\Http\Controllers\CoastCuisineController;
-use App\Http\Controllers\CoastEconomatController;
-use App\Http\Controllers\CoastPizzaController;
+use App\Http\Controllers\CostConsomableController;
+use App\Http\Controllers\CostCuisineController;
+use App\Http\Controllers\CostEconomatController;
+use App\Http\Controllers\CostPizzaController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
@@ -103,49 +103,51 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         Route::post('/cloture-caisse', 'store');
     });
 
-    Route::get('/coast-cuisine', [CoastCuisineController::class, 'index'])
-        ->name('coast-cuisine.index');
+    Route::get('/flux-reel', [HomeController::class, 'FluxReel'])->name('FluxReel');
+
+    Route::get('/cost-cuisine', [CostCuisineController::class, 'index'])
+        ->name('cost-cuisine.index');
 
     // Show the form for a specific restaurant
-    Route::get('/coast-cuisine/{restaurant:slug}', [CoastCuisineController::class, 'show'])
-        ->name('coast-cuisine.show');
+    Route::get('/cost-cuisine/{restaurant:slug}', [CostCuisineController::class, 'show'])
+        ->name('cost-cuisine.show');
 
     // Update value endpoint
-    Route::post('/coast-cuisine/update-value', [CoastCuisineController::class, 'updateValue'])
-        ->name('coast-cuisine.update-value');
+    Route::post('/cost-cuisine/update-value', [CostCuisineController::class, 'updateValue'])
+        ->name('cost-cuisine.update-value');
 
-    Route::get('/coast-pizza', [CoastPizzaController::class, 'index'])
-        ->name('coast-pizza.index');
+    Route::get('/cost-pizza', [CostPizzaController::class, 'index'])
+        ->name('cost-pizza.index');
 
     // Show the form for a specific restaurant
-    Route::get('/coast-pizza/{restaurant:slug}', [CoastPizzaController::class, 'show'])
-        ->name('coast-pizza.show');
+    Route::get('/cost-pizza/{restaurant:slug}', [CostPizzaController::class, 'show'])
+        ->name('cost-pizza.show');
 
     // Update value endpoint
-    Route::post('/coast-pizza/update-value', [CoastPizzaController::class, 'updateValue'])
-        ->name('coast-pizza.update-value');
+    Route::post('/cost-pizza/update-value', [CostPizzaController::class, 'updateValue'])
+        ->name('cost-pizza.update-value');
 
-    Route::get('/coast-economat', [CoastEconomatController::class, 'index'])
-        ->name('coast-economat.index');
+    Route::get('/cost-economat', [CostEconomatController::class, 'index'])
+        ->name('cost-economat.index');
 
     // Show the form for a specific restaurant
-    Route::get('/coast-economat/{restaurant:slug}', [CoastEconomatController::class, 'show'])
-        ->name('coast-economat.show');
+    Route::get('/cost-economat/{restaurant:slug}', [CostEconomatController::class, 'show'])
+        ->name('cost-economat.show');
 
     // Update value endpoint
-    Route::post('/coast-economat/update-value', [CoastEconomatController::class, 'updateValue'])
-        ->name('coast-economat.update-value');
+    Route::post('/cost-economat/update-value', [CostEconomatController::class, 'updateValue'])
+        ->name('cost-economat.update-value');
 
-    Route::get('/coast-consomable', [CoastConsomableController::class, 'index'])
-        ->name('coast-consomable.index');
+    Route::get('/cost-consomable', [CostConsomableController::class, 'index'])
+        ->name('cost-consomable.index');
 
     // Show the form for a specific restaurant
-    Route::get('/coast-consomable/{restaurant:slug}', [CoastConsomableController::class, 'show'])
-        ->name('coast-consomable.show');
+    Route::get('/cost-consomable/{restaurant:slug}', [CostConsomableController::class, 'show'])
+        ->name('cost-consomable.show');
 
     // Update value endpoint
-    Route::post('/coast-consomable/update-value', [CoastConsomableController::class, 'updateValue'])
-        ->name('coast-consomable.update-value');
+    Route::post('/cost-consomable/update-value', [CostConsomableController::class, 'updateValue'])
+        ->name('cost-consomable.update-value');
 
     Route::get('/bml', [BMLController::class, 'index'])
         ->name('bml.index');
