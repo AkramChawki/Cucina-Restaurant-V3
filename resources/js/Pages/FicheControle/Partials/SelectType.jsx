@@ -56,8 +56,8 @@ export default function SelectType({ restaurants }) {
                                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#90D88C] focus:border-[#90D88C] sm:text-sm rounded-md"
                             >
                                 <option value="">Sélectionner le type ...</option>
-                                <option value="laboratoire">Laboratoire</option>
-                                <option value="restaurant">Restaurant</option>
+                                <option value="hygiene">Hygiene</option>
+                                <option value="patrimoine">Patrimoine</option>
                             </select>
                         </div>
                     )}

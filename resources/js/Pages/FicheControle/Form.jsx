@@ -1,7 +1,7 @@
 import React from 'react'
-import LaboratoireForm from './Partials/LaboratoireForm'
-import RestaurantForm from './Partials/RestaurantForm'
 import Footer from '@/Components/Footer'
+import HygieneForm from './Partials/HygieneForm';
+import PatrimoineForm from './Partials/PatrimoineForm';
 
 export default function Form() {
   const queryParameters = new URLSearchParams(window.location.search);
@@ -9,7 +9,7 @@ export default function Form() {
 
   return (
     <>
-      {type === 'laboratoire' ? <LaboratoireForm /> : <RestaurantForm />}
+      {type === 'hygiene' ? <HygieneForm /> : <PatrimoineForm />}
       <Footer />
     </>
   )
