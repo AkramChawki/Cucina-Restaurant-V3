@@ -155,7 +155,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
         ->name('bml.show');
 
     // Update value endpoint
-    Route::post('/bml/update-value', [BMLController::class, 'updateValue'])
+    Route::post('/bml/update-value', [BMLController::class, 'store'])
         ->name('bml.update-value');
 
 });
