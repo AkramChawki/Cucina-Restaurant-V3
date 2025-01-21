@@ -103,7 +103,7 @@ function Home({ rubriques }) {
 
                         {auth.user.role.includes("Cost Consomable") && (
                             <CardOverlay
-                                title="cost-consomable"
+                                title="Cost Consomable"
                                 link="/cost-consomable"
                             />
                         )}
