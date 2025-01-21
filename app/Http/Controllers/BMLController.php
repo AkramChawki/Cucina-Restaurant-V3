@@ -39,7 +39,7 @@ class BMLController extends Controller
             ];
         });
 
-    return Inertia::render('BML/bml', [
+    return Inertia::render('FluxReel/bml/BML', [
         'restaurant' => $restaurant,
         'currentMonth' => [
             'month' => (int)$currentMonth,
