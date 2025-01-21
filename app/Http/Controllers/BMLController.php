@@ -13,7 +13,7 @@ class BMLController extends Controller
     {
         $restaurants = Restaurant::all(['id', 'name', 'slug']);
 
-        return Inertia::render('FluxReel/BML/BMLRestau', [
+        return Inertia::render('FluxReel/bml/BMLRestau', [
             'restaurants' => $restaurants
         ]);
     }
@@ -39,7 +39,7 @@ class BMLController extends Controller
             ];
         });
 
-    return Inertia::render('BML/BML', [
+    return Inertia::render('BML/bml', [
         'restaurant' => $restaurant,
         'currentMonth' => [
             'month' => (int)$currentMonth,
