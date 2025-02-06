@@ -32,57 +32,50 @@ class FicheControleController extends Controller
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'date' => 'required|date',
-        'restau' => 'required|string|max:255',
-        'type' => 'required|in:hygiene,patrimoine',
-        'data' => 'required|array'
-    ]);
-
-    try {
-        // First create with temporary PDF
-        $validated['pdf'] = 'temp.pdf';
-        $data = $request->except(['name', 'date', 'restau', 'type']);
-        
-        $ficheControle = FicheControle::create([
-            'name' => $validated['name'],
-            'date' => $validated['date'],
-            'restau' => $validated['restau'],
-            'type' => $validated['type'],
-            'data' => $data,
-            'pdf' => 'temp.pdf', // Add temporary PDF value
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'date' => 'required|date',
+            'restau' => 'required|string|max:255',
+            'type' => 'required|in:hygiene,patrimoine',
+            'moyens' => 'required|array',  // Add validation
+            'controles' => 'required_if:type,hygiene|array' // Add validation
         ]);
 
-        // Generate and update PDF
-        $pdfName = $this->generatePdfName($ficheControle);
-        $this->savePdf($ficheControle, $pdfName);
+        try {
+            $ficheControle = FicheControle::create([
+                'name' => $validated['name'],
+                'date' => $validated['date'],
+                'restau' => $validated['restau'],
+                'type' => $validated['type'],
+                'data' => [  // Restructure data
+                    'moyens' => $request->moyens,
+                    'controles' => $request->controles
+                ],
+                'pdf' => null
+            ]);
 
-        // Update with correct PDF name
-        $ficheControle->pdf = $pdfName;
-        $ficheControle->save();
+            $pdfName = $this->generatePdfName($ficheControle);
+            $this->savePdf($ficheControle, $pdfName);
 
-        return redirect("/")->with('success', 'Fiche de contrôle créée avec succès.');
-    } catch (\Exception $e) {
-        Log::error('Failed to create fiche de controle', ['error' => $e->getMessage()]);
-        return redirect()->back()->with('error', 'Échec de l\'enregistrement.');
+            return redirect("/")->with('success', 'Fiche de contrôle créée avec succès.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create fiche', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Échec de l\'enregistrement.');
+        }
     }
-}
 
     private function generatePdfName($ficheControle)
     {
         return $this->generatePdfFileName(
-            "FicheControle" . ucfirst($ficheControle->type), 
+            "FicheControle" . ucfirst($ficheControle->type),
             $ficheControle
         );
     }
 
     private function savePdf($ficheControle, $pdfName)
     {
-        $view = $ficheControle->type === 'hygiene' 
-            ? 'pdf.fiche-controle-hygiene' 
-            : 'pdf.fiche-controle-patrimoine';
+        $view = 'pdf.fiche-controle-' . $ficheControle->type;
 
         $pdfUrl = $this->generatePdfAndSave(
             $view,

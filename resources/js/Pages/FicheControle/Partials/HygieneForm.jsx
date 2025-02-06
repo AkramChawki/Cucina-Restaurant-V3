@@ -12,116 +12,114 @@ export default function HygieneForm() {
         date: "",
         restau: restau,
         type: "hygiene",
-        data: {
-            moyens: {
-                economat: {
-                    economat_salle_ferme: { etat: "non", commentaire: "" },
-                    economat_chimique_ferme: { etat: "non", commentaire: "" },
-                    economat_food_ferme: { etat: "non", commentaire: "" }
-                },
-                salle: {
-                    torchon_salle: { etat: "non", commentaire: "" },
-                    deobact_salle: { etat: "non", commentaire: "" },
-                    balai_salle: { etat: "non", commentaire: "" },
-                    port_tenue_responsable: { etat: "non", commentaire: "" },
-                    port_tenue_serveur: { etat: "non", commentaire: "" },
-                    boxs_livreurs: { etat: "non", commentaire: "" },
-                    poubelle_salle: { etat: "non", commentaire: "" }
-                },
-                pizzeria: {
-                    port_tenue_pizzaiolo: { etat: "non", commentaire: "" },
-                    distributeur_essui_main: { etat: "non", commentaire: "" },
-                    distributeur_savon_pizzeria: { etat: "non", commentaire: "" },
-                    deobact_pizzeria: { etat: "non", commentaire: "" },
-                    torchon_pizzeria: { etat: "non", commentaire: "" },
-                    poubelle_pizzeria: { etat: "non", commentaire: "" }
-                },
-                wc_client: {
-                    distributeur_savon_wc: { etat: "non", commentaire: "" },
-                    papier_hygienique_wc_client: { etat: "non", commentaire: "" },
-                    papier_essui_main_wc_client: { etat: "non", commentaire: "" },
-                    poubelle_wc_client: { etat: "non", commentaire: "" }
-                },
-                cuisine: {
-                    port_tenue_cuisinier: { etat: "non", commentaire: "" },
-                    deobact_cuisine: { etat: "non", commentaire: "" },
-                    supervix: { etat: "non", commentaire: "" },
-                    nectal_wc: { etat: "non", commentaire: "" },
-                    mister_glass: { etat: "non", commentaire: "" },
-                    javel: { etat: "non", commentaire: "" },
-                    sanicroix: { etat: "non", commentaire: "" },
-                    distributeur_savon_plonge: { etat: "non", commentaire: "" },
-                    distributeur_essui_main_plonge: { etat: "non", commentaire: "" },
-                    torchon_cuisine: { etat: "non", commentaire: "" },
-                    poubelle_cuisine: { etat: "non", commentaire: "" }
-                },
-                vestiaire: {
-                    vestiaire_personnel: { etat: "non", commentaire: "" },
-                    wc_personnel: { etat: "non", commentaire: "" },
-                    casiers_ferme: { etat: "non", commentaire: "" },
-                    douche_personnel: { etat: "non", commentaire: "" },
-                    papier_hygienique_personnel: { etat: "non", commentaire: "" },
-                    distributeur_savon_personnel: { etat: "non", commentaire: "" },
-                    poubelle_vestiaire: { etat: "non", commentaire: "" }
-                }
+        moyens: {
+            economat: {
+                economat_salle_ferme: { etat: "non", commentaire: "" },
+                economat_chimique_ferme: { etat: "non", commentaire: "" },
+                economat_food_ferme: { etat: "non", commentaire: "" }
             },
-            controles: {
-                rangement_economats: {
-                    rangement_economat_chimique: { value: "", commentaire: "" },
-                    rangement_economat_salle: { value: "", commentaire: "" },
-                    rangement_economat_food: { value: "", commentaire: "" }
-                },
-                salle: {
-                    proprete_table: { value: "", commentaire: "" },
-                    proprete_chaise: { value: "", commentaire: "" },
-                    proprete_tenue_responsable: { value: "", commentaire: "" },
-                    proprete_tenue_serveur: { value: "", commentaire: "" },
-                    proprete_bouteilles_huile: { value: "", commentaire: "" },
-                    proprete_poubelle_salle: { value: "", commentaire: "" },
-                    proprete_torchon: { value: "", commentaire: "" },
-                    proprete_boxs_livreurs: { value: "", commentaire: "" },
-                    proprete_poste_caisse: { value: "", commentaire: "" }
-                },
-                poste_pizza: {
-                    proprete_comptoir_pizzeria: { value: "", commentaire: "" },
-                    proprete_tenues_pizzaiolo: { value: "", commentaire: "" },
-                    proprete_ustensiles_pizzeria: { value: "", commentaire: "" },
-                    proprete_poubelle_pizzeria: { value: "", commentaire: "" },
-                    proprete_torchon_pizzeria: { value: "", commentaire: "" }
-                },
-                wc_client: {
-                    proprete_sol_wc: { value: "", commentaire: "" },
-                    proprete_sanitaire: { value: "", commentaire: "" },
-                    proprete_miroir: { value: "", commentaire: "" },
-                    proprete_poubelle_wc: { value: "", commentaire: "" }
-                },
-                cuisine: {
-                    proprete_comptoir_chaud: { value: "", commentaire: "" },
-                    proprete_comptoir_froid: { value: "", commentaire: "" },
-                    proprete_armoires_positives: { value: "", commentaire: "" },
-                    proprete_congelateurs: { value: "", commentaire: "" },
-                    proprete_piano_chaud: { value: "", commentaire: "" },
-                    proprete_salamander: { value: "", commentaire: "" },
-                    proprete_micro_onde: { value: "", commentaire: "" },
-                    proprete_tenues_cuisiniers: { value: "", commentaire: "" },
-                    proprete_torchon_cuisine: { value: "", commentaire: "" }
-                },
-                vestiaire: {
-                    controle_odeurs_casiers: { value: "", commentaire: "" },
-                    controle_proprete_poubelles: { value: "", commentaire: "" },
-                    controle_proprete_wc_personnel: { value: "", commentaire: "" }
-                },
-                facade_terrasse: {
-                    proprete_enseigne: { value: "", commentaire: "" },
-                    proprete_drapeau: { value: "", commentaire: "" },
-                    proprete_vitres: { value: "", commentaire: "" },
-                    proprete_jardiniere: { value: "", commentaire: "" },
-                    proprete_sol_terrasse: { value: "", commentaire: "" },
-                    proprete_tapis_sol: { value: "", commentaire: "" }
-                }
+            salle: {
+                torchon_salle: { etat: "non", commentaire: "" },
+                deobact_salle: { etat: "non", commentaire: "" },
+                balai_salle: { etat: "non", commentaire: "" },
+                port_tenue_responsable: { etat: "non", commentaire: "" },
+                port_tenue_serveur: { etat: "non", commentaire: "" },
+                boxs_livreurs: { etat: "non", commentaire: "" },
+                poubelle_salle: { etat: "non", commentaire: "" }
+            },
+            pizzeria: {
+                port_tenue_pizzaiolo: { etat: "non", commentaire: "" },
+                distributeur_essui_main: { etat: "non", commentaire: "" },
+                distributeur_savon_pizzeria: { etat: "non", commentaire: "" },
+                deobact_pizzeria: { etat: "non", commentaire: "" },
+                torchon_pizzeria: { etat: "non", commentaire: "" },
+                poubelle_pizzeria: { etat: "non", commentaire: "" }
+            },
+            wc_client: {
+                distributeur_savon_wc: { etat: "non", commentaire: "" },
+                papier_hygienique_wc_client: { etat: "non", commentaire: "" },
+                papier_essui_main_wc_client: { etat: "non", commentaire: "" },
+                poubelle_wc_client: { etat: "non", commentaire: "" }
+            },
+            cuisine: {
+                port_tenue_cuisinier: { etat: "non", commentaire: "" },
+                deobact_cuisine: { etat: "non", commentaire: "" },
+                supervix: { etat: "non", commentaire: "" },
+                nectal_wc: { etat: "non", commentaire: "" },
+                mister_glass: { etat: "non", commentaire: "" },
+                javel: { etat: "non", commentaire: "" },
+                sanicroix: { etat: "non", commentaire: "" },
+                distributeur_savon_plonge: { etat: "non", commentaire: "" },
+                distributeur_essui_main_plonge: { etat: "non", commentaire: "" },
+                torchon_cuisine: { etat: "non", commentaire: "" },
+                poubelle_cuisine: { etat: "non", commentaire: "" }
+            },
+            vestiaire: {
+                vestiaire_personnel: { etat: "non", commentaire: "" },
+                wc_personnel: { etat: "non", commentaire: "" },
+                casiers_ferme: { etat: "non", commentaire: "" },
+                douche_personnel: { etat: "non", commentaire: "" },
+                papier_hygienique_personnel: { etat: "non", commentaire: "" },
+                distributeur_savon_personnel: { etat: "non", commentaire: "" },
+                poubelle_vestiaire: { etat: "non", commentaire: "" }
+            }
+        },
+        controles: {
+            rangement_economats: {
+                rangement_economat_chimique: { value: "", commentaire: "" },
+                rangement_economat_salle: { value: "", commentaire: "" },
+                rangement_economat_food: { value: "", commentaire: "" }
+            },
+            salle: {
+                proprete_table: { value: "", commentaire: "" },
+                proprete_chaise: { value: "", commentaire: "" },
+                proprete_tenue_responsable: { value: "", commentaire: "" },
+                proprete_tenue_serveur: { value: "", commentaire: "" },
+                proprete_bouteilles_huile: { value: "", commentaire: "" },
+                proprete_poubelle_salle: { value: "", commentaire: "" },
+                proprete_torchon: { value: "", commentaire: "" },
+                proprete_boxs_livreurs: { value: "", commentaire: "" },
+                proprete_poste_caisse: { value: "", commentaire: "" }
+            },
+            poste_pizza: {
+                proprete_comptoir_pizzeria: { value: "", commentaire: "" },
+                proprete_tenues_pizzaiolo: { value: "", commentaire: "" },
+                proprete_ustensiles_pizzeria: { value: "", commentaire: "" },
+                proprete_poubelle_pizzeria: { value: "", commentaire: "" },
+                proprete_torchon_pizzeria: { value: "", commentaire: "" }
+            },
+            wc_client: {
+                proprete_sol_wc: { value: "", commentaire: "" },
+                proprete_sanitaire: { value: "", commentaire: "" },
+                proprete_miroir: { value: "", commentaire: "" },
+                proprete_poubelle_wc: { value: "", commentaire: "" }
+            },
+            cuisine: {
+                proprete_comptoir_chaud: { value: "", commentaire: "" },
+                proprete_comptoir_froid: { value: "", commentaire: "" },
+                proprete_armoires_positives: { value: "", commentaire: "" },
+                proprete_congelateurs: { value: "", commentaire: "" },
+                proprete_piano_chaud: { value: "", commentaire: "" },
+                proprete_salamander: { value: "", commentaire: "" },
+                proprete_micro_onde: { value: "", commentaire: "" },
+                proprete_tenues_cuisiniers: { value: "", commentaire: "" },
+                proprete_torchon_cuisine: { value: "", commentaire: "" }
+            },
+            vestiaire: {
+                controle_odeurs_casiers: { value: "", commentaire: "" },
+                controle_proprete_poubelles: { value: "", commentaire: "" },
+                controle_proprete_wc_personnel: { value: "", commentaire: "" }
+            },
+            facade_terrasse: {
+                proprete_enseigne: { value: "", commentaire: "" },
+                proprete_drapeau: { value: "", commentaire: "" },
+                proprete_vitres: { value: "", commentaire: "" },
+                proprete_jardiniere: { value: "", commentaire: "" },
+                proprete_sol_terrasse: { value: "", commentaire: "" },
+                proprete_tapis_sol: { value: "", commentaire: "" }
             }
         }
-    });
+     });
 
     function submit(e) {
         e.preventDefault();
