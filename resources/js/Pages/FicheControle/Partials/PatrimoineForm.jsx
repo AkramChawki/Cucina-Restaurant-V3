@@ -12,36 +12,38 @@ export default function PatrimoineForm() {
         date: "",
         restau: restau,
         type: "patrimoine",
-        moyens: {
-            logo_eclaire: { etat: "non", commentaire: "" },
-            drapeau_eclaire: { etat: "non", commentaire: "" },
-            refregirateur_boissons_fonctionnel: { etat: "non", commentaire: "" },
-            lampes_salles_eclaires: { etat: "non", commentaire: "" },
-            eclairage_wc: { etat: "non", commentaire: "" },
-            eclairage_pizzeria: { etat: "non", commentaire: "" },
-            eclairage_cuisine: { etat: "non", commentaire: "" },
-            climatisation_fonctionnelle: { etat: "non", commentaire: "" },
-            tue_mouche_fonctionnelle: { etat: "non", commentaire: "" },
-            prises_electriques_fonctionnelle: { etat: "non", commentaire: "" },
-            comptoir_pizzeria_fonctionnelle: { etat: "non", commentaire: "" },
-            lave_main_pizzeria_fonctionnelle: { etat: "non", commentaire: "" },
-            chaises_en_bon_etat: { etat: "non", commentaire: "" },
-            lavabo_et_robinet_fonctionnel: { etat: "non", commentaire: "" },
-            wc_fonctionnel: { etat: "non", commentaire: "" },
-            carrelage_four_en_bon_etat: { etat: "non", commentaire: "" },
-            carrelage_salle: { etat: "non", commentaire: "" },
-            escalier_en_bon_etat: { etat: "non", commentaire: "" },
-            peinture_salle: { etat: "non", commentaire: "" },
-            plafon_en_bon_etat: { etat: "non", commentaire: "" },
-            comptoir_cuisine: { etat: "non", commentaire: "" },
-            lave_main_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
-            plonge_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
-            chauffe_eau_plonge_fonctionnel: { etat: "non", commentaire: "" },
-            hotte_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
-            installation_gaz: { etat: "non", commentaire: "" },
-            fonctionnement_friteuse_et_salamander: { etat: "non", commentaire: "" },
-            armoires_cuisines: { etat: "non", commentaire: "" },
-            congelateurs_cuisine: { etat: "non", commentaire: "" }
+        data: {
+            moyens: {
+                logo_eclaire: { etat: "non", commentaire: "" },
+                drapeau_eclaire: { etat: "non", commentaire: "" },
+                refregirateur_boissons_fonctionnel: { etat: "non", commentaire: "" },
+                lampes_salles_eclaires: { etat: "non", commentaire: "" },
+                eclairage_wc: { etat: "non", commentaire: "" },
+                eclairage_pizzeria: { etat: "non", commentaire: "" },
+                eclairage_cuisine: { etat: "non", commentaire: "" },
+                climatisation_fonctionnelle: { etat: "non", commentaire: "" },
+                tue_mouche_fonctionnelle: { etat: "non", commentaire: "" },
+                prises_electriques_fonctionnelle: { etat: "non", commentaire: "" },
+                comptoir_pizzeria_fonctionnelle: { etat: "non", commentaire: "" },
+                lave_main_pizzeria_fonctionnelle: { etat: "non", commentaire: "" },
+                chaises_en_bon_etat: { etat: "non", commentaire: "" },
+                lavabo_et_robinet_fonctionnel: { etat: "non", commentaire: "" },
+                wc_fonctionnel: { etat: "non", commentaire: "" },
+                carrelage_four_en_bon_etat: { etat: "non", commentaire: "" },
+                carrelage_salle: { etat: "non", commentaire: "" },
+                escalier_en_bon_etat: { etat: "non", commentaire: "" },
+                peinture_salle: { etat: "non", commentaire: "" },
+                plafon_en_bon_etat: { etat: "non", commentaire: "" },
+                comptoir_cuisine: { etat: "non", commentaire: "" },
+                lave_main_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
+                plonge_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
+                chauffe_eau_plonge_fonctionnel: { etat: "non", commentaire: "" },
+                hotte_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
+                installation_gaz: { etat: "non", commentaire: "" },
+                fonctionnement_friteuse_et_salamander: { etat: "non", commentaire: "" },
+                armoires_cuisines: { etat: "non", commentaire: "" },
+                congelateurs_cuisine: { etat: "non", commentaire: "" }
+            }
         }
     });
 
@@ -82,7 +84,7 @@ export default function PatrimoineForm() {
                                 </div>
                             </div>
                         </div>
-                        <img src="/logo.png" alt="Logo" className="w-16 h-16" />
+                        <img src="/api/placeholder/64/64" alt="Logo" className="w-16 h-16" />
                     </div>
 
                     <table className="min-w-full divide-y divide-gray-200">
@@ -103,7 +105,7 @@ export default function PatrimoineForm() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {Object.entries(data.moyens).map(([key, value]) => (
+                            {Object.entries(data.data.moyens).map(([key, value]) => (
                                 <tr key={key}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
@@ -113,8 +115,8 @@ export default function PatrimoineForm() {
                                             type="radio"
                                             checked={value.etat === "oui"}
                                             onChange={() => {
-                                                const newData = { ...data };
-                                                newData.moyens[key].etat = "oui";
+                                                const newData = _.cloneDeep(data);
+                                                newData.data.moyens[key].etat = "oui";
                                                 setData(newData);
                                             }}
                                             className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
@@ -125,8 +127,8 @@ export default function PatrimoineForm() {
                                             type="radio"
                                             checked={value.etat === "non"}
                                             onChange={() => {
-                                                const newData = { ...data };
-                                                newData.moyens[key].etat = "non";
+                                                const newData = _.cloneDeep(data);
+                                                newData.data.moyens[key].etat = "non";
                                                 setData(newData);
                                             }}
                                             className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
@@ -137,8 +139,8 @@ export default function PatrimoineForm() {
                                             type="text"
                                             value={value.commentaire}
                                             onChange={(e) => {
-                                                const newData = { ...data };
-                                                newData.moyens[key].commentaire = e.target.value;
+                                                const newData = _.cloneDeep(data);
+                                                newData.data.moyens[key].commentaire = e.target.value;
                                                 setData(newData);
                                             }}
                                             className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
