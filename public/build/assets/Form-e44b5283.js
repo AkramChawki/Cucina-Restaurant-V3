@@ -1,0 +1,1 @@
+import{a as o,F as t,j as r}from"./app-9cc03269.js";import{F as a}from"./Footer-b117c3dd.js";import m from"./HygieneForm-696a9548.js";import s from"./PatrimoineForm-9b98898a.js";import"./lodash-b3348e85.js";function y(){const e=new URLSearchParams(window.location.search).get("type");return o(t,{children:[e==="hygiene"?r(m,{}):r(s,{}),r(a,{})]})}export{y as default};

@@ -125,7 +125,11 @@ export default function HygieneForm() {
 
     function submit(e) {
         e.preventDefault();
-        post("/fiche-controle/form");
+        post("/fiche-controle/form", {
+            onError: (errors) => {
+                console.error(errors);
+            }
+        });
     }
 
     const createOuiNonSection = (title, sectionData) => (
@@ -157,25 +161,23 @@ export default function HygieneForm() {
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <input
                                     type="radio"
-                                    checked={value.etat === "oui"}
+                                    checked={_.get(data, `data.moyens.${title.toLowerCase()}.${key}.etat`) === "oui"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
                                         _.set(newData, `data.moyens.${title.toLowerCase()}.${key}.etat`, "oui");
                                         setData(newData);
                                     }}
-                                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                                 />
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <input
                                     type="radio"
-                                    checked={value.etat === "non"}
+                                    checked={_.get(data, `data.moyens.${title.toLowerCase()}.${key}.etat`) === "non"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
                                         _.set(newData, `data.moyens.${title.toLowerCase()}.${key}.etat`, "non");
                                         setData(newData);
                                     }}
-                                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
                                 />
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-500">
@@ -233,13 +235,12 @@ export default function HygieneForm() {
                                 <td key={rating} className="px-6 py-4 whitespace-nowrap text-center">
                                     <input
                                         type="radio"
-                                        checked={value.value === rating}
+                                        checked={_.get(data, `data.controles.${title.toLowerCase()}.${key}.value`) === rating}
                                         onChange={() => {
                                             const newData = _.cloneDeep(data);
                                             _.set(newData, `data.controles.${title.toLowerCase()}.${key}.value`, rating);
                                             setData(newData);
                                         }}
-                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                                     />
                                 </td>
                             ))}
