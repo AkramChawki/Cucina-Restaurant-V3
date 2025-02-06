@@ -37,7 +37,7 @@ class FicheControleController extends Controller
         'name' => 'required|string|max:255',
         'date' => 'required|date',
         'restau' => 'required|string|max:255',
-        'type' => 'required|in:laboratoire,restaurant',
+        'type' => 'required|in:patrimoine,hygiene',
     ]);
 
     try {
