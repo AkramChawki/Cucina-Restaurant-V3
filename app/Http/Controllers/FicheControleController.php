@@ -80,9 +80,9 @@ class FicheControleController extends Controller
 
     private function savePdf($ficheControle, $pdfName)
     {
-        $view = $ficheControle->type === 'laboratoire' 
-            ? 'pdf.fiche-controle-laboratoire' 
-            : 'pdf.fiche-controle-restaurant';
+        $view = $ficheControle->type === 'hygiene' 
+            ? 'pdf.fiche-controle-hygiene' 
+            : 'pdf.fiche-controle-patrimoine';
 
         $pdfUrl = $this->generatePdfAndSave(
             $view,
