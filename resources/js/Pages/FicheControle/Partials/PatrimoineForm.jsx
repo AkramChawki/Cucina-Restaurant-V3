@@ -12,211 +12,158 @@ export default function PatrimoineForm() {
         date: "",
         restau: restau,
         type: "patrimoine",
-        eclairage: {
-            logo_eclaire: { etat: false, commentaire: "" },
-            drapeau_eclaire: { etat: false, commentaire: "" },
-            lampes_salle: { etat: false, commentaire: "" },
-            eclairage_wc: { etat: false, commentaire: "" },
-            eclairage_pizzeria: { etat: false, commentaire: "" },
-            eclairage_cuisine: { etat: false, commentaire: "" }
-        },
-        equipements: {
-            climatisation: { etat: false, commentaire: "" },
-            tue_mouche: { etat: false, commentaire: "" },
-            prises_electriques: { etat: false, commentaire: "" },
-            refregirateur_boissons: { etat: false, commentaire: "" }
-        },
-        pizzeria: {
-            comptoir_pizzeria: { etat: false, commentaire: "" },
-            lave_main_pizzeria: { etat: false, commentaire: "" }
-        },
-        salle: {
-            chaises_etat: { etat: false, commentaire: "" },
-            lavabo_robinet: { etat: false, commentaire: "" },
-            wc_fonctionnel: { etat: false, commentaire: "" },
-            carrelage_four: { etat: false, commentaire: "" },
-            carrelage_salle: { etat: false, commentaire: "" },
-            escalier_etat: { etat: false, commentaire: "" },
-            peinture_salle: { etat: false, commentaire: "" },
-            plafond_etat: { etat: false, commentaire: "" }
-        },
-        cuisine: {
-            comptoir_cuisine: { etat: false, commentaire: "" },
-            lave_main_cuisine: { etat: false, commentaire: "" },
-            plonge_cuisine: { etat: false, commentaire: "" },
-            chauffe_eau_plonge: { etat: false, commentaire: "" },
-            hotte_cuisine: { etat: false, commentaire: "" },
-            installation_gaz: { etat: false, commentaire: "" },
-            friteuse_salamander: { etat: false, commentaire: "" },
-            armoires_cuisines: { etat: false, commentaire: "" },
-            congelateurs_cuisine: { etat: false, commentaire: "" }
+        moyens: {
+            logo_eclaire: { etat: "non", commentaire: "" },
+            drapeau_eclaire: { etat: "non", commentaire: "" },
+            refregirateur_boissons_fonctionnel: { etat: "non", commentaire: "" },
+            lampes_salles_eclaires: { etat: "non", commentaire: "" },
+            eclairage_wc: { etat: "non", commentaire: "" },
+            eclairage_pizzeria: { etat: "non", commentaire: "" },
+            eclairage_cuisine: { etat: "non", commentaire: "" },
+            climatisation_fonctionnelle: { etat: "non", commentaire: "" },
+            tue_mouche_fonctionnelle: { etat: "non", commentaire: "" },
+            prises_electriques_fonctionnelle: { etat: "non", commentaire: "" },
+            comptoir_pizzeria_fonctionnelle: { etat: "non", commentaire: "" },
+            lave_main_pizzeria_fonctionnelle: { etat: "non", commentaire: "" },
+            chaises_en_bon_etat: { etat: "non", commentaire: "" },
+            lavabo_et_robinet_fonctionnel: { etat: "non", commentaire: "" },
+            wc_fonctionnel: { etat: "non", commentaire: "" },
+            carrelage_four_en_bon_etat: { etat: "non", commentaire: "" },
+            carrelage_salle: { etat: "non", commentaire: "" },
+            escalier_en_bon_etat: { etat: "non", commentaire: "" },
+            peinture_salle: { etat: "non", commentaire: "" },
+            plafon_en_bon_etat: { etat: "non", commentaire: "" },
+            comptoir_cuisine: { etat: "non", commentaire: "" },
+            lave_main_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
+            plonge_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
+            chauffe_eau_plonge_fonctionnel: { etat: "non", commentaire: "" },
+            hotte_cuisine_fonctionnelle: { etat: "non", commentaire: "" },
+            installation_gaz: { etat: "non", commentaire: "" },
+            fonctionnement_friteuse_et_salamander: { etat: "non", commentaire: "" },
+            armoires_cuisines: { etat: "non", commentaire: "" },
+            congelateurs_cuisine: { etat: "non", commentaire: "" }
         }
     });
 
     function submit(e) {
         e.preventDefault();
-        post("/fiche-controle/form", {
-            preserveState: true,
-            preserveScroll: true
-        });
+        post("/fiche-controle/form");
     }
-
-    // Helper function to create Oui/Non field with comment
-    const createOuiNonField = (label, path) => (
-        <div className="space-y-2">
-            <div className="flex items-center justify-between">
-                <label className="block text-sm text-gray-700">
-                    {label}
-                </label>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            checked={_.get(data, `${path}.etat`) === true}
-                            onChange={() => {
-                                const newData = { ...data };
-                                _.set(newData, `${path}.etat`, true);
-                                setData(newData);
-                            }}
-                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                        />
-                        <label className="ml-2 text-sm text-gray-700">Oui</label>
-                    </div>
-                    <div className="flex items-center">
-                        <input
-                            type="radio"
-                            checked={_.get(data, `${path}.etat`) === false}
-                            onChange={() => {
-                                const newData = { ...data };
-                                _.set(newData, `${path}.etat`, false);
-                                setData(newData);
-                            }}
-                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                        />
-                        <label className="ml-2 text-sm text-gray-700">Non</label>
-                    </div>
-                </div>
-            </div>
-            <input
-                type="text"
-                placeholder="Commentaire"
-                value={_.get(data, `${path}.commentaire`)}
-                onChange={(e) => {
-                    const newData = { ...data };
-                    _.set(newData, `${path}.commentaire`, e.target.value);
-                    setData(newData);
-                }}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-            />
-        </div>
-    );
-
-    // Helper function to create a section
-    const createSection = (title, fields) => (
-        <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
-            <div className="sm:border-t sm:border-gray-200 sm:pt-5">
-                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
-                <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-                    {Object.entries(fields).map(([key, label]) => (
-                        <div key={key} className="sm:col-span-1">
-                            {createOuiNonField(label, key)}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
 
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 px-10 py-10">
-            <form className="space-y-8 divide-y divide-gray-200" onSubmit={submit}>
-                <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
-                    <div>
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
-                            FICHE DE CONTROLE PATRIMOINE
-                        </h3>
-
-                        {/* Date Input */}
-                        <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                                <label className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                                    Date
-                                </label>
-                                <div className="mt-1 sm:mt-0 sm:col-span-2">
+            <form onSubmit={submit} className="space-y-8">
+                <div className="space-y-6">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h2 className="text-xl font-semibold">Fiche contrôle Patrimoine</h2>
+                            <div className="mt-4 space-y-4">
+                                <div className="flex space-x-4 items-center">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Date
+                                    </label>
                                     <input
                                         type="date"
                                         value={data.date}
                                         onChange={(e) => setData("date", e.target.value)}
-                                        className="max-w-lg block w-full shadow-sm focus:ring-green-500 focus:border-green-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
+                                        className="shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm border-gray-300 rounded-md"
+                                    />
+                                </div>
+                                <div className="flex space-x-4 items-center">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Restaurant
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.restau}
+                                        disabled
+                                        className="shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md"
                                     />
                                 </div>
                             </div>
                         </div>
-
-                        {/* Sections */}
-                        {createSection("Éclairage", {
-                            "eclairage.logo_eclaire": "Logo Éclairé",
-                            "eclairage.drapeau_eclaire": "Drapeau Éclairé",
-                            "eclairage.lampes_salle": "Lampes Salle",
-                            "eclairage.eclairage_wc": "Éclairage WC",
-                            "eclairage.eclairage_pizzeria": "Éclairage Pizzeria",
-                            "eclairage.eclairage_cuisine": "Éclairage Cuisine"
-                        })}
-
-                        {createSection("Équipements", {
-                            "equipements.climatisation": "Climatisation Fonctionnelle",
-                            "equipements.tue_mouche": "Tue Mouche Fonctionnelle",
-                            "equipements.prises_electriques": "Prises Électriques Fonctionnelle",
-                            "equipements.refregirateur_boissons": "Réfrigérateur Boissons Fonctionnel"
-                        })}
-
-                        {createSection("Pizzeria", {
-                            "pizzeria.comptoir_pizzeria": "Comptoir Pizzeria Fonctionnelle",
-                            "pizzeria.lave_main_pizzeria": "Lave Main Pizzeria Fonctionnelle"
-                        })}
-
-                        {createSection("Salle", {
-                            "salle.chaises_etat": "Chaises en Bon État",
-                            "salle.lavabo_robinet": "Lavabo et Robinet Fonctionnel",
-                            "salle.wc_fonctionnel": "WC Fonctionnel",
-                            "salle.carrelage_four": "Carrelage Four en Bon État",
-                            "salle.carrelage_salle": "Carrelage Salle",
-                            "salle.escalier_etat": "Escalier en Bon État",
-                            "salle.peinture_salle": "Peinture Salle",
-                            "salle.plafond_etat": "Plafon en Bon État"
-                        })}
-
-                        {createSection("Cuisine", {
-                            "cuisine.comptoir_cuisine": "Comptoir + Cuisine",
-                            "cuisine.lave_main_cuisine": "Lave Main Cuisine Fonctionnelle",
-                            "cuisine.plonge_cuisine": "Plonge Cuisine Fonctionnelle",
-                            "cuisine.chauffe_eau_plonge": "Chauffe Eau Plonge Fonctionnel",
-                            "cuisine.hotte_cuisine": "Hotte Cuisine Fonctionnelle",
-                            "cuisine.installation_gaz": "Installation Gaz (4 Feux et Bain Marie)",
-                            "cuisine.friteuse_salamander": "Fonctionnement Friteuse et Salamander",
-                            "cuisine.armoires_cuisines": "Armoires + Cuisines",
-                            "cuisine.congelateurs_cuisine": "Congélateurs Cuisine"
-                        })}
-
-                        {/* Submit Buttons */}
-                        <div className="pt-5">
-                            <div className="flex justify-end">
-                                <Link
-                                    href="/"
-                                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                                >
-                                    Annuler
-                                </Link>
-                                <button
-                                    type="submit"
-                                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                                    disabled={processing}
-                                >
-                                    {processing ? 'Enregistrement...' : 'Enregistrer'}
-                                </button>
-                            </div>
-                        </div>
+                        <img src="/logo.png" alt="Logo" className="w-16 h-16" />
                     </div>
+
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Moyens
+                                </th>
+                                <th className="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Etat oui
+                                </th>
+                                <th className="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Etat non
+                                </th>
+                                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Commentaires
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {Object.entries(data.moyens).map(([key, value]) => (
+                                <tr key={key}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <input
+                                            type="radio"
+                                            checked={value.etat === "oui"}
+                                            onChange={() => {
+                                                const newData = { ...data };
+                                                newData.moyens[key].etat = "oui";
+                                                setData(newData);
+                                            }}
+                                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                        />
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <input
+                                            type="radio"
+                                            checked={value.etat === "non"}
+                                            onChange={() => {
+                                                const newData = { ...data };
+                                                newData.moyens[key].etat = "non";
+                                                setData(newData);
+                                            }}
+                                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                                        />
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                        <input
+                                            type="text"
+                                            value={value.commentaire}
+                                            onChange={(e) => {
+                                                const newData = { ...data };
+                                                newData.moyens[key].commentaire = e.target.value;
+                                                setData(newData);
+                                            }}
+                                            className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                    <Link
+                        href="/"
+                        className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                        Annuler
+                    </Link>
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                        {processing ? 'Enregistrement...' : 'Enregistrer'}
+                    </button>
                 </div>
             </form>
         </div>
