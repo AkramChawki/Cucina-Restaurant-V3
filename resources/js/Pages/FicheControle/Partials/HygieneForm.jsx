@@ -294,7 +294,6 @@ export default function HygieneForm() {
                                 </div>
                             </div>
                         </div>
-                        <img src="/api/placeholder/64/64" alt="Logo" className="w-16 h-16" />
                     </div>
 
                     {createOuiNonSection("Economat", data.data.moyens.economat)}
