@@ -119,7 +119,7 @@ export default function HygieneForm() {
                 proprete_tapis_sol: { value: "", commentaire: "" }
             }
         }
-     });
+    });
 
     function submit(e) {
         e.preventDefault();
@@ -131,18 +131,18 @@ export default function HygieneForm() {
     }
 
     const createOuiNonSection = (title, sectionData) => (
-        <div className="mt-8">
+        <div className="mt-8 overflow-x-auto">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                             Moyens
                         </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                             Etat oui
                         </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                             Etat non
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -153,32 +153,34 @@ export default function HygieneForm() {
                 <tbody className="bg-white divide-y divide-gray-200">
                     {Object.entries(sectionData).map(([key, value]) => (
                         <tr key={key}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
                                 {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <input
                                     type="radio"
-                                    checked={_.get(data, `data.moyens.${title.toLowerCase()}.${key}.etat`) === "oui"}
+                                    checked={value.etat === "oui"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
                                         _.set(newData, `moyens.${title.toLowerCase()}.${key}.etat`, "oui");
                                         setData(newData);
                                     }}
+                                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                                 />
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <input
                                     type="radio"
-                                    checked={_.get(data, `data.moyens.${title.toLowerCase()}.${key}.etat`) === "non"}
+                                    checked={value.etat === "non"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
                                         _.set(newData, `moyens.${title.toLowerCase()}.${key}.etat`, "non");
                                         setData(newData);
                                     }}
+                                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
                                 />
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-500">
+                            <td className="px-6 py-4">
                                 <input
                                     type="text"
                                     value={value.commentaire}
@@ -187,7 +189,7 @@ export default function HygieneForm() {
                                         _.set(newData, `moyens.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
                                         setData(newData);
                                     }}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                    className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                                 />
                             </td>
                         </tr>
@@ -198,26 +200,19 @@ export default function HygieneForm() {
     );
 
     const createEvaluationSection = (title, sectionData) => (
-        <div className="mt-8">
+        <div className="mt-8 overflow-x-auto">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                             Désignation des contrôles
                         </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Bien
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Moyen
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Mediocre
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Neant
-                        </th>
+                        {['bien', 'moyen', 'mediocre', 'neant'].map((rating) => (
+                            <th key={rating} scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                {rating}
+                            </th>
+                        ))}
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Commentaires
                         </th>
@@ -226,32 +221,33 @@ export default function HygieneForm() {
                 <tbody className="bg-white divide-y divide-gray-200">
                     {Object.entries(sectionData).map(([key, value]) => (
                         <tr key={key}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
                                 {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                             </td>
                             {['bien', 'moyen', 'mediocre', 'neant'].map((rating) => (
                                 <td key={rating} className="px-6 py-4 whitespace-nowrap text-center">
                                     <input
                                         type="radio"
-                                        checked={_.get(data, `data.controles.${title.toLowerCase()}.${key}.value`) === rating}
+                                        checked={value.value === rating}
                                         onChange={() => {
                                             const newData = _.cloneDeep(data);
-                                            _.set(newData, `data.controles.${title.toLowerCase()}.${key}.value`, rating);
+                                            _.set(newData, `controles.${title.toLowerCase()}.${key}.value`, rating);
                                             setData(newData);
                                         }}
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                                     />
                                 </td>
                             ))}
-                            <td className="px-6 py-4 text-sm text-gray-500">
+                            <td className="px-6 py-4">
                                 <input
                                     type="text"
                                     value={value.commentaire}
                                     onChange={(e) => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `data.controles.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
+                                        _.set(newData, `controles.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
                                         setData(newData);
                                     }}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                    className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                                 />
                             </td>
                         </tr>
@@ -261,7 +257,7 @@ export default function HygieneForm() {
         </div>
     );
     return (
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 px-10 py-10">
+        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4 py-10">
             <form onSubmit={submit} className="space-y-8">
                 <div className="space-y-6">
                     <div className="flex justify-between items-start">
