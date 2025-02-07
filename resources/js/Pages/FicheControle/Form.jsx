@@ -3,6 +3,7 @@ import Footer from '@/Components/Footer'
 import HygieneForm from './Partials/HygieneForm';
 import PatrimoineForm from './Partials/PatrimoineForm';
 import ListePrestataires from './Partials/PrestataireForm';
+import TravauxForm from './Partials/TravauxForm';
 
 export default function Form({ restau, type, existingData }) {
   const renderForm = () => {
