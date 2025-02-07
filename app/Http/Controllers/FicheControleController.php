@@ -41,6 +41,7 @@ class FicheControleController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('Incoming request data:', $request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'date' => 'required|date',
@@ -61,14 +62,6 @@ class FicheControleController extends Controller
                     $data['controles'] = $request->controles;
                 }
             }
-            dd([
-                'name' => $validated['name'],
-                'date' => $validated['date'],
-                'restau' => $validated['restau'],
-                'type' => $validated['type'],
-                'data' => $data,
-                'pdf' => null
-            ]);
             $ficheControle = FicheControle::create([
                 'name' => $validated['name'],
                 'date' => $validated['date'],

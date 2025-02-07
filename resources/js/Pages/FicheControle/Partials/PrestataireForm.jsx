@@ -1,7 +1,8 @@
 import { useForm } from "@inertiajs/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function ListePrestataires({ restau, type, existingData }) {
+    console.log("Component Props:", { restau, type, existingData });
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [tempPrestataire, setTempPrestataire] = useState({
         lot: "",
@@ -17,6 +18,10 @@ export default function ListePrestataires({ restau, type, existingData }) {
         prestataires: existingData?.prestataires || []
     });
 
+    useEffect(() => {
+        console.log("Current Form Data:", data);
+    }, [data]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         
@@ -26,14 +31,37 @@ export default function ListePrestataires({ restau, type, existingData }) {
             telephone: tempPrestataire.telephone
         };
 
-        post("/fiche-controle/form", {
+        const formData = {
             name: data.name,
             date: data.date,
             restau: data.restau,
             type: data.type,
             prestataires: [...data.prestataires, newPrestataire]
+        };
+
+        console.log("Submitting Data:", formData);
+
+        post("/fiche-controle/form", formData, {
+            onError: (errors) => {
+                console.log("Submission Errors:", errors);
+            },
+            onSuccess: () => {
+                console.log("Submission Successful");
+                setIsAddingNew(false);
+                setTempPrestataire({
+                    lot: "",
+                    nom: "",
+                    telephone: ""
+                });
+            }
         });
     };
+
+    useEffect(() => {
+        if (errors && Object.keys(errors).length > 0) {
+            console.log("Current Validation Errors:", errors);
+        }
+    }, [errors]);
 
     const handleNewPrestataire = () => {
         setIsAddingNew(true);
