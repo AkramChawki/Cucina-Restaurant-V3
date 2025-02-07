@@ -61,7 +61,14 @@ class FicheControleController extends Controller
                     $data['controles'] = $request->controles;
                 }
             }
-
+            dd([
+                'name' => $validated['name'],
+                'date' => $validated['date'],
+                'restau' => $validated['restau'],
+                'type' => $validated['type'],
+                'data' => $data,
+                'pdf' => null
+            ]);
             $ficheControle = FicheControle::create([
                 'name' => $validated['name'],
                 'date' => $validated['date'],
