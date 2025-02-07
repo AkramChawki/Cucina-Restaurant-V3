@@ -1,13 +1,14 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 
-export default function ListePrestataires({ restau, type, existingData }) {
+export default function ListePrestataires({ type, existingData }) {
+    const { auth } = usePage().props;
     const [isAddingNew, setIsAddingNew] = useState(false);
+    
 
     const { data, setData, post, processing, errors } = useForm({
-        name: "Liste Prestataires",
+        name: auth.user.name,
         date: new Date().toISOString().split('T')[0],
-        restau: restau,
         type: type,
         prestataires: existingData?.prestataires || [],
         lot: "",
@@ -46,7 +47,6 @@ export default function ListePrestataires({ restau, type, existingData }) {
         post("/fiche-controle/form", {
             name: data.name,
             date: data.date,
-            restau: data.restau,
             type: data.type,
             prestataires: data.prestataires
         });
@@ -70,7 +70,7 @@ export default function ListePrestataires({ restau, type, existingData }) {
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-10">
             <div className="sm:flex sm:items-center mb-6">
                 <div className="sm:flex-auto">
-                    <h1 className="text-xl font-semibold text-gray-900">Liste Prestataires - {restau}</h1>
+                    <h1 className="text-xl font-semibold text-gray-900">Liste Prestataires</h1>
                     <div className="mt-4">
                         <label className="text-sm font-medium text-gray-700 mr-2">Date:</label>
                         <input

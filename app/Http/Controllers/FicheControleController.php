@@ -41,39 +41,43 @@ class FicheControleController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Incoming request data:', $request->all());
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'date' => 'required|date',
-            'restau' => 'required|string|max:255',
             'type' => 'required|in:hygiene,patrimoine,prestataires',
-            'moyens' => 'required_if:type,hygiene,patrimoine|array',
-            'controles' => 'required_if:type,hygiene|array',
-            'prestataires' => 'required_if:type,prestataires|array|min:1'
-        ]);
-
-
+        ];
+    
+        if ($request->type !== 'prestataires') {
+            $rules['restau'] = 'required|string|max:255';
+            $rules['moyens'] = 'required|array';
+            if ($request->type === 'hygiene') {
+                $rules['controles'] = 'required|array';
+            }
+        } else {
+            $rules['prestataires'] = 'required|array|min:1';
+        }
+    
+        $validated = $request->validate($rules);
+    
         try {
             $data = [];
             if ($request->type === 'prestataires') {
-                $data = [
-                    'prestataires' => array_values($request->prestataires)
-                ];
+                $data = ['prestataires' => array_values($request->prestataires)];
             } else {
                 $data['moyens'] = $request->moyens;
                 if ($request->type === 'hygiene') {
                     $data['controles'] = $request->controles;
                 }
             }
+    
             $ficheControle = FicheControle::create([
                 'name' => $validated['name'],
                 'date' => $validated['date'],
-                'restau' => $validated['restau'],
+                'restau' => $request->restau ?? null,  // Make restau optional
                 'type' => $validated['type'],
                 'data' => $data,
                 'pdf' => null
             ]);
-            Log::info('FicheControle created:', $ficheControle->toArray());
 
             if ($validated['type'] !== 'prestataires') {
                 $pdfName = $this->generatePdfName($ficheControle);
