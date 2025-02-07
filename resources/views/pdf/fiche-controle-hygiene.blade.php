@@ -1,4 +1,3 @@
-// fiche-controle-hygiene.blade.php
 <!DOCTYPE html>
 <html>
 <head>

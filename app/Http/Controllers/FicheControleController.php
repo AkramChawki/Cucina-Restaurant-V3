@@ -66,18 +66,18 @@ class FicheControleController extends Controller
     }
 
     private function generatePdfName($ficheControle)
-    {
-        $prefix = "FicheControle" . ucfirst($ficheControle->type);
-        $restauPart = $ficheControle->restau ? "-{$ficheControle->restau}" : '';
-        return "{$prefix}-{$ficheControle->name}{$restauPart}-{$ficheControle->created_at->format('d-m-Y')}-{$ficheControle->id}.pdf";
-    }
+{
+    $prefix = "FicheControle" . ucfirst($ficheControle->type);
+    $restauPart = $ficheControle->restau ? "-{$ficheControle->restau}" : '';
+    return "{$prefix}-{$ficheControle->name}{$restauPart}-{$ficheControle->created_at->format('d-m-Y')}-{$ficheControle->id}.pdf";
+}
 
-    private function savePdf($ficheControle, $pdfName)
-    {
-        $view = "pdf.fiche-controle-{$ficheControle->type}";
-        $pdfUrl = $this->generatePdfAndSave($view, ["fiche" => $ficheControle], $pdfName, "fiche-controles");
-        $ficheControle->pdf = $pdfName;
-        $ficheControle->save();
-        return $pdfUrl;
-    }
+private function savePdf($ficheControle, $pdfName)
+{
+    $view = "pdf/fiche-controle-{$ficheControle->type}"; // Changed from pdf.
+    $pdfUrl = $this->generatePdfAndSave($view, ["fiche" => $ficheControle], $pdfName, "fiche-controles");
+    $ficheControle->pdf = $pdfName;
+    $ficheControle->save();
+    return $pdfUrl;
+}
 }

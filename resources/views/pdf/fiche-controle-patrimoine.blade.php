@@ -1,4 +1,3 @@
-// fiche-controle-patrimoine.blade.php
 <!DOCTYPE html>
 <html>
 <head>
