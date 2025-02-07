@@ -231,7 +231,7 @@ export default function HygieneForm() {
                                         checked={value.value === rating}
                                         onChange={() => {
                                             const newData = _.cloneDeep(data);
-                                            _.set(newData, `controles.${title.toLowerCase()}.${key}.value`, rating);
+                                            _.set(newData, `controles.${title.toLowerCase().replace(/ /g, '_')}.${key}.value`, rating);
                                             setData(newData);
                                         }}
                                         className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
