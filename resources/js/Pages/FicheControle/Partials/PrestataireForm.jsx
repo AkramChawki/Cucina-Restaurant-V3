@@ -8,42 +8,48 @@ export default function ListePrestataires({ restau, type, existingData }) {
         date: new Date().toISOString().split('T')[0],
         restau: restau,
         type: type,
-        prestataires: existingData?.prestataires || [],
-        lot: "",
-        nom: "",
-        telephone: ""
+        prestataires: []
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         const newPrestataire = {
             lot: data.lot,
             nom: data.nom,
             telephone: data.telephone
         };
 
-        const updatedPrestataires = [...data.prestataires, newPrestataire];
-
         post("/fiche-controle/form", {
+            preserveState: true,
             data: {
                 name: data.name,
                 date: data.date,
                 restau: data.restau,
                 type: data.type,
-                prestataires: updatedPrestataires
+                prestataires: [...data.prestataires, newPrestataire]
             },
             onSuccess: () => {
                 setIsAddingNew(false);
                 setData(prevData => ({
                     ...prevData,
-                    prestataires: updatedPrestataires,
                     lot: "",
                     nom: "",
-                    telephone: ""
+                    telephone: "",
+                    prestataires: [...prevData.prestataires, newPrestataire]
                 }));
             }
         });
+    };
+
+    const handleNewPrestataire = () => {
+        setIsAddingNew(true);
+        setData(prevData => ({
+            ...prevData,
+            lot: "",
+            nom: "",
+            telephone: ""
+        }));
     };
 
     const handleCancel = () => {
@@ -61,12 +67,21 @@ export default function ListePrestataires({ restau, type, existingData }) {
             <div className="sm:flex sm:items-center mb-6">
                 <div className="sm:flex-auto">
                     <h1 className="text-xl font-semibold text-gray-900">Liste Prestataires - {restau}</h1>
+                    <div className="mt-4">
+                        <label className="text-sm font-medium text-gray-700 mr-2">Date:</label>
+                        <input
+                            type="date"
+                            value={data.date}
+                            onChange={e => setData('date', e.target.value)}
+                            className="shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm border-gray-300 rounded-md"
+                        />
+                    </div>
                 </div>
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                     {!isAddingNew && (
                         <button
                             type="button"
-                            onClick={() => setIsAddingNew(true)}
+                            onClick={handleNewPrestataire}
                             className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                             Ajouter Prestataire

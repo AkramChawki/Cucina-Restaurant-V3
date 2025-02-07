@@ -54,13 +54,14 @@ class FicheControleController extends Controller
         try {
             $data = [];
             if ($validated['type'] === 'prestataires') {
-                $data['prestataires'] = $request->prestataires;
+                $data = ['prestataires' => $request->prestataires];
             } else {
                 $data['moyens'] = $request->moyens;
                 if ($validated['type'] === 'hygiene') {
                     $data['controles'] = $request->controles;
                 }
             }
+
             $ficheControle = FicheControle::create([
                 'name' => $validated['name'],
                 'date' => $validated['date'],
@@ -71,9 +72,9 @@ class FicheControleController extends Controller
             ]);
 
             if ($validated['type'] !== 'prestataires') {
-            $pdfName = $this->generatePdfName($ficheControle);
-            $this->savePdf($ficheControle, $pdfName);
-        }
+                $pdfName = $this->generatePdfName($ficheControle);
+                $this->savePdf($ficheControle, $pdfName);
+            }
 
             return redirect("/")->with('success', 'Fiche de contrôle créée avec succès.');
         } catch (\Exception $e) {
