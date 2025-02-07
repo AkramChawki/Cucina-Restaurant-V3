@@ -1,32 +1,58 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 
-export default function ListePrestataires({prestataires}) {
+export default function ListePrestataires({ restau, type, existingData }) {
     const [isAddingNew, setIsAddingNew] = useState(false);
     const { data, setData, post, processing } = useForm({
+        name: "Liste Prestataires",
+        date: new Date().toISOString().split('T')[0],
+        restau: restau,
+        type: type,
         lot: "",
         nom: "",
-        telephone: ""
+        telephone: "",
+        prestataires: existingData?.prestataires || []
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setPrestataires([...prestataires, data]);
-        setData({ lot: "", nom: "", telephone: "" });
-        setIsAddingNew(false);
-        post("/prestataires");
+        
+        const newPrestataire = {
+            lot: data.lot,
+            nom: data.nom,
+            telephone: data.telephone
+        };
+
+        setData(prevData => ({
+            ...prevData,
+            prestataires: [...prevData.prestataires, newPrestataire],
+            lot: "",
+            nom: "",
+            telephone: ""
+        }));
+
+        post(route('fiche-controle.store'), {
+            onSuccess: () => {
+                setIsAddingNew(false);
+            }
+        });
     };
 
     const handleCancel = () => {
         setIsAddingNew(false);
-        setData({ lot: "", nom: "", telephone: "" });
+        setData(prevData => ({
+            ...prevData,
+            lot: "",
+            nom: "",
+            telephone: ""
+        }));
     };
 
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-10">
             <div className="sm:flex sm:items-center mb-6">
                 <div className="sm:flex-auto">
-                    <h1 className="text-xl font-semibold text-gray-900">Liste Prestataires</h1>
+                    <h1 className="text-xl font-semibold text-gray-900">Liste Prestataires - {restau}</h1>
                 </div>
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                     {!isAddingNew && (
@@ -63,7 +89,7 @@ export default function ListePrestataires({prestataires}) {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
-                                    {prestataires.map((prestataire, index) => (
+                                    {data.prestataires.map((prestataire, index) => (
                                         <tr key={index}>
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                                                 {prestataire.lot}
@@ -73,14 +99,6 @@ export default function ListePrestataires({prestataires}) {
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {prestataire.telephone}
-                                            </td>
-                                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                <button
-                                                    type="button"
-                                                    className="text-red-600 hover:text-red-900"
-                                                >
-                                                    Supprimer
-                                                </button>
                                             </td>
                                         </tr>
                                     ))}

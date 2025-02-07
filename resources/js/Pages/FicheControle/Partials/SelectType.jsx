@@ -58,6 +58,7 @@ export default function SelectType({ restaurants }) {
                                 <option value="">Sélectionner le type ...</option>
                                 <option value="hygiene">Hygiene</option>
                                 <option value="patrimoine">Patrimoine</option>
+                                <option value="prestataires">Prestataires</option>
                             </select>
                         </div>
                     )}

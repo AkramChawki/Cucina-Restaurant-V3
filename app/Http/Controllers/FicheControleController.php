@@ -25,9 +25,17 @@ class FicheControleController extends Controller
     {
         $restau = $request->query('restau');
         $type = $request->query('type');
+        $existingFiche = null;
+        if ($type === 'prestataires') {
+            $existingFiche = FicheControle::where('restau', $restau)
+                ->where('type', 'prestataires')
+                ->latest()
+                ->first();
+        }
         return Inertia::render('FicheControle/Form', [
             "restau" => $restau,
-            "type" => $type
+            "type" => $type,
+            "existingData" => $existingFiche ? $existingFiche->data : null
         ]);
     }
 
@@ -66,18 +74,18 @@ class FicheControleController extends Controller
     }
 
     private function generatePdfName($ficheControle)
-{
-    $prefix = "FicheControle" . ucfirst($ficheControle->type);
-    $restauPart = $ficheControle->restau ? "-{$ficheControle->restau}" : '';
-    return "{$prefix}-{$ficheControle->name}{$restauPart}-{$ficheControle->created_at->format('d-m-Y')}-{$ficheControle->id}.pdf";
-}
+    {
+        $prefix = "FicheControle" . ucfirst($ficheControle->type);
+        $restauPart = $ficheControle->restau ? "-{$ficheControle->restau}" : '';
+        return "{$prefix}-{$ficheControle->name}{$restauPart}-{$ficheControle->created_at->format('d-m-Y')}-{$ficheControle->id}.pdf";
+    }
 
-private function savePdf($ficheControle, $pdfName)
-{
-    $view = "pdf/fiche-controle-{$ficheControle->type}"; // Changed from pdf.
-    $pdfUrl = $this->generatePdfAndSave($view, ["fiche" => $ficheControle], $pdfName, "fiche-controles");
-    $ficheControle->pdf = $pdfName;
-    $ficheControle->save();
-    return $pdfUrl;
-}
+    private function savePdf($ficheControle, $pdfName)
+    {
+        $view = "pdf/fiche-controle-{$ficheControle->type}"; // Changed from pdf.
+        $pdfUrl = $this->generatePdfAndSave($view, ["fiche" => $ficheControle], $pdfName, "fiche-controles");
+        $ficheControle->pdf = $pdfName;
+        $ficheControle->save();
+        return $pdfUrl;
+    }
 }
