@@ -49,22 +49,19 @@ class FicheControleController extends Controller
             'type' => 'required|in:hygiene,patrimoine,prestataires',
             'moyens' => 'required_if:type,hygiene,patrimoine|array',
             'controles' => 'required_if:type,hygiene|array',
-            'prestataires' => 'required_if:type,prestataires|array'
+            'prestataires' => 'required_if:type,prestataires|array|min:1'
         ]);
 
-        Log::info('Validated data:', $validated);
 
         try {
             $data = [];
-            if ($validated['type'] === 'prestataires') {
-                Log::info('Processing prestataires data:', [
-                    'type' => $request->type,
-                    'prestataires' => $request->prestataires
-                ]);
-                $data = ['prestataires' => $request->prestataires];
+            if ($request->type === 'prestataires') {
+                $data = [
+                    'prestataires' => array_values($request->prestataires)
+                ];
             } else {
                 $data['moyens'] = $request->moyens;
-                if ($validated['type'] === 'hygiene') {
+                if ($request->type === 'hygiene') {
                     $data['controles'] = $request->controles;
                 }
             }

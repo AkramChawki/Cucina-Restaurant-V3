@@ -2,7 +2,6 @@ import { useForm } from "@inertiajs/react";
 import React, { useEffect, useState } from "react";
 
 export default function ListePrestataires({ restau, type, existingData }) {
-    console.log("Component Props:", { restau, type, existingData });
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [tempPrestataire, setTempPrestataire] = useState({
         lot: "",
@@ -10,75 +9,63 @@ export default function ListePrestataires({ restau, type, existingData }) {
         telephone: ""
     });
 
-    const { data, setData, post, processing ,errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: "Liste Prestataires",
         date: new Date().toISOString().split('T')[0],
         restau: restau,
         type: type,
-        prestataires: existingData?.prestataires || []
+        prestataires: existingData?.prestataires || [],
+        lot: "",
+        nom: "",
+        telephone: ""
     });
-
-    useEffect(() => {
-        console.log("Current Form Data:", data);
-    }, [data]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
-        const newPrestataire = {
-            lot: tempPrestataire.lot,
-            nom: tempPrestataire.nom,
-            telephone: tempPrestataire.telephone
-        };
 
-        const formData = {
+        const updatedPrestataires = [
+            ...data.prestataires,
+            {
+                lot: data.lot,
+                nom: data.nom,
+                telephone: data.telephone
+            }
+        ];
+
+
+        post("/fiche-controle/form", {
             name: data.name,
             date: data.date,
             restau: data.restau,
             type: data.type,
-            prestataires: [...data.prestataires, newPrestataire]
-        };
-
-        console.log("Submitting Data:", formData);
-
-        post("/fiche-controle/form", formData, {
-            onError: (errors) => {
-                console.log("Submission Errors:", errors);
-            },
+            prestataires: updatedPrestataires
+        }, {
+            preserveState: true,
             onSuccess: () => {
-                console.log("Submission Successful");
                 setIsAddingNew(false);
-                setTempPrestataire({
+                setData(prevData => ({
+                    ...prevData,
+                    prestataires: updatedPrestataires,
                     lot: "",
                     nom: "",
                     telephone: ""
-                });
+                }));
             }
         });
     };
 
-    useEffect(() => {
-        if (errors && Object.keys(errors).length > 0) {
-            console.log("Current Validation Errors:", errors);
-        }
-    }, [errors]);
-
     const handleNewPrestataire = () => {
         setIsAddingNew(true);
-        setTempPrestataire({
-            lot: "",
-            nom: "",
-            telephone: ""
-        });
     };
 
     const handleCancel = () => {
         setIsAddingNew(false);
-        setTempPrestataire({
+        setData(prevData => ({
+            ...prevData,
             lot: "",
             nom: "",
             telephone: ""
-        });
+        }));
     };
 
     return (
@@ -149,8 +136,8 @@ export default function ListePrestataires({ restau, type, existingData }) {
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-6">
                                                 <input
                                                     type="text"
-                                                    value={tempPrestataire.lot}
-                                                    onChange={(e) => setTempPrestataire(prev => ({ ...prev, lot: e.target.value }))}
+                                                    value={data.lot}
+                                                    onChange={(e) => setData('lot', e.target.value)}
                                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                     placeholder="LOT"
                                                 />
@@ -158,8 +145,8 @@ export default function ListePrestataires({ restau, type, existingData }) {
                                             <td className="whitespace-nowrap px-3 py-4">
                                                 <input
                                                     type="text"
-                                                    value={tempPrestataire.nom}
-                                                    onChange={(e) => setTempPrestataire(prev => ({ ...prev, nom: e.target.value }))}
+                                                    value={data.nom}
+                                                    onChange={(e) => setData('nom', e.target.value)}
                                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                     placeholder="Nom Prestataire"
                                                 />
@@ -167,8 +154,8 @@ export default function ListePrestataires({ restau, type, existingData }) {
                                             <td className="whitespace-nowrap px-3 py-4">
                                                 <input
                                                     type="text"
-                                                    value={tempPrestataire.telephone}
-                                                    onChange={(e) => setTempPrestataire(prev => ({ ...prev, telephone: e.target.value }))}
+                                                    value={data.telephone}
+                                                    onChange={(e) => setData('telephone', e.target.value)}
                                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                     placeholder="N Telephone"
                                                 />
