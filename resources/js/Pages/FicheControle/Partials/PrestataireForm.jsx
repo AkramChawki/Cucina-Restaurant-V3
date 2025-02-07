@@ -10,7 +10,7 @@ export default function ListePrestataires({ restau, type, existingData }) {
         telephone: ""
     });
 
-    const { data, setData, post, processing } = useForm({
+    const { data, setData, post, processing ,errors } = useForm({
         name: "Liste Prestataires",
         date: new Date().toISOString().split('T')[0],
         restau: restau,

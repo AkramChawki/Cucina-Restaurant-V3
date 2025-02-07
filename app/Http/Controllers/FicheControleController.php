@@ -52,9 +52,15 @@ class FicheControleController extends Controller
             'prestataires' => 'required_if:type,prestataires|array'
         ]);
 
+        Log::info('Validated data:', $validated);
+
         try {
             $data = [];
             if ($validated['type'] === 'prestataires') {
+                Log::info('Processing prestataires data:', [
+                    'type' => $request->type,
+                    'prestataires' => $request->prestataires
+                ]);
                 $data = ['prestataires' => $request->prestataires];
             } else {
                 $data['moyens'] = $request->moyens;
@@ -70,6 +76,7 @@ class FicheControleController extends Controller
                 'data' => $data,
                 'pdf' => null
             ]);
+            Log::info('FicheControle created:', $ficheControle->toArray());
 
             if ($validated['type'] !== 'prestataires') {
                 $pdfName = $this->generatePdfName($ficheControle);
