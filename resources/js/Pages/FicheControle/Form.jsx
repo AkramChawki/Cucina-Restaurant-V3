@@ -13,6 +13,8 @@ export default function Form({ restau, type, existingData }) {
         return <PatrimoineForm />;
       case 'prestataires':
         return <ListePrestataires type={type} existingData={existingData} />;
+      case 'travaux':
+        return <TravauxForm />;
       default:
         return <HygieneForm />;
     }
