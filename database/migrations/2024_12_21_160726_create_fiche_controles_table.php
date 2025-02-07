@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->date('date');
             $table->string('restau');
-            $table->enum('type', ['hygiene', 'patrimoine']);
+            $table->enum('type', ['hygiene', 'patrimoine', 'prestataires']);
             $table->json('data');
             $table->string('pdf')->nullable();
             $table->timestamps();

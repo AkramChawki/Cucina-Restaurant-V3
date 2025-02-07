@@ -45,26 +45,35 @@ class FicheControleController extends Controller
             'name' => 'required|string|max:255',
             'date' => 'required|date',
             'restau' => 'required|string|max:255',
-            'type' => 'required|in:hygiene,patrimoine',
-            'moyens' => 'required|array',  // Add validation
-            'controles' => 'required_if:type,hygiene|array' // Add validation
+            'type' => 'required|in:hygiene,patrimoine,prestataires',
+            'moyens' => 'required_if:type,hygiene,patrimoine|array',
+            'controles' => 'required_if:type,hygiene|array',
+            'prestataires' => 'required_if:type,prestataires|array'
         ]);
 
         try {
+            $data = [];
+            if ($validated['type'] === 'prestataires') {
+                $data['prestataires'] = $request->prestataires;
+            } else {
+                $data['moyens'] = $request->moyens;
+                if ($validated['type'] === 'hygiene') {
+                    $data['controles'] = $request->controles;
+                }
+            }
             $ficheControle = FicheControle::create([
                 'name' => $validated['name'],
                 'date' => $validated['date'],
                 'restau' => $validated['restau'],
                 'type' => $validated['type'],
-                'data' => [  // Restructure data
-                    'moyens' => $request->moyens,
-                    'controles' => $request->controles
-                ],
+                'data' => $data,
                 'pdf' => null
             ]);
 
+            if ($validated['type'] !== 'prestataires') {
             $pdfName = $this->generatePdfName($ficheControle);
             $this->savePdf($ficheControle, $pdfName);
+        }
 
             return redirect("/")->with('success', 'Fiche de contrôle créée avec succès.');
         } catch (\Exception $e) {
