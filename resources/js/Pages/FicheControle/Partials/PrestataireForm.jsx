@@ -1,13 +1,8 @@
 import { useForm } from "@inertiajs/react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export default function ListePrestataires({ restau, type, existingData }) {
     const [isAddingNew, setIsAddingNew] = useState(false);
-    const [tempPrestataire, setTempPrestataire] = useState({
-        lot: "",
-        nom: "",
-        telephone: ""
-    });
 
     const { data, setData, post, processing, errors } = useForm({
         name: "Liste Prestataires",
@@ -22,35 +17,38 @@ export default function ListePrestataires({ restau, type, existingData }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!data.lot || !data.nom || !data.telephone) {
+            return;
+        }
+        const newPrestataire = {
+            lot: data.lot,
+            nom: data.nom,
+            telephone: data.telephone
+        };
 
-        const updatedPrestataires = [
-            ...data.prestataires,
-            {
-                lot: data.lot,
-                nom: data.nom,
-                telephone: data.telephone
-            }
-        ];
+        setData(prevData => ({
+            ...prevData,
+            prestataires: [...prevData.prestataires, newPrestataire],
+            lot: "",
+            nom: "",
+            telephone: ""
+        }));
 
+        setIsAddingNew(false);
+
+    };
+
+    const handleFinalSubmit = () => {
+        if (data.prestataires.length === 0) {
+            return;
+        }
 
         post("/fiche-controle/form", {
             name: data.name,
             date: data.date,
             restau: data.restau,
             type: data.type,
-            prestataires: updatedPrestataires
-        }, {
-            preserveState: true,
-            onSuccess: () => {
-                setIsAddingNew(false);
-                setData(prevData => ({
-                    ...prevData,
-                    prestataires: updatedPrestataires,
-                    lot: "",
-                    nom: "",
-                    telephone: ""
-                }));
-            }
+            prestataires: data.prestataires
         });
     };
 
@@ -95,6 +93,19 @@ export default function ListePrestataires({ restau, type, existingData }) {
                     )}
                 </div>
             </div>
+
+            {data.prestataires.length > 0 && !isAddingNew && (
+                <div className="mb-4">
+                    <button
+                        type="button"
+                        onClick={handleFinalSubmit}
+                        disabled={processing}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                        {processing ? 'Enregistrement...' : 'Enregistrer la fiche'}
+                    </button>
+                </div>
+            )}
 
             <div className="mt-8 flex flex-col">
                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -164,17 +175,16 @@ export default function ListePrestataires({ restau, type, existingData }) {
                                                 <button
                                                     type="button"
                                                     onClick={handleSubmit}
-                                                    disabled={processing}
                                                     className="inline-flex mr-2 items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                                 >
-                                                    {processing ? 'Saving...' : 'Save'}
+                                                    Ajouter
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={handleCancel}
                                                     className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                                 >
-                                                    Cancel
+                                                    Annuler
                                                 </button>
                                             </td>
                                         </tr>
