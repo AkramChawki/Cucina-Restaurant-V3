@@ -44,10 +44,13 @@ class FicheControleController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'date' => 'required|date',
-            'type' => 'required|in:hygiene,patrimoine,prestataires',
+            'type' => 'required|in:hygiene,patrimoine,prestataires,travaux',
         ];
-    
-        if ($request->type !== 'prestataires') {
+
+        // Add type-specific validation rules
+        if ($request->type === 'travaux') {
+            $rules['data.rows'] = 'required|array|min:1';
+        } elseif ($request->type !== 'prestataires') {
             $rules['restau'] = 'required|string|max:255';
             $rules['moyens'] = 'required|array';
             if ($request->type === 'hygiene') {
@@ -56,30 +59,32 @@ class FicheControleController extends Controller
         } else {
             $rules['prestataires'] = 'required|array|min:1';
         }
-    
+
         $validated = $request->validate($rules);
-    
+
         try {
             $data = [];
             if ($request->type === 'prestataires') {
                 $data = ['prestataires' => array_values($request->prestataires)];
+            } elseif ($request->type === 'travaux') {
+                $data = ['rows' => array_values($request->data['rows'])];
             } else {
                 $data['moyens'] = $request->moyens;
                 if ($request->type === 'hygiene') {
                     $data['controles'] = $request->controles;
                 }
             }
-    
+
             $ficheControle = FicheControle::create([
                 'name' => $validated['name'],
                 'date' => $validated['date'],
-                'restau' => $request->restau ?? null,  // Make restau optional
+                'restau' => $request->restau ?? null,
                 'type' => $validated['type'],
                 'data' => $data,
                 'pdf' => null
             ]);
 
-            if ($validated['type'] !== 'prestataires') {
+            if ($validated['type'] !== 'prestataires' && $validated['type'] !== 'travaux') {
                 $pdfName = $this->generatePdfName($ficheControle);
                 $this->savePdf($ficheControle, $pdfName);
             }
