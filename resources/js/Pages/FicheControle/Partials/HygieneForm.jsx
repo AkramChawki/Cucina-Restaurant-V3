@@ -162,7 +162,7 @@ export default function HygieneForm() {
                                     checked={_.get(data, `data.moyens.${title.toLowerCase()}.${key}.etat`) === "oui"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `data.moyens.${title.toLowerCase()}.${key}.etat`, "oui");
+                                        _.set(newData, `moyens.${title.toLowerCase()}.${key}.etat`, "oui");
                                         setData(newData);
                                     }}
                                 />
@@ -173,7 +173,7 @@ export default function HygieneForm() {
                                     checked={_.get(data, `data.moyens.${title.toLowerCase()}.${key}.etat`) === "non"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `data.moyens.${title.toLowerCase()}.${key}.etat`, "non");
+                                        _.set(newData, `moyens.${title.toLowerCase()}.${key}.etat`, "non");
                                         setData(newData);
                                     }}
                                 />
@@ -184,7 +184,7 @@ export default function HygieneForm() {
                                     value={value.commentaire}
                                     onChange={(e) => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `data.moyens.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
+                                        _.set(newData, `moyens.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
                                         setData(newData);
                                     }}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
@@ -294,20 +294,20 @@ export default function HygieneForm() {
                         </div>
                     </div>
 
-                    {createOuiNonSection("Economat", data.data.moyens.economat)}
-                    {createOuiNonSection("Salle", data.data.moyens.salle)}
-                    {createOuiNonSection("Pizzeria", data.data.moyens.pizzeria)}
-                    {createOuiNonSection("WC Client", data.data.moyens.wc_client)}
-                    {createOuiNonSection("Cuisine", data.data.moyens.cuisine)}
-                    {createOuiNonSection("Vestiaire", data.data.moyens.vestiaire)}
+                    {createOuiNonSection("Economat", data.moyens.economat)}
+                    {createOuiNonSection("Salle", data.moyens.salle)}
+                    {createOuiNonSection("Pizzeria", data.moyens.pizzeria)}
+                    {createOuiNonSection("WC Client", data.moyens.wc_client)}
+                    {createOuiNonSection("Cuisine", data.moyens.cuisine)}
+                    {createOuiNonSection("Vestiaire", data.moyens.vestiaire)}
 
-                    {createEvaluationSection("Rangement Economats", data.data.controles.rangement_economats)}
-                    {createEvaluationSection("Salle", data.data.controles.salle)}
-                    {createEvaluationSection("Poste Pizza", data.data.controles.poste_pizza)}
-                    {createEvaluationSection("WC Client", data.data.controles.wc_client)}
-                    {createEvaluationSection("Cuisine", data.data.controles.cuisine)}
-                    {createEvaluationSection("Vestiaire", data.data.controles.vestiaire)}
-                    {createEvaluationSection("Facade et Terrasse", data.data.controles.facade_terrasse)}
+                    {createEvaluationSection("Rangement Economats", data.controles.rangement_economats)}
+                    {createEvaluationSection("Salle", data.controles.salle)}
+                    {createEvaluationSection("Poste Pizza", data.controles.poste_pizza)}
+                    {createEvaluationSection("WC Client", data.controles.wc_client)}
+                    {createEvaluationSection("Cuisine", data.controles.cuisine)}
+                    {createEvaluationSection("Vestiaire", data.controles.vestiaire)}
+                    {createEvaluationSection("Facade et Terrasse", data.controles.facade_terrasse)}
 
                     <div className="pt-8 flex justify-end space-x-3">
                         <Link

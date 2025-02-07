@@ -103,7 +103,7 @@ export default function PatrimoineForm() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {Object.entries(data.data.moyens).map(([key, value]) => (
+                            {Object.entries(data.moyens).map(([key, value]) => (
                                 <tr key={key}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
@@ -114,7 +114,7 @@ export default function PatrimoineForm() {
                                             checked={value.etat === "oui"}
                                             onChange={() => {
                                                 const newData = _.cloneDeep(data);
-                                                newData.data.moyens[key].etat = "oui";
+                                                newData.moyens[key].etat = "oui";
                                                 setData(newData);
                                             }}
                                             className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
@@ -126,7 +126,7 @@ export default function PatrimoineForm() {
                                             checked={value.etat === "non"}
                                             onChange={() => {
                                                 const newData = _.cloneDeep(data);
-                                                newData.data.moyens[key].etat = "non";
+                                                newData.moyens[key].etat = "non";
                                                 setData(newData);
                                             }}
                                             className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
@@ -138,7 +138,7 @@ export default function PatrimoineForm() {
                                             value={value.commentaire}
                                             onChange={(e) => {
                                                 const newData = _.cloneDeep(data);
-                                                newData.data.moyens[key].commentaire = e.target.value;
+                                                newData.moyens[key].commentaire = e.target.value;
                                                 setData(newData);
                                             }}
                                             className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
