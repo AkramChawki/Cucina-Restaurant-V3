@@ -7,6 +7,7 @@ use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\PdfGeneratorTrait;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class FicheControleController extends Controller
@@ -52,20 +53,20 @@ class FicheControleController extends Controller
             if ($request->type === 'maintenance_preventive') {
                 $rules['data.mois'] = 'required|string';
             }
-        } elseif  ($request->type === 'prestataires') {
+        } elseif ($request->type === 'prestataires') {
             $rules['prestataires'] = 'required|array|min:1';
-            
+
             $existingRecord = FicheControle::where('type', 'prestataires')
                 ->latest()
                 ->first();
-    
+
             if ($existingRecord) {
                 $existingRecord->update([
                     'name' => $request->name,
                     'date' => $request->date,
                     'data' => ['prestataires' => array_values($request->prestataires)]
                 ]);
-                
+
                 return redirect("/")->with('success', 'Liste des prestataires mise à jour avec succès.');
             }
         } else {
@@ -105,7 +106,7 @@ class FicheControleController extends Controller
                 'pdf' => null
             ]);
 
-            if ($validated['type'] !== 'prestataires' && $validated['type'] !== 'travaux' && $validated['type'] !== 'maintenance_preventive') {
+            if ($validated['type'] !== 'prestataires') {
                 $pdfName = $this->generatePdfName($ficheControle);
                 $this->savePdf($ficheControle, $pdfName);
             }
@@ -121,15 +122,42 @@ class FicheControleController extends Controller
     {
         $prefix = "FicheControle" . ucfirst($ficheControle->type);
         $restauPart = $ficheControle->restau ? "-{$ficheControle->restau}" : '';
-        return "{$prefix}-{$ficheControle->name}{$restauPart}-{$ficheControle->created_at->format('d-m-Y')}-{$ficheControle->id}.pdf";
+        $datePart = $ficheControle->date ? "-" . $ficheControle->date->format('d-m-Y') : '-' . now()->format('d-m-Y');
+        return "{$prefix}{$restauPart}{$datePart}-{$ficheControle->id}.pdf";
     }
 
     private function savePdf($ficheControle, $pdfName)
     {
-        $view = "pdf/fiche-controle-{$ficheControle->type}"; // Changed from pdf.
+        $view = "pdf/fiche-controle-{$ficheControle->type}";
         $pdfUrl = $this->generatePdfAndSave($view, ["fiche" => $ficheControle], $pdfName, "fiche-controles");
         $ficheControle->pdf = $pdfName;
         $ficheControle->save();
         return $pdfUrl;
+    }
+
+    public function downloadPrestatairePdf(Request $request)
+    {
+        try {
+            // Create a temporary record for PDF generation
+            $ficheControle = FicheControle::create([
+                'name' => $request->name,
+                'date' => $request->date,
+                'type' => 'prestataires',
+                'data' => ['prestataires' => $request->prestataires],
+                'pdf' => null
+            ]);
+
+            $pdfName = $this->generatePdfName($ficheControle);
+            $pdfUrl = $this->savePdf($ficheControle, $pdfName);
+
+            $filePath = public_path("storage/fiche-controles/$pdfName");
+
+            $ficheControle->delete();
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate PDF', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Failed to generate PDF'], 500);
+        }
     }
 }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 export default function ListePrestataires({ type, existingData }) {
     const { auth } = usePage().props;
     const [isAddingNew, setIsAddingNew] = useState(false);
-    
+
 
     const { data, setData, post, processing, errors } = useForm({
         name: auth.user.name,
@@ -114,6 +114,36 @@ export default function ListePrestataires({ type, existingData }) {
                         {processing ? 'Enregistrement...' : 'Enregistrer la fiche'}
                     </button>
                 </div>
+            )}
+            {data.prestataires.length > 0 && (
+                <button
+                    type="button"
+                    onClick={() => {
+                        axios.post('/fiche-controle/download-prestataire-pdf', {
+                            name: data.name,
+                            date: data.date,
+                            prestataires: data.prestataires
+                        }, {
+                            responseType: 'blob'
+                        })
+                            .then((response) => {
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', `Liste_Prestataires_${data.date}.pdf`);
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+                                window.URL.revokeObjectURL(url);
+                            })
+                            .catch((error) => {
+                                console.error('Error downloading PDF:', error);
+                            });
+                    }}
+                    className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    Télécharger PDF
+                </button>
             )}
 
             <div className="mt-8 flex flex-col">
