@@ -49,11 +49,11 @@ export default function MaintenancePreventiveForm() {
 
     const { data, setData, post, processing, errors } = useForm({
         name: auth.user.name,
-        date: "",
+        date: new Date().toISOString().split('T')[0],
         restau: restau,
         type: "maintenance_preventive",
         data: {
-            mois: "",
+            mois: new Date().toISOString().slice(0, 7),
             rows: rows
         }
     });
@@ -167,7 +167,6 @@ export default function MaintenancePreventiveForm() {
                         </div>
                     </div>
 
-                    {/* Dynamic Table */}
                     <div className="mt-8">
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-300">

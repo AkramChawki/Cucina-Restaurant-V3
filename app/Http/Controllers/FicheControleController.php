@@ -44,22 +44,22 @@ class FicheControleController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'date' => 'required|date',
-            'type' => 'required|in:hygiene,patrimoine,prestataires,travaux',
+            'type' => 'required|in:hygiene,patrimoine,prestataires,travaux,maintenance_preventive',
         ];
 
-        if ($request->type === 'travaux') {
+        if ($request->type === 'travaux' || $request->type === 'maintenance_preventive') {
             $rules['data.rows'] = 'required|array|min:1';
-        } elseif ($request->type !== 'prestataires') {
+            if ($request->type === 'maintenance_preventive') {
+                $rules['data.mois'] = 'required|string';
+            }
+        } elseif ($request->type === 'prestataires') {
+            $rules['prestataires'] = 'required|array|min:1';
+        } else {
             $rules['restau'] = 'required|string|max:255';
             $rules['moyens'] = 'required|array';
             if ($request->type === 'hygiene') {
                 $rules['controles'] = 'required|array';
             }
-        } elseif ($request->type === 'maintenance_preventive') {
-            $rules['data.mois'] = 'required|string';
-            $rules['data.rows'] = 'required|array|min:1';
-        } else {
-            $rules['prestataires'] = 'required|array|min:1';
         }
 
         $validated = $request->validate($rules);
@@ -68,8 +68,13 @@ class FicheControleController extends Controller
             $data = [];
             if ($request->type === 'prestataires') {
                 $data = ['prestataires' => array_values($request->prestataires)];
-            } elseif ($request->type === 'travaux') {
-                $data = ['rows' => array_values($request->data['rows'])];
+            } elseif ($request->type === 'travaux' || $request->type === 'maintenance_preventive') {
+                $data = [
+                    'rows' => array_values($request->data['rows'])
+                ];
+                if ($request->type === 'maintenance_preventive') {
+                    $data['mois'] = $request->data['mois'];
+                }
             } else {
                 $data['moyens'] = $request->moyens;
                 if ($request->type === 'hygiene') {
@@ -86,7 +91,7 @@ class FicheControleController extends Controller
                 'pdf' => null
             ]);
 
-            if ($validated['type'] !== 'prestataires' && $validated['type'] !== 'travaux') {
+            if ($validated['type'] !== 'prestataires' && $validated['type'] !== 'travaux' && $validated['type'] !== 'maintenance_preventive') {
                 $pdfName = $this->generatePdfName($ficheControle);
                 $this->savePdf($ficheControle, $pdfName);
             }

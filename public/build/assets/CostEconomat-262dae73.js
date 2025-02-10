@@ -1,1 +1,0 @@
-import{j as m}from"./app-cb0b993c.js";import a from"./CostEconomatForm-4e4d7bd9.js";function f({restaurant:o,products:t,currentMonth:r}){return m(a,{restaurant:o,products:t,currentMonth:r})}export{f as default};
