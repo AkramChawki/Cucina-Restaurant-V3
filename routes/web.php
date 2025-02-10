@@ -95,6 +95,7 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
             ->name('fiche-controle.form');
         Route::post('/form', [FicheControleController::class, 'store'])
             ->name('fiche-controle.store');
+        Route::post('/download-prestataire-pdf', [FicheControleController::class, 'downloadPrestatairePdf']);
     });
 
     Route::controller(ClotureCaisseController::class)->group(function () {
