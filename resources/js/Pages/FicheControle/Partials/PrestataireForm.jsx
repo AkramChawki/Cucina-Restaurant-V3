@@ -1,5 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function ListePrestataires({ type, existingData }) {
     const { auth } = usePage().props;
@@ -15,6 +15,15 @@ export default function ListePrestataires({ type, existingData }) {
         nom: "",
         telephone: ""
     });
+
+    useEffect(() => {
+        if (existingData?.prestataires) {
+            setData(prevData => ({
+                ...prevData,
+                prestataires: existingData.prestataires
+            }));
+        }
+    }, [existingData]);
 
     const handleSubmit = (e) => {
         e.preventDefault();

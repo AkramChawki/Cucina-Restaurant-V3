@@ -52,8 +52,22 @@ class FicheControleController extends Controller
             if ($request->type === 'maintenance_preventive') {
                 $rules['data.mois'] = 'required|string';
             }
-        } elseif ($request->type === 'prestataires') {
+        } elseif  ($request->type === 'prestataires') {
             $rules['prestataires'] = 'required|array|min:1';
+            
+            $existingRecord = FicheControle::where('type', 'prestataires')
+                ->latest()
+                ->first();
+    
+            if ($existingRecord) {
+                $existingRecord->update([
+                    'name' => $request->name,
+                    'date' => $request->date,
+                    'data' => ['prestataires' => array_values($request->prestataires)]
+                ]);
+                
+                return redirect("/")->with('success', 'Liste des prestataires mise à jour avec succès.');
+            }
         } else {
             $rules['restau'] = 'required|string|max:255';
             $rules['moyens'] = 'required|array';
