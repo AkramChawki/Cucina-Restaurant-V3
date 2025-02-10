@@ -47,7 +47,6 @@ class FicheControleController extends Controller
             'type' => 'required|in:hygiene,patrimoine,prestataires,travaux',
         ];
 
-        // Add type-specific validation rules
         if ($request->type === 'travaux') {
             $rules['data.rows'] = 'required|array|min:1';
         } elseif ($request->type !== 'prestataires') {
@@ -56,6 +55,9 @@ class FicheControleController extends Controller
             if ($request->type === 'hygiene') {
                 $rules['controles'] = 'required|array';
             }
+        } elseif ($request->type === 'maintenance_preventive') {
+            $rules['data.mois'] = 'required|string';
+            $rules['data.rows'] = 'required|array|min:1';
         } else {
             $rules['prestataires'] = 'required|array|min:1';
         }

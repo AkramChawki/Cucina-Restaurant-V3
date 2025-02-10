@@ -61,6 +61,7 @@ export default function SelectType({ restaurants }) {
                             <option value="patrimoine">Patrimoine</option>
                             <option value="prestataires">Prestataires</option>
                             <option value="travaux">Travaux</option>
+                            <option value="maintenance_preventive">Maintenance Preventive</option>
                         </select>
                     </div>
 
