@@ -130,76 +130,86 @@ export default function HygieneForm() {
         });
     }
 
-    const createOuiNonSection = (title, sectionData) => (
-        <div className="mt-8 overflow-x-auto">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
-            <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                            Moyens
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                            Etat oui
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                            Etat non
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Commentaires
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.entries(sectionData).map(([key, value]) => (
-                        <tr key={key}>
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
-                                {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                <input
-                                    type="radio"
-                                    name={`etat-${title}-${key}`}
-                                    checked={value.etat === "oui"}
-                                    onChange={() => {
-                                        const newData = _.cloneDeep(data);
-                                        newData.moyens[title.toLowerCase()][key].etat = "oui";
-                                        setData(newData);
-                                    }}
-                                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                                />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                <input
-                                    type="radio"
-                                    name={`etat-${title}-${key}`}
-                                    checked={value.etat === "non"}
-                                    onChange={() => {
-                                        const newData = _.cloneDeep(data);
-                                        newData.moyens[title.toLowerCase()][key].etat = "non";
-                                        setData(newData);
-                                    }}
-                                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                                />
-                            </td>
-                            <td className="px-6 py-4">
-                                <input
-                                    type="text"
-                                    value={value.commentaire}
-                                    onChange={(e) => {
-                                        const newData = _.cloneDeep(data);
-                                        newData.moyens[title.toLowerCase()][key].commentaire = e.target.value;
-                                        setData(newData);
-                                    }}
-                                    className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                                />
-                            </td>
+    const createOuiNonSection = (title, sectionData) => {
+        const sectionKey = title.toLowerCase().replace(/ /g, '_');
+        
+        return (
+            <div className="mt-8 overflow-x-auto">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
+                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                                Moyens
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                                Etat oui
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                                Etat non
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Commentaires
+                            </th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {Object.entries(sectionData).map(([key, value]) => (
+                            <tr key={key}>
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
+                                    {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <input
+                                        type="radio"
+                                        name={`etat-${sectionKey}-${key}`}
+                                        checked={value.etat === "oui"}
+                                        onChange={() => {
+                                            const newData = _.cloneDeep(data);
+                                            if (newData.moyens[sectionKey] && newData.moyens[sectionKey][key]) {
+                                                newData.moyens[sectionKey][key].etat = "oui";
+                                                setData(newData);
+                                            }
+                                        }}
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                    />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <input
+                                        type="radio"
+                                        name={`etat-${sectionKey}-${key}`}
+                                        checked={value.etat === "non"}
+                                        onChange={() => {
+                                            const newData = _.cloneDeep(data);
+                                            if (newData.moyens[sectionKey] && newData.moyens[sectionKey][key]) {
+                                                newData.moyens[sectionKey][key].etat = "non";
+                                                setData(newData);
+                                            }
+                                        }}
+                                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                                    />
+                                </td>
+                                <td className="px-6 py-4">
+                                    <input
+                                        type="text"
+                                        value={value.commentaire}
+                                        onChange={(e) => {
+                                            const newData = _.cloneDeep(data);
+                                            if (newData.moyens[sectionKey] && newData.moyens[sectionKey][key]) {
+                                                newData.moyens[sectionKey][key].commentaire = e.target.value;
+                                                setData(newData);
+                                            }
+                                        }}
+                                        className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                    />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
 
     const createEvaluationSection = (title, sectionData) => (
         <div className="mt-8 overflow-x-auto">
