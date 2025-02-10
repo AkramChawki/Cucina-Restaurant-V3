@@ -159,10 +159,11 @@ export default function HygieneForm() {
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <input
                                     type="radio"
+                                    name={`etat-${title}-${key}`}
                                     checked={value.etat === "oui"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `moyens.${title.toLowerCase()}.${key}.etat`, "oui");
+                                        newData.moyens[title.toLowerCase()][key].etat = "oui";
                                         setData(newData);
                                     }}
                                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
@@ -171,10 +172,11 @@ export default function HygieneForm() {
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <input
                                     type="radio"
+                                    name={`etat-${title}-${key}`}
                                     checked={value.etat === "non"}
                                     onChange={() => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `moyens.${title.toLowerCase()}.${key}.etat`, "non");
+                                        newData.moyens[title.toLowerCase()][key].etat = "non";
                                         setData(newData);
                                     }}
                                     className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
@@ -186,7 +188,7 @@ export default function HygieneForm() {
                                     value={value.commentaire}
                                     onChange={(e) => {
                                         const newData = _.cloneDeep(data);
-                                        _.set(newData, `moyens.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
+                                        newData.moyens[title.toLowerCase()][key].commentaire = e.target.value;
                                         setData(newData);
                                     }}
                                     className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
