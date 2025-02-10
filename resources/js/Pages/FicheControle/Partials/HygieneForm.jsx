@@ -132,7 +132,7 @@ export default function HygieneForm() {
 
     const createOuiNonSection = (title, sectionData) => {
         const sectionKey = title.toLowerCase().replace(/ /g, '_');
-        
+
         return (
             <div className="mt-8 overflow-x-auto">
                 <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
@@ -211,63 +211,84 @@ export default function HygieneForm() {
         );
     };
 
-    const createEvaluationSection = (title, sectionData) => (
-        <div className="mt-8 overflow-x-auto">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
-            <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                            Désignation des contrôles
-                        </th>
-                        {['bien', 'moyen', 'mediocre', 'neant'].map((rating) => (
-                            <th key={rating} scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
-                                {rating}
+    const createEvaluationSection = (title, sectionData) => {
+        // Normalize the section name to match the data structure
+        const getSectionKey = (title) => {
+            switch (title) {
+                case 'Rangement Economats':
+                    return 'rangement_economats';
+                case 'Poste Pizza':
+                    return 'poste_pizza';
+                case 'WC Client':
+                    return 'wc_client';
+                case 'Facade et Terrasse':
+                    return 'facade_terrasse';
+                default:
+                    return title.toLowerCase();
+            }
+        };
+
+        const sectionKey = getSectionKey(title);
+
+        return (
+            <div className="mt-8 overflow-x-auto">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">{title}</h3>
+                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                                Désignation des contrôles
                             </th>
-                        ))}
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Commentaires
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.entries(sectionData).map(([key, value]) => (
-                        <tr key={key}>
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
-                                {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                            </td>
                             {['bien', 'moyen', 'mediocre', 'neant'].map((rating) => (
-                                <td key={rating} className="px-6 py-4 whitespace-nowrap text-center">
+                                <th key={rating} scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                    {rating}
+                                </th>
+                            ))}
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Commentaires
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {Object.entries(sectionData).map(([key, value]) => (
+                            <tr key={key}>
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
+                                    {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </td>
+                                {['bien', 'moyen', 'mediocre', 'neant'].map((rating) => (
+                                    <td key={rating} className="px-6 py-4 whitespace-nowrap text-center">
+                                        <input
+                                            type="radio"
+                                            name={`rating-${sectionKey}-${key}`}
+                                            checked={value.value === rating}
+                                            onChange={() => {
+                                                const newData = _.cloneDeep(data);
+                                                newData.controles[sectionKey][key].value = rating;
+                                                setData(newData);
+                                            }}
+                                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                        />
+                                    </td>
+                                ))}
+                                <td className="px-6 py-4">
                                     <input
-                                        type="radio"
-                                        checked={value.value === rating}
-                                        onChange={() => {
+                                        type="text"
+                                        value={value.commentaire}
+                                        onChange={(e) => {
                                             const newData = _.cloneDeep(data);
-                                            _.set(newData, `controles.${title.toLowerCase().replace(/ /g, '_')}.${key}.value`, rating);
+                                            newData.controles[sectionKey][key].commentaire = e.target.value;
                                             setData(newData);
                                         }}
-                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                        className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                                     />
                                 </td>
-                            ))}
-                            <td className="px-6 py-4">
-                                <input
-                                    type="text"
-                                    value={value.commentaire}
-                                    onChange={(e) => {
-                                        const newData = _.cloneDeep(data);
-                                        _.set(newData, `controles.${title.toLowerCase()}.${key}.commentaire`, e.target.value);
-                                        setData(newData);
-                                    }}
-                                    className="w-full min-w-0 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                                />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4 py-10">
             <form onSubmit={submit} className="space-y-8">
