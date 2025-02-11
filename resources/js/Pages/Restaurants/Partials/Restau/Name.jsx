@@ -4,27 +4,19 @@ import { Link } from "@inertiajs/react";
 export default function Name({ restaurants, auth }) {
     const [restaurant, setRestaurant] = useState("");
 
-    console.log('Auth User Restau:', auth.user.restau); // Debug auth user restau
-    console.log('Available Restaurants:', restaurants); // Debug available restaurants
 
     const userRestaurants = useMemo(() => {
-        // Debug checks
         if (!auth.user.restau) {
-            console.log('No restau field in auth.user');
             return [];
         }
 
         if (!Array.isArray(auth.user.restau)) {
-            console.log('Restau is not an array:', typeof auth.user.restau);
-            // If it's a string, try to parse it
             try {
                 const parsedRestau = JSON.parse(auth.user.restau);
                 if (Array.isArray(parsedRestau)) {
-                    console.log('Successfully parsed restau:', parsedRestau);
                     auth.user.restau = parsedRestau;
                 }
             } catch (e) {
-                console.log('Failed to parse restau:', e);
                 return [];
             }
         }
@@ -33,12 +25,10 @@ export default function Name({ restaurants, auth }) {
             const restaurantName = restaurant.name.toLowerCase();
             return auth.user.restau.some(location => {
                 const locationMatch = restaurantName.includes(location.toLowerCase());
-                console.log(`Checking ${restaurantName} against ${location}: ${locationMatch}`);
                 return locationMatch;
             });
         });
 
-        console.log('Filtered Restaurants:', filtered);
         return filtered;
     }, [restaurants, auth.user.restau]);
 
