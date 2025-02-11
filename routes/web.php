@@ -18,6 +18,7 @@ use App\Http\Controllers\CostCuisineController;
 use App\Http\Controllers\CostEconomatController;
 use App\Http\Controllers\CostPizzaController;
 use App\Http\Controllers\FicheControleController;
+use App\Http\Controllers\InfractionController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
 
@@ -160,6 +161,16 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     // Update value endpoint
     Route::post('/bml/update-value', [BMLController::class, 'store'])
         ->name('bml.update-value');
+
+    Route::get('/infraction', [InfractionController::class, 'index'])
+        ->name('infraction.index');
+
+    // Update value endpoint
+    Route::post('/infraction/store', [InfractionController::class, 'store'])
+        ->name('infraction.store');
+
+    Route::get('/infractions/report', [InfractionController::class, 'report'])
+        ->name('infractions.report');
 
 });
 

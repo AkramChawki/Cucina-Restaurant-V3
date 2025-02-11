@@ -173,6 +173,12 @@ function Home({ rubriques }) {
                                 link="/numeros"
                             />
                         )}
+                        {auth.user.role.includes("Infraction") && (
+                            <CardOverlay
+                                title="INFRACTIONS CONSTATEES PAR LE CENTRE DE CONTRÔLE"
+                                link="/infraction"
+                            />
+                        )}
                     </div>
                 </div>
             </div>
