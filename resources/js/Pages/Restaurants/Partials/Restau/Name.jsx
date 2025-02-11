@@ -4,14 +4,23 @@ import { Link } from "@inertiajs/react";
 export default function Name({ restaurants, auth }) {
     const [restaurant, setRestaurant] = useState("");
 
+    const getLocationFromName = (name) => {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('anoual')) return 'anoual';
+        if (lowerName.includes('palmier')) return 'palmier';
+        if (lowerName.includes('ziraoui')) return 'ziraoui';
+        if (lowerName.includes('to go')) return 'to go';
+        return null;
+    };
+
+    // Find restaurants that match user's permissions
     const userRestaurants = useMemo(() => {
         if (!auth.user.restau || !Array.isArray(auth.user.restau)) return [];
         
-        return restaurants.filter(restaurant => 
-            auth.user.restau.some(userLocation => 
-                restaurant.name.toLowerCase().includes(userLocation.toLowerCase())
-            )
-        );
+        return restaurants.filter(restaurant => {
+            const location = getLocationFromName(restaurant.name);
+            return location && auth.user.restau.includes(location);
+        });
     }, [restaurants, auth.user.restau]);
 
     const handleChange = (event) => {
