@@ -261,6 +261,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                     </form>
                 </div>
 
+                {/* List Section with Table */}
                 <div className="bg-white rounded-lg shadow">
                     <div className="overflow-x-auto -mx-4 sm:mx-0">
                         <div className="inline-block min-w-full align-middle">
@@ -275,20 +276,20 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {infractions.map((infraction) => (
+                                    {infractions && infractions.map((infraction) => (
                                         <tr key={infraction.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">{infraction.restaurant}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{infraction.poste}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center">
-                                                    {infraction.employe.profile_photo && (
+                                                    {infraction.employe?.profile_photo && (
                                                         <img
-                                                            src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
+                                                            src={`https://restaurant.cucinanapoli.com/public/storage/${infraction.employe.profile_photo}`}
                                                             alt=""
                                                             className="h-8 w-8 rounded-full mr-2"
                                                         />
                                                     )}
-                                                    <span>{infraction.employe.first_name} {infraction.employe.last_name}</span>
+                                                    <span>{infraction.employe?.first_name} {infraction.employe?.last_name}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">{infraction.infraction_constatee}</td>
