@@ -5,7 +5,7 @@ import { Camera } from 'lucide-react';
 export default function Index({ employes, restaurants, postes, infractions }) {
     const [preview, setPreview] = useState(null);
     const fileInput = useRef(null);
-    
+
     const { data, setData, post, processing, errors, reset } = useForm({
         restaurant: '',
         infraction_constatee: '',
@@ -45,7 +45,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
             <div className="bg-white shadow-sm rounded-lg">
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 mb-6">Nouvelle Infraction</h2>
-                    
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Restaurant Selection */}
@@ -103,12 +103,10 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 >
                                     <option value="">Sélectionner un employé</option>
-                                    {employes.map(employe => (
-                                        <div key={employe.id} className="flex items-center">
-                                            <option value={employe.id}>
-                                                {employe.first_name} {employe.last_name}
-                                            </option>
-                                        </div>
+                                    {employes && employes.map(employe => (
+                                        <option key={employe.id} value={employe.id}>
+                                            {`${employe.first_name} ${employe.last_name}${employe.restau ? ` - ${employe.restau}` : ''}`}
+                                        </option>
                                     ))}
                                 </select>
                                 {errors.employe_id && (
