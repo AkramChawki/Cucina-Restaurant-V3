@@ -1,25 +1,25 @@
 {
-  "_Footer-b8336c89.js": {
-    "file": "assets/Footer-b8336c89.js",
+  "_Footer-dc258e61.js": {
+    "file": "assets/Footer-dc258e61.js",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_SearchIcon-ae2824ca.js": {
-    "file": "assets/SearchIcon-ae2824ca.js",
+  "_SearchIcon-e6ee2157.js": {
+    "file": "assets/SearchIcon-e6ee2157.js",
     "imports": [
       "resources/js/app.jsx",
-      "_description-3ab61a58.js"
+      "_description-db19822f.js"
     ]
   },
-  "_createLucideIcon-1202f9b1.js": {
-    "file": "assets/createLucideIcon-1202f9b1.js",
+  "_createLucideIcon-33621795.js": {
+    "file": "assets/createLucideIcon-33621795.js",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_description-3ab61a58.js": {
-    "file": "assets/description-3ab61a58.js",
+  "_description-db19822f.js": {
+    "file": "assets/description-db19822f.js",
     "imports": [
       "resources/js/app.jsx"
     ]
@@ -27,14 +27,14 @@
   "_index-08c7c3df.js": {
     "file": "assets/index-08c7c3df.js"
   },
-  "_lodash-3e983fa0.js": {
-    "file": "assets/lodash-3e983fa0.js",
+  "_lodash-5726d37e.js": {
+    "file": "assets/lodash-5726d37e.js",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Auth/Login.jsx": {
-    "file": "assets/Login-51751c45.js",
+    "file": "assets/Login-f174c98a.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -42,28 +42,28 @@
     "src": "resources/js/Pages/Auth/Login.jsx"
   },
   "resources/js/Pages/ClotureCaisse/Ajouter.jsx": {
-    "file": "assets/Ajouter-18f8324e.js",
+    "file": "assets/Ajouter-1b27970b.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/ClotureCaisse/Partials/Formulaire.jsx",
-      "_Footer-b8336c89.js",
+      "_Footer-dc258e61.js",
       "_index-08c7c3df.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/ClotureCaisse/Ajouter.jsx"
   },
   "resources/js/Pages/ClotureCaisse/ClotureCaisse.jsx": {
-    "file": "assets/ClotureCaisse-a4a329ae.js",
+    "file": "assets/ClotureCaisse-e15ddbb4.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/ClotureCaisse/Partials/Name.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/ClotureCaisse/ClotureCaisse.jsx"
   },
   "resources/js/Pages/ClotureCaisse/Partials/Formulaire.jsx": {
-    "file": "assets/Formulaire-8a9fe2cc.js",
+    "file": "assets/Formulaire-6b77caf0.js",
     "imports": [
       "resources/js/app.jsx",
       "_index-08c7c3df.js"
@@ -72,7 +72,7 @@
     "src": "resources/js/Pages/ClotureCaisse/Partials/Formulaire.jsx"
   },
   "resources/js/Pages/ClotureCaisse/Partials/Name.jsx": {
-    "file": "assets/Name-b1e2b422.js",
+    "file": "assets/Name-49641ea2.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -80,28 +80,28 @@
     "src": "resources/js/Pages/ClotureCaisse/Partials/Name.jsx"
   },
   "resources/js/Pages/CommandeCuisinier/CommandeCuisinier.jsx": {
-    "file": "assets/CommandeCuisinier-ae2b6a9c.js",
+    "file": "assets/CommandeCuisinier-6df97f53.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/CommandeCuisinier/Partials/Name.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/CommandeCuisinier/CommandeCuisinier.jsx"
   },
   "resources/js/Pages/CommandeCuisinier/Commander.jsx": {
-    "file": "assets/Commander-8f6c98ac.js",
+    "file": "assets/Commander-20d9e644.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/CommandeCuisinier/Partials/Table.jsx",
-      "_SearchIcon-ae2824ca.js",
-      "_description-3ab61a58.js"
+      "_SearchIcon-e6ee2157.js",
+      "_description-db19822f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/CommandeCuisinier/Commander.jsx"
   },
   "resources/js/Pages/CommandeCuisinier/Partials/Name.jsx": {
-    "file": "assets/Name-a688dfb5.js",
+    "file": "assets/Name-ca1a306e.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -109,69 +109,69 @@
     "src": "resources/js/Pages/CommandeCuisinier/Partials/Name.jsx"
   },
   "resources/js/Pages/CommandeCuisinier/Partials/Table.jsx": {
-    "file": "assets/Table-53d24329.js",
+    "file": "assets/Table-48b1085c.js",
     "imports": [
       "resources/js/app.jsx",
-      "_SearchIcon-ae2824ca.js",
-      "_description-3ab61a58.js"
+      "_SearchIcon-e6ee2157.js",
+      "_description-db19822f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/CommandeCuisinier/Partials/Table.jsx"
   },
   "resources/js/Pages/FicheControle/Form.jsx": {
-    "file": "assets/Form-d61fd435.js",
+    "file": "assets/Form-e69e27cb.js",
     "imports": [
       "resources/js/app.jsx",
-      "_Footer-b8336c89.js",
+      "_Footer-dc258e61.js",
       "resources/js/Pages/FicheControle/Partials/HygieneForm.jsx",
       "resources/js/Pages/FicheControle/Partials/PatrimoineForm.jsx",
       "resources/js/Pages/FicheControle/Partials/PrestataireForm.jsx",
       "resources/js/Pages/FicheControle/Partials/TravauxForm.jsx",
       "resources/js/Pages/FicheControle/Partials/MaintenancePreventiveForm.jsx",
-      "_lodash-3e983fa0.js"
+      "_lodash-5726d37e.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FicheControle/Form.jsx"
   },
   "resources/js/Pages/FicheControle/Index.jsx": {
-    "file": "assets/Index-77c3c75e.js",
+    "file": "assets/Index-7716b12b.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FicheControle/Partials/SelectType.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FicheControle/Index.jsx"
   },
   "resources/js/Pages/FicheControle/Partials/HygieneForm.jsx": {
-    "file": "assets/HygieneForm-b665fcd7.js",
+    "file": "assets/HygieneForm-f0923a23.js",
     "imports": [
       "resources/js/app.jsx",
-      "_lodash-3e983fa0.js"
+      "_lodash-5726d37e.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FicheControle/Partials/HygieneForm.jsx"
   },
   "resources/js/Pages/FicheControle/Partials/MaintenancePreventiveForm.jsx": {
-    "file": "assets/MaintenancePreventiveForm-8b95ec74.js",
+    "file": "assets/MaintenancePreventiveForm-6d56f6a8.js",
     "imports": [
       "resources/js/app.jsx",
-      "_lodash-3e983fa0.js"
+      "_lodash-5726d37e.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FicheControle/Partials/MaintenancePreventiveForm.jsx"
   },
   "resources/js/Pages/FicheControle/Partials/PatrimoineForm.jsx": {
-    "file": "assets/PatrimoineForm-84045227.js",
+    "file": "assets/PatrimoineForm-4c1c84e1.js",
     "imports": [
       "resources/js/app.jsx",
-      "_lodash-3e983fa0.js"
+      "_lodash-5726d37e.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FicheControle/Partials/PatrimoineForm.jsx"
   },
   "resources/js/Pages/FicheControle/Partials/PrestataireForm.jsx": {
-    "file": "assets/PrestataireForm-2da8ce6d.js",
+    "file": "assets/PrestataireForm-7e208fd4.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -179,7 +179,7 @@
     "src": "resources/js/Pages/FicheControle/Partials/PrestataireForm.jsx"
   },
   "resources/js/Pages/FicheControle/Partials/SelectType.jsx": {
-    "file": "assets/SelectType-a4418650.js",
+    "file": "assets/SelectType-3424522e.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -187,16 +187,16 @@
     "src": "resources/js/Pages/FicheControle/Partials/SelectType.jsx"
   },
   "resources/js/Pages/FicheControle/Partials/TravauxForm.jsx": {
-    "file": "assets/TravauxForm-bfae6ee9.js",
+    "file": "assets/TravauxForm-3ceed6c8.js",
     "imports": [
       "resources/js/app.jsx",
-      "_lodash-3e983fa0.js"
+      "_lodash-5726d37e.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FicheControle/Partials/TravauxForm.jsx"
   },
   "resources/js/Pages/FluxReel/CostConsomable/CostConsomable.jsx": {
-    "file": "assets/CostConsomable-5829b5a7.js",
+    "file": "assets/CostConsomable-9375df49.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostConsomable/partials/CostConsomableForm.jsx"
@@ -205,7 +205,7 @@
     "src": "resources/js/Pages/FluxReel/CostConsomable/CostConsomable.jsx"
   },
   "resources/js/Pages/FluxReel/CostConsomable/CostConsomableRestau.jsx": {
-    "file": "assets/CostConsomableRestau-f5826ecf.js",
+    "file": "assets/CostConsomableRestau-c53164df.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostConsomable/partials/CostConsomableRestauSelect.jsx"
@@ -214,7 +214,7 @@
     "src": "resources/js/Pages/FluxReel/CostConsomable/CostConsomableRestau.jsx"
   },
   "resources/js/Pages/FluxReel/CostConsomable/partials/CostConsomableForm.jsx": {
-    "file": "assets/CostConsomableForm-fa46860b.js",
+    "file": "assets/CostConsomableForm-f222794c.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -222,7 +222,7 @@
     "src": "resources/js/Pages/FluxReel/CostConsomable/partials/CostConsomableForm.jsx"
   },
   "resources/js/Pages/FluxReel/CostConsomable/partials/CostConsomableRestauSelect.jsx": {
-    "file": "assets/CostConsomableRestauSelect-60d59895.js",
+    "file": "assets/CostConsomableRestauSelect-be1f2a6d.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -230,7 +230,7 @@
     "src": "resources/js/Pages/FluxReel/CostConsomable/partials/CostConsomableRestauSelect.jsx"
   },
   "resources/js/Pages/FluxReel/CostCuisine/CostCuisine.jsx": {
-    "file": "assets/CostCuisine-8ed6eba3.js",
+    "file": "assets/CostCuisine-2c5ce7cb.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostCuisine/partials/CostCuisineForm.jsx"
@@ -239,7 +239,7 @@
     "src": "resources/js/Pages/FluxReel/CostCuisine/CostCuisine.jsx"
   },
   "resources/js/Pages/FluxReel/CostCuisine/CostCuisineRestau.jsx": {
-    "file": "assets/CostCuisineRestau-24819b02.js",
+    "file": "assets/CostCuisineRestau-12ac8afe.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostCuisine/partials/CostCuisineRestauSelect.jsx"
@@ -248,7 +248,7 @@
     "src": "resources/js/Pages/FluxReel/CostCuisine/CostCuisineRestau.jsx"
   },
   "resources/js/Pages/FluxReel/CostCuisine/partials/CostCuisineForm.jsx": {
-    "file": "assets/CostCuisineForm-aaadf91d.js",
+    "file": "assets/CostCuisineForm-f256b693.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -256,7 +256,7 @@
     "src": "resources/js/Pages/FluxReel/CostCuisine/partials/CostCuisineForm.jsx"
   },
   "resources/js/Pages/FluxReel/CostCuisine/partials/CostCuisineRestauSelect.jsx": {
-    "file": "assets/CostCuisineRestauSelect-5f279a68.js",
+    "file": "assets/CostCuisineRestauSelect-a3c0aace.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -264,7 +264,7 @@
     "src": "resources/js/Pages/FluxReel/CostCuisine/partials/CostCuisineRestauSelect.jsx"
   },
   "resources/js/Pages/FluxReel/CostEconomat/CostEconomat.jsx": {
-    "file": "assets/CostEconomat-8543bc2e.js",
+    "file": "assets/CostEconomat-7fc2a123.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostEconomat/partials/CostEconomatForm.jsx"
@@ -273,7 +273,7 @@
     "src": "resources/js/Pages/FluxReel/CostEconomat/CostEconomat.jsx"
   },
   "resources/js/Pages/FluxReel/CostEconomat/CostEconomatRestau.jsx": {
-    "file": "assets/CostEconomatRestau-e0d7de0a.js",
+    "file": "assets/CostEconomatRestau-17864cc5.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostEconomat/partials/CostEconomatRestauSelect.jsx"
@@ -282,7 +282,7 @@
     "src": "resources/js/Pages/FluxReel/CostEconomat/CostEconomatRestau.jsx"
   },
   "resources/js/Pages/FluxReel/CostEconomat/partials/CostEconomatForm.jsx": {
-    "file": "assets/CostEconomatForm-3a54eb6b.js",
+    "file": "assets/CostEconomatForm-dbc01fcc.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -290,7 +290,7 @@
     "src": "resources/js/Pages/FluxReel/CostEconomat/partials/CostEconomatForm.jsx"
   },
   "resources/js/Pages/FluxReel/CostEconomat/partials/CostEconomatRestauSelect.jsx": {
-    "file": "assets/CostEconomatRestauSelect-ce1ed8c3.js",
+    "file": "assets/CostEconomatRestauSelect-6fafeba9.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -298,7 +298,7 @@
     "src": "resources/js/Pages/FluxReel/CostEconomat/partials/CostEconomatRestauSelect.jsx"
   },
   "resources/js/Pages/FluxReel/CostPizza/CostPizza.jsx": {
-    "file": "assets/CostPizza-97360868.js",
+    "file": "assets/CostPizza-1e74739c.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostPizza/partials/CostPizzaForm.jsx"
@@ -307,7 +307,7 @@
     "src": "resources/js/Pages/FluxReel/CostPizza/CostPizza.jsx"
   },
   "resources/js/Pages/FluxReel/CostPizza/CostPizzaRestau.jsx": {
-    "file": "assets/CostPizzaRestau-6fec9cba.js",
+    "file": "assets/CostPizzaRestau-f69ecc8d.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/CostPizza/partials/CostPizzaRestauSelect.jsx"
@@ -316,7 +316,7 @@
     "src": "resources/js/Pages/FluxReel/CostPizza/CostPizzaRestau.jsx"
   },
   "resources/js/Pages/FluxReel/CostPizza/partials/CostPizzaForm.jsx": {
-    "file": "assets/CostPizzaForm-dee1a99e.js",
+    "file": "assets/CostPizzaForm-8440e8b5.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -324,7 +324,7 @@
     "src": "resources/js/Pages/FluxReel/CostPizza/partials/CostPizzaForm.jsx"
   },
   "resources/js/Pages/FluxReel/CostPizza/partials/CostPizzaRestauSelect.jsx": {
-    "file": "assets/CostPizzaRestauSelect-c524a0ba.js",
+    "file": "assets/CostPizzaRestauSelect-9ab5e4d7.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -332,7 +332,7 @@
     "src": "resources/js/Pages/FluxReel/CostPizza/partials/CostPizzaRestauSelect.jsx"
   },
   "resources/js/Pages/FluxReel/FluxReel.jsx": {
-    "file": "assets/FluxReel-b68e3531.js",
+    "file": "assets/FluxReel-8d32bd86.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -340,17 +340,17 @@
     "src": "resources/js/Pages/FluxReel/FluxReel.jsx"
   },
   "resources/js/Pages/FluxReel/bml/BML.jsx": {
-    "file": "assets/BML-cefb348f.js",
+    "file": "assets/BML-e54a62dd.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/bml/partials/BMLFom.jsx",
-      "_createLucideIcon-1202f9b1.js"
+      "_createLucideIcon-33621795.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FluxReel/bml/BML.jsx"
   },
   "resources/js/Pages/FluxReel/bml/BMLRestau.jsx": {
-    "file": "assets/BMLRestau-625e217f.js",
+    "file": "assets/BMLRestau-0d87cdf1.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/FluxReel/bml/partials/BMLRestauSelect.jsx"
@@ -359,16 +359,16 @@
     "src": "resources/js/Pages/FluxReel/bml/BMLRestau.jsx"
   },
   "resources/js/Pages/FluxReel/bml/partials/BMLFom.jsx": {
-    "file": "assets/BMLFom-0da437ac.js",
+    "file": "assets/BMLFom-3e7fe026.js",
     "imports": [
       "resources/js/app.jsx",
-      "_createLucideIcon-1202f9b1.js"
+      "_createLucideIcon-33621795.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/FluxReel/bml/partials/BMLFom.jsx"
   },
   "resources/js/Pages/FluxReel/bml/partials/BMLRestauSelect.jsx": {
-    "file": "assets/BMLRestauSelect-2bea5191.js",
+    "file": "assets/BMLRestauSelect-bb529e5e.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -376,7 +376,7 @@
     "src": "resources/js/Pages/FluxReel/bml/partials/BMLRestauSelect.jsx"
   },
   "resources/js/Pages/Home.jsx": {
-    "file": "assets/Home-e6957ad7.js",
+    "file": "assets/Home-11e5200e.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -384,26 +384,26 @@
     "src": "resources/js/Pages/Home.jsx"
   },
   "resources/js/Pages/Infraction/Index.jsx": {
-    "file": "assets/Index-57d1bc49.js",
+    "file": "assets/Index-0b164cb1.js",
     "imports": [
       "resources/js/app.jsx",
-      "_createLucideIcon-1202f9b1.js"
+      "_createLucideIcon-33621795.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Infraction/Index.jsx"
   },
   "resources/js/Pages/Inventaire/Inventaire.jsx": {
-    "file": "assets/Inventaire-5a33c65b.js",
+    "file": "assets/Inventaire-ce580ea1.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Inventaire/Partials/Name.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Inventaire/Inventaire.jsx"
   },
   "resources/js/Pages/Inventaire/Partials/Name.jsx": {
-    "file": "assets/Name-38208b35.js",
+    "file": "assets/Name-f5c89932.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -411,28 +411,28 @@
     "src": "resources/js/Pages/Inventaire/Partials/Name.jsx"
   },
   "resources/js/Pages/Inventaire/Partials/Table.jsx": {
-    "file": "assets/Table-50598dba.js",
+    "file": "assets/Table-1fe15ddf.js",
     "imports": [
       "resources/js/app.jsx",
-      "_SearchIcon-ae2824ca.js",
-      "_description-3ab61a58.js"
+      "_SearchIcon-e6ee2157.js",
+      "_description-db19822f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Inventaire/Partials/Table.jsx"
   },
   "resources/js/Pages/Inventaire/Stock.jsx": {
-    "file": "assets/Stock-0f573ec4.js",
+    "file": "assets/Stock-5f69a2e3.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Inventaire/Partials/Table.jsx",
-      "_SearchIcon-ae2824ca.js",
-      "_description-3ab61a58.js"
+      "_SearchIcon-e6ee2157.js",
+      "_description-db19822f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Inventaire/Stock.jsx"
   },
   "resources/js/Pages/Livraison.jsx": {
-    "file": "assets/Livraison-bd772341.js",
+    "file": "assets/Livraison-7b5aa80d.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -440,10 +440,10 @@
     "src": "resources/js/Pages/Livraison.jsx"
   },
   "resources/js/Pages/Numeros/Numeros.jsx": {
-    "file": "assets/Numeros-816f91d9.js",
+    "file": "assets/Numeros-4faef8d2.js",
     "imports": [
       "resources/js/app.jsx",
-      "_Footer-b8336c89.js",
+      "_Footer-dc258e61.js",
       "resources/js/Pages/Numeros/Partials/Formulaire.jsx",
       "_index-08c7c3df.js"
     ],
@@ -451,7 +451,7 @@
     "src": "resources/js/Pages/Numeros/Numeros.jsx"
   },
   "resources/js/Pages/Numeros/Partials/Formulaire.jsx": {
-    "file": "assets/Formulaire-18f70feb.js",
+    "file": "assets/Formulaire-ce1610eb.js",
     "imports": [
       "resources/js/app.jsx",
       "_index-08c7c3df.js"
@@ -460,27 +460,27 @@
     "src": "resources/js/Pages/Numeros/Partials/Formulaire.jsx"
   },
   "resources/js/Pages/PNC/PNC.jsx": {
-    "file": "assets/PNC-d0310488.js",
+    "file": "assets/PNC-7873bdbd.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/PNC/Partials/Name.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/PNC/PNC.jsx"
   },
   "resources/js/Pages/PNC/PNCform.jsx": {
-    "file": "assets/PNCform-a724d1dd.js",
+    "file": "assets/PNCform-7fc803f5.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/PNC/Partials/From.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/PNC/PNCform.jsx"
   },
   "resources/js/Pages/PNC/Partials/From.jsx": {
-    "file": "assets/From-a6356dfa.js",
+    "file": "assets/From-1afeaa42.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -488,7 +488,7 @@
     "src": "resources/js/Pages/PNC/Partials/From.jsx"
   },
   "resources/js/Pages/PNC/Partials/Name.jsx": {
-    "file": "assets/Name-fcc3963f.js",
+    "file": "assets/Name-0092363c.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -496,17 +496,17 @@
     "src": "resources/js/Pages/PNC/Partials/Name.jsx"
   },
   "resources/js/Pages/Restaurants/AddEmploye.jsx": {
-    "file": "assets/AddEmploye-4a20369f.js",
+    "file": "assets/AddEmploye-8017164c.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Employe/add/Form.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Restaurants/AddEmploye.jsx"
   },
   "resources/js/Pages/Restaurants/AjouterEmploye.jsx": {
-    "file": "assets/AjouterEmploye-b04ffb14.js",
+    "file": "assets/AjouterEmploye-f612d600.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Employe/add/Restau.jsx"
@@ -515,7 +515,7 @@
     "src": "resources/js/Pages/Restaurants/AjouterEmploye.jsx"
   },
   "resources/js/Pages/Restaurants/EditEmploye.jsx": {
-    "file": "assets/EditEmploye-c36114ef.js",
+    "file": "assets/EditEmploye-2774d133.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Employe/edit/Table.jsx"
@@ -524,7 +524,7 @@
     "src": "resources/js/Pages/Restaurants/EditEmploye.jsx"
   },
   "resources/js/Pages/Restaurants/Employe.jsx": {
-    "file": "assets/Employe-d1151298.js",
+    "file": "assets/Employe-d429e6fa.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -532,7 +532,7 @@
     "src": "resources/js/Pages/Restaurants/Employe.jsx"
   },
   "resources/js/Pages/Restaurants/ManagePresence.jsx": {
-    "file": "assets/ManagePresence-53f3cd73.js",
+    "file": "assets/ManagePresence-374b65f8.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Presence/Form.jsx"
@@ -541,17 +541,17 @@
     "src": "resources/js/Pages/Restaurants/ManagePresence.jsx"
   },
   "resources/js/Pages/Restaurants/ManageRestaurant.jsx": {
-    "file": "assets/ManageRestaurant-c2295eef.js",
+    "file": "assets/ManageRestaurant-65dd8077.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Restau/Restaurant.jsx",
-      "_description-3ab61a58.js"
+      "_description-db19822f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Restaurants/ManageRestaurant.jsx"
   },
   "resources/js/Pages/Restaurants/ModifierEmploye.jsx": {
-    "file": "assets/ModifierEmploye-c7f72a89.js",
+    "file": "assets/ModifierEmploye-d1d4c579.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Employe/edit/Restau.jsx"
@@ -560,16 +560,16 @@
     "src": "resources/js/Pages/Restaurants/ModifierEmploye.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Employe/add/Form.jsx": {
-    "file": "assets/Form-4bd4c9e3.js",
+    "file": "assets/Form-57b121ba.js",
     "imports": [
       "resources/js/app.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Restaurants/Partials/Employe/add/Form.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Employe/add/Restau.jsx": {
-    "file": "assets/Restau-90415744.js",
+    "file": "assets/Restau-20656b42.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -577,16 +577,16 @@
     "src": "resources/js/Pages/Restaurants/Partials/Employe/add/Restau.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Employe/edit/Form.jsx": {
-    "file": "assets/Form-84c9ef46.js",
+    "file": "assets/Form-550fecb4.js",
     "imports": [
       "resources/js/app.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Restaurants/Partials/Employe/edit/Form.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Employe/edit/Restau.jsx": {
-    "file": "assets/Restau-dd2b141c.js",
+    "file": "assets/Restau-ab37d9d4.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -594,7 +594,7 @@
     "src": "resources/js/Pages/Restaurants/Partials/Employe/edit/Restau.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Employe/edit/Table.jsx": {
-    "file": "assets/Table-d6357eb0.js",
+    "file": "assets/Table-1dec0104.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -602,7 +602,7 @@
     "src": "resources/js/Pages/Restaurants/Partials/Employe/edit/Table.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Presence/Form.jsx": {
-    "file": "assets/Form-5ab80321.js",
+    "file": "assets/Form-84510df7.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -610,7 +610,7 @@
     "src": "resources/js/Pages/Restaurants/Partials/Presence/Form.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Presence/Restau.jsx": {
-    "file": "assets/Restau-b450de45.js",
+    "file": "assets/Restau-e5134308.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -618,7 +618,7 @@
     "src": "resources/js/Pages/Restaurants/Partials/Presence/Restau.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Restau/Name.jsx": {
-    "file": "assets/Name-f0aa3a5f.js",
+    "file": "assets/Name-597b3985.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -626,16 +626,16 @@
     "src": "resources/js/Pages/Restaurants/Partials/Restau/Name.jsx"
   },
   "resources/js/Pages/Restaurants/Partials/Restau/Restaurant.jsx": {
-    "file": "assets/Restaurant-37388959.js",
+    "file": "assets/Restaurant-e874bfae.js",
     "imports": [
       "resources/js/app.jsx",
-      "_description-3ab61a58.js"
+      "_description-db19822f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Restaurants/Partials/Restau/Restaurant.jsx"
   },
   "resources/js/Pages/Restaurants/Presence.jsx": {
-    "file": "assets/Presence-45368ffe.js",
+    "file": "assets/Presence-e34767d0.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Presence/Restau.jsx"
@@ -644,7 +644,7 @@
     "src": "resources/js/Pages/Restaurants/Presence.jsx"
   },
   "resources/js/Pages/Restaurants/Restaurant.jsx": {
-    "file": "assets/Restaurant-3f71d544.js",
+    "file": "assets/Restaurant-7469f188.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Restau/Name.jsx"
@@ -653,7 +653,7 @@
     "src": "resources/js/Pages/Restaurants/Restaurant.jsx"
   },
   "resources/js/Pages/Restaurants/Rubrique.jsx": {
-    "file": "assets/Rubrique-e158cb00.js",
+    "file": "assets/Rubrique-cf60434b.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -661,17 +661,17 @@
     "src": "resources/js/Pages/Restaurants/Rubrique.jsx"
   },
   "resources/js/Pages/Restaurants/UpdateEmploye.jsx": {
-    "file": "assets/UpdateEmploye-12f304a1.js",
+    "file": "assets/UpdateEmploye-0ef3bc1b.js",
     "imports": [
       "resources/js/app.jsx",
       "resources/js/Pages/Restaurants/Partials/Employe/edit/Form.jsx",
-      "_Footer-b8336c89.js"
+      "_Footer-dc258e61.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Restaurants/UpdateEmploye.jsx"
   },
   "resources/js/Pages/Rubrique.jsx": {
-    "file": "assets/Rubrique-f2db7c9d.js",
+    "file": "assets/Rubrique-7a6e0b4c.js",
     "imports": [
       "resources/js/app.jsx"
     ],
@@ -679,12 +679,12 @@
     "src": "resources/js/Pages/Rubrique.jsx"
   },
   "resources/js/app.css": {
-    "file": "assets/app-4b8dd9b5.css",
+    "file": "assets/app-e1033094.css",
     "src": "resources/js/app.css"
   },
   "resources/js/app.jsx": {
     "css": [
-      "assets/app-4b8dd9b5.css"
+      "assets/app-e1033094.css"
     ],
     "dynamicImports": [
       "resources/js/Pages/Auth/Login.jsx",
@@ -760,7 +760,7 @@
       "resources/js/Pages/Restaurants/UpdateEmploye.jsx",
       "resources/js/Pages/Rubrique.jsx"
     ],
-    "file": "assets/app-3b2f67ac.js",
+    "file": "assets/app-00065596.js",
     "isEntry": true,
     "src": "resources/js/app.jsx"
   }

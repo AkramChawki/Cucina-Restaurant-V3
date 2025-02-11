@@ -6,7 +6,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
     const [preview, setPreview] = useState(null);
     const fileInput = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
-    
+
     const { data, setData, post, processing, errors, reset } = useForm({
         restaurant: '',
         infraction_constatee: '',
@@ -41,7 +41,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
     };
 
     return (
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
             <h1 className="text-2xl font-semibold text-gray-900 mb-8">
                 Nouvelle Infraction
             </h1>
@@ -100,14 +100,14 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                         >
                             <div className="flex items-center">
                                 {data.employe_id && employes.find(emp => emp.id === parseInt(data.employe_id))?.profile_photo && (
-                                    <img 
-                                    src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
+                                    <img
+                                        src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
                                         alt=""
                                         className="h-8 w-8 rounded-full mr-3 object-cover"
                                     />
                                 )}
-                                <span>{data.employe_id ? 
-                                    `${employes.find(emp => emp.id === parseInt(data.employe_id))?.first_name} ${employes.find(emp => emp.id === parseInt(data.employe_id))?.last_name}` : 
+                                <span>{data.employe_id ?
+                                    `${employes.find(emp => emp.id === parseInt(data.employe_id))?.first_name} ${employes.find(emp => emp.id === parseInt(data.employe_id))?.last_name}` :
                                     'Sélectionner un employé'}</span>
                             </div>
                             <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -125,8 +125,8 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                         }}
                                     >
                                         {employe.profile_photo && (
-                                            <img 
-                                            src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
+                                            <img
+                                                src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
                                                 alt=""
                                                 className="h-8 w-8 rounded-full mr-3 object-cover"
                                             />
@@ -153,7 +153,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                 </div>
 
                 {/* Date and Time */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-base text-gray-700 mb-2">
                             Date
@@ -221,7 +221,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                     >
                         Enregistrer
                     </button>
@@ -230,11 +230,11 @@ export default function Index({ employes, restaurants, postes, infractions }) {
 
             {/* List Section */}
             <div className="mt-12">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <h2 className="text-xl font-semibold text-gray-900">
                         Liste des infractions
                     </h2>
-                    <form action={route('infractions.report')} method="GET" className="flex items-center space-x-4">
+                    <form action={route('infractions.report')} method="GET" className="flex flex-col sm:flex-row gap-2 sm:items-center sm:space-x-4">
                         <input
                             type="date"
                             name="date_from"
@@ -254,44 +254,48 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                     </form>
                 </div>
 
-                <div className="bg-white rounded-lg shadow overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restaurant</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Poste</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infraction</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Heure</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {infractions.map((infraction) => (
-                                <tr key={infraction.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{infraction.restaurant}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{infraction.poste}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center">
-                                            {infraction.employe.profile_photo && (
-                                                <img
-                                                src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
-                                                    alt=""
-                                                    className="h-8 w-8 rounded-full mr-2"
-                                                />
-                                            )}
-                                            <span>{infraction.employe.first_name} {infraction.employe.last_name}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">{infraction.infraction_constatee}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {infraction.infraction_date} {infraction.infraction_time}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div className="bg-white rounded-lg shadow">
+                    <div className="overflow-x-auto -mx-4 sm:mx-0">
+                        <div className="inline-block min-w-full align-middle">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restaurant</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Poste</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infraction</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Heure</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {infractions.map((infraction) => (
+                                            <tr key={infraction.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">{infraction.restaurant}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{infraction.poste}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        {infraction.employe.profile_photo && (
+                                                            <img
+                                                                src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
+                                                                alt=""
+                                                                className="h-8 w-8 rounded-full mr-2"
+                                                            />
+                                                        )}
+                                                        <span>{infraction.employe.first_name} {infraction.employe.last_name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">{infraction.infraction_constatee}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {infraction.infraction_date} {infraction.infraction_time}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                        </div>
                 </div>
             </div>
         </div>
+        </div >
     );
 }
