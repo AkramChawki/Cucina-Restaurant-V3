@@ -4,29 +4,49 @@ import { Link } from "@inertiajs/react";
 export default function Name({ restaurants, auth }) {
     const [restaurant, setRestaurant] = useState("");
 
-    const getLocationFromName = (name) => {
-        const lowerName = name.toLowerCase();
-        if (lowerName.includes('anoual')) return 'anoual';
-        if (lowerName.includes('palmier')) return 'palmier';
-        if (lowerName.includes('ziraoui')) return 'ziraoui';
-        if (lowerName.includes('to go')) return 'to go';
-        return null;
-    };
+    console.log('Auth User Restau:', auth.user.restau); // Debug auth user restau
+    console.log('Available Restaurants:', restaurants); // Debug available restaurants
 
-    // Find restaurants that match user's permissions
     const userRestaurants = useMemo(() => {
-        if (!auth.user.restau || !Array.isArray(auth.user.restau)) return [];
-        
-        return restaurants.filter(restaurant => {
-            const location = getLocationFromName(restaurant.name);
-            return location && auth.user.restau.includes(location);
+        // Debug checks
+        if (!auth.user.restau) {
+            console.log('No restau field in auth.user');
+            return [];
+        }
+
+        if (!Array.isArray(auth.user.restau)) {
+            console.log('Restau is not an array:', typeof auth.user.restau);
+            // If it's a string, try to parse it
+            try {
+                const parsedRestau = JSON.parse(auth.user.restau);
+                if (Array.isArray(parsedRestau)) {
+                    console.log('Successfully parsed restau:', parsedRestau);
+                    auth.user.restau = parsedRestau;
+                }
+            } catch (e) {
+                console.log('Failed to parse restau:', e);
+                return [];
+            }
+        }
+
+        const filtered = restaurants.filter(restaurant => {
+            const restaurantName = restaurant.name.toLowerCase();
+            return auth.user.restau.some(location => {
+                const locationMatch = restaurantName.includes(location.toLowerCase());
+                console.log(`Checking ${restaurantName} against ${location}: ${locationMatch}`);
+                return locationMatch;
+            });
         });
+
+        console.log('Filtered Restaurants:', filtered);
+        return filtered;
     }, [restaurants, auth.user.restau]);
 
     const handleChange = (event) => {
         setRestaurant(event.target.value);
     };
 
+    // Rest of your component remains the same...
     if (!userRestaurants.length) {
         return (
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex h-screen">
