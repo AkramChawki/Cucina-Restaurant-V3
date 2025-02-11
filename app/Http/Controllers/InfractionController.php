@@ -15,17 +15,18 @@ class InfractionController extends Controller
     public function index()
     {
         $employes = Employe::select('id', 'first_name', 'last_name', 'profile_photo')->get();
-        $infractions = Infraction::with('employe')
-            ->orderBy('infraction_date', 'desc')
-            ->orderBy('infraction_time', 'desc')
-            ->get();
+        return $employes;
+        // $infractions = Infraction::with('employe')
+        //     ->orderBy('infraction_date', 'desc')
+        //     ->orderBy('infraction_time', 'desc')
+        //     ->get();
 
-        return Inertia::render('Infraction/Index', [
-            'employes' => $employes,
-            'infractions' => $infractions,
-            'restaurants' => ['Palmier', 'Anoual', 'Labo', 'Economat', 'Ziraoui'],
-            'postes' => ['Pizza', 'cuisine', 'salle', 'caisse', '1.5']
-        ]);
+        // return Inertia::render('Infraction/Index', [
+        //     'employes' => $employes,
+        //     'infractions' => $infractions,
+        //     'restaurants' => ['Palmier', 'Anoual', 'Labo', 'Economat', 'Ziraoui'],
+        //     'postes' => ['Pizza', 'cuisine', 'salle', 'caisse', '1.5']
+        // ]);
     }
 
     public function store(Request $request)
