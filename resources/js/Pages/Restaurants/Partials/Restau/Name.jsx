@@ -4,10 +4,13 @@ import { Link } from "@inertiajs/react";
 export default function Name({ restaurants, auth }) {
     const [restaurant, setRestaurant] = useState("");
 
-    const userRestaurant = useMemo(() => {
-        const userLocation = auth.user.restau.toLowerCase();
-        return restaurants.find(r => 
-            r.name.toLowerCase().includes(userLocation)
+    const userRestaurants = useMemo(() => {
+        if (!auth.user.restau || !Array.isArray(auth.user.restau)) return [];
+        
+        return restaurants.filter(restaurant => 
+            auth.user.restau.some(userLocation => 
+                restaurant.name.toLowerCase().includes(userLocation.toLowerCase())
+            )
         );
     }, [restaurants, auth.user.restau]);
 
@@ -15,7 +18,7 @@ export default function Name({ restaurants, auth }) {
         setRestaurant(event.target.value);
     };
 
-    if (!userRestaurant) {
+    if (!userRestaurants.length) {
         return (
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex h-screen">
                 <div className="m-auto w-[90%] relative">
@@ -49,7 +52,11 @@ export default function Name({ restaurants, auth }) {
                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#90D88C] focus:border-[#90D88C] sm:text-sm rounded-md"
                     >
                         <option value="">Selectionner le restaurant ...</option>
-                        <option value={userRestaurant.name}>{userRestaurant.name}</option>
+                        {userRestaurants.map((rest) => (
+                            <option key={rest.id} value={rest.name}>
+                                {rest.name}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 {restaurant !== "" && (
