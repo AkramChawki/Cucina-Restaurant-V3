@@ -294,7 +294,11 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                             </td>
                                             <td className="px-6 py-4">{infraction.infraction_constatee}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {infraction.infraction_date} {infraction.infraction_time}
+                                                {new Date(infraction.infraction_date).toLocaleDateString('fr-FR')} {' '}
+                                                {new Date(`2000-01-01T${infraction.infraction_time}`).toLocaleTimeString('fr-FR', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
                                             </td>
                                         </tr>
                                     ))}

@@ -1,73 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <title>Infraction Report</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rapport d'Infraction</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
+            font-family: "Inter", sans-serif;
+            margin: 0;
+            padding: 20px;
         }
-        .header {
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .title {
             text-align: center;
-            margin-bottom: 30px;
+            font-size: 24px;
+            margin-bottom: 40px;
         }
-        .content {
-            margin-bottom: 20px;
-        }
+
         .info-row {
-            margin: 10px 0;
+            margin-bottom: 20px;
+            font-size: 16px;
         }
-        .label {
+
+        .info-row strong {
+            display: inline-block;
+            width: 150px;
             font-weight: bold;
-            margin-right: 10px;
         }
+
+        .infraction-text {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+
         .photo {
-            max-width: 300px;
             margin: 20px 0;
         }
+
+        .photo img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
         .datetime {
-            margin-top: 30px;
             text-align: right;
+            margin-top: 40px;
+        }
+
+        .logo {
+            width: 150px;
+            display: block;
+            margin: 0 auto;
+            margin-bottom: 40px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Rapport d'Infraction</h1>
-    </div>
+    <div class="container">
+        <img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" class="logo" />
+        
+        <h1 class="title">Rapport d'Infraction</h1>
 
-    <div class="content">
         <div class="info-row">
-            <span class="label">Restaurant:</span>
-            <span>{{ $infraction->restaurant }}</span>
+            <strong>Restaurant:</strong> {{ $infraction->restaurant }}
         </div>
 
         <div class="info-row">
-            <span class="label">Poste:</span>
-            <span>{{ $infraction->poste }}</span>
+            <strong>Poste:</strong> {{ $infraction->poste }}
         </div>
 
         <div class="info-row">
-            <span class="label">Employé:</span>
-            <span>{{ $infraction->employe->first_name }} {{ $infraction->employe->last_name }}</span>
+            <strong>Employé:</strong> {{ $infraction->employe->first_name }} {{ $infraction->employe->last_name }}
         </div>
 
         <div class="info-row">
-            <span class="label">Infraction constatée:</span>
-            <p>{{ $infraction->infraction_constatee }}</p>
+            <strong>Infraction constatée:</strong>
+            <div class="infraction-text">
+                {{ $infraction->infraction_constatee }}
+            </div>
         </div>
 
         @if($infraction->photo_path)
-            <div class="info-row">
-                <span class="label">Photo:</span><br>
-                <img src="{{ storage_path('app/public/' . $infraction->photo_path) }}" class="photo">
+        <div class="info-row">
+            <strong>Photo:</strong>
+            <div class="photo">
+                <img src="{{ storage_path('app/public/' . $infraction->photo_path) }}" style="max-width: 400px;">
             </div>
+        </div>
         @endif
 
         <div class="datetime">
-            <p>Date: {{ $infraction->infraction_date->format('d/m/Y') }}</p>
-            <p>Heure: {{ $infraction->infraction_time->format('H:i') }}</p>
+            <p>Date: {{ \Carbon\Carbon::parse($infraction->infraction_date)->format('d/m/Y') }}</p>
+            <p>Heure: {{ \Carbon\Carbon::parse($infraction->infraction_time)->format('H:i') }}</p>
         </div>
     </div>
 </body>
