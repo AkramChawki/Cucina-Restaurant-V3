@@ -162,12 +162,11 @@ Route::middleware(['auth', 'time.auth'])->group(function () {
     Route::post('/bml/update-value', [BMLController::class, 'store'])
         ->name('bml.update-value');
 
-    Route::get('/infraction', [InfractionController::class, 'index'])
-        ->name('infraction.index');
+    Route::get('/infraction', [InfractionController::class, 'index']);
 
     // Update value endpoint
     Route::post('/infraction/store', [InfractionController::class, 'store'])
-        ->name('infraction.store');
+        ->name('infractions.store');
 
     Route::get('/infractions/report', [InfractionController::class, 'report'])
         ->name('infractions.report');
