@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -63,10 +64,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <img src="https://restaurant.cucinanapoli.com/images/logo/Cucina.png" class="logo" />
-        
+
         <h1 class="title">Rapport d'Infraction</h1>
 
         <div class="info-row">
@@ -88,13 +90,14 @@
             </div>
         </div>
 
-        @if($infraction->photo_path)
-        <div class="info-row">
-            <strong>Photo:</strong>
-            <div class="photo">
-                <img src="{{ storage_path('app/public/' . $infraction->photo_path) }}" style="max-width: 400px;">
+        @if ($infraction->photo_path)
+            <div class="info-row">
+                <strong>Photo:</strong>
+                <div class="photo">
+                    <img src="{{ $storagePath . $infraction->photo_path }}" alt="Infraction Photo"
+                        style="display:block;" width="400px">
+                </div>
             </div>
-        </div>
         @endif
 
         <div class="datetime">
@@ -103,4 +106,5 @@
         </div>
     </div>
 </body>
+
 </html>

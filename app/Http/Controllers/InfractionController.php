@@ -39,8 +39,8 @@ class InfractionController extends Controller
             'infraction_date' => 'required|date',
             'infraction_time' => 'required'
         ]);
-
-        // Store the photo
+        $validated['infraction_date'] = date('Y-m-d', strtotime($request->infraction_date));
+        $validated['infraction_time'] = date('H:i:s', strtotime($request->infraction_time));
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('infractions', 'public');
             $validated['photo_path'] = $path;
@@ -49,25 +49,36 @@ class InfractionController extends Controller
         // Create the infraction
         $infraction = Infraction::create($validated);
 
-        // Generate and store PDF
-        $pdfName = $this->generatePdfFileName("Infraction", $infraction);
-        $this->generatePdfAndSave("pdf.infraction", [
-            "infraction" => $infraction->load('employe')
+        $pdfName = $this->generatePdfName($infraction);
+        $this->savePdf($infraction, $pdfName);
+
+        return redirect()->back()->with('success', 'Infraction enregistrée avec succès');
+    }
+
+    private function generatePdfName($infraction)
+    {
+        return $this->generatePdfFileName("Infraction", $infraction);
+    }
+
+    private function savePdf($infraction, $pdfName)
+    {
+        $pdfUrl = $this->generatePdfAndSave("pdf.infraction", [
+            "infraction" => $infraction->load('employe'),
+            "imageBasePath" => public_path(),
+            "storagePath" => storage_path('app/public/')
         ], $pdfName, "infractions");
 
         $infraction->pdf = $pdfName;
         $infraction->save();
-
-        return redirect()->back()->with('success', 'Infraction enregistrée avec succès');
     }
 
     public function report(Request $request)
     {
         $infractions = Infraction::with('employe')
-            ->when($request->date_from, function($query) use ($request) {
+            ->when($request->date_from, function ($query) use ($request) {
                 return $query->whereDate('infraction_date', '>=', $request->date_from);
             })
-            ->when($request->date_to, function($query) use ($request) {
+            ->when($request->date_to, function ($query) use ($request) {
                 return $query->whereDate('infraction_date', '<=', $request->date_to);
             })
             ->orderBy('infraction_date', 'desc')
