@@ -88,6 +88,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                 </div>
 
                 {/* Employee Selection */}
+                {/* Employee Selection */}
                 <div>
                     <label className="block text-base text-gray-700 mb-2">
                         Employé
@@ -99,39 +100,45 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                             className="w-full text-left rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white flex items-center justify-between"
                         >
                             <div className="flex items-center">
-                                {data.employe_id && employes.find(emp => emp.id === parseInt(data.employe_id))?.profile_photo && (
-                                    <img
-                                        src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
-                                        alt=""
-                                        className="h-8 w-8 rounded-full mr-3 object-cover"
-                                    />
+                                {data.employe_id && employes && (
+                                    <>
+                                        {employes.find(e => e.id === parseInt(data.employe_id))?.profile_photo && (
+                                            <img
+                                                src={`https://restaurant.cucinanapoli.com/public/storage/${employes.find(e => e.id === parseInt(data.employe_id)).profile_photo}`}
+                                                alt=""
+                                                className="h-8 w-8 rounded-full mr-3 object-cover"
+                                            />
+                                        )}
+                                        <span>
+                                            {employes.find(e => e.id === parseInt(data.employe_id))?.first_name} {' '}
+                                            {employes.find(e => e.id === parseInt(data.employe_id))?.last_name}
+                                        </span>
+                                    </>
                                 )}
-                                <span>{data.employe_id ?
-                                    `${employes.find(emp => emp.id === parseInt(data.employe_id))?.first_name} ${employes.find(emp => emp.id === parseInt(data.employe_id))?.last_name}` :
-                                    'Sélectionner un employé'}</span>
+                                {!data.employe_id && <span>Sélectionner un employé</span>}
                             </div>
                             <ChevronDown className="h-5 w-5 text-gray-400" />
                         </button>
 
                         {isOpen && (
                             <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-auto">
-                                {employes.map((employe) => (
+                                {employes.map((e) => (
                                     <div
-                                        key={employe.id}
+                                        key={e.id}
                                         className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center"
                                         onClick={() => {
-                                            setData('employe_id', employe.id);
+                                            setData('employe_id', e.id);
                                             setIsOpen(false);
                                         }}
                                     >
-                                        {employe.profile_photo && (
+                                        {e.profile_photo && (
                                             <img
-                                                src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
+                                                src={`https://restaurant.cucinanapoli.com/public/storage/${e.profile_photo}`}
                                                 alt=""
                                                 className="h-8 w-8 rounded-full mr-3 object-cover"
                                             />
                                         )}
-                                        <span>{employe.first_name} {employe.last_name}</span>
+                                        <span>{e.first_name} {e.last_name}</span>
                                     </div>
                                 ))}
                             </div>
@@ -258,44 +265,44 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                     <div className="overflow-x-auto -mx-4 sm:mx-0">
                         <div className="inline-block min-w-full align-middle">
                             <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restaurant</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Poste</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infraction</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Heure</th>
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restaurant</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Poste</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infraction</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Heure</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {infractions.map((infraction) => (
+                                        <tr key={infraction.id}>
+                                            <td className="px-6 py-4 whitespace-nowrap">{infraction.restaurant}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">{infraction.poste}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center">
+                                                    {infraction.employe.profile_photo && (
+                                                        <img
+                                                            src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
+                                                            alt=""
+                                                            className="h-8 w-8 rounded-full mr-2"
+                                                        />
+                                                    )}
+                                                    <span>{infraction.employe.first_name} {infraction.employe.last_name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">{infraction.infraction_constatee}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {infraction.infraction_date} {infraction.infraction_time}
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {infractions.map((infraction) => (
-                                            <tr key={infraction.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">{infraction.restaurant}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{infraction.poste}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center">
-                                                        {infraction.employe.profile_photo && (
-                                                            <img
-                                                                src={`https://restaurant.cucinanapoli.com/public/storage/${employe.profile_photo}`}
-                                                                alt=""
-                                                                className="h-8 w-8 rounded-full mr-2"
-                                                            />
-                                                        )}
-                                                        <span>{infraction.employe.first_name} {infraction.employe.last_name}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">{infraction.infraction_constatee}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {infraction.infraction_date} {infraction.infraction_time}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
                 </div>
             </div>
-        </div>
         </div >
     );
 }
