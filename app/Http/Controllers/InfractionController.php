@@ -73,25 +73,37 @@ class InfractionController extends Controller
     }
 
     public function report(Request $request)
-    {
-        $infractions = Infraction::with('employe')
-            ->when($request->date_from, function ($query) use ($request) {
-                return $query->whereDate('infraction_date', '>=', $request->date_from);
-            })
-            ->when($request->date_to, function ($query) use ($request) {
-                return $query->whereDate('infraction_date', '<=', $request->date_to);
-            })
-            ->orderBy('infraction_date', 'desc')
-            ->orderBy('infraction_time', 'desc')
-            ->get();
+{
+    $infractions = Infraction::with('employe')
+        ->when($request->date_from, function ($query) use ($request) {
+            return $query->whereDate('infraction_date', '>=', $request->date_from);
+        })
+        ->when($request->date_to, function ($query) use ($request) {
+            return $query->whereDate('infraction_date', '<=', $request->date_to);
+        })
+        ->orderBy('infraction_date', 'desc')
+        ->orderBy('infraction_time', 'desc')
+        ->get();
 
-        $pdfName = $this->generatePdfFileName("Rapport-Infractions", null);
-        $this->generatePdfAndSave("pdf.infractions-report", [
-            'infractions' => $infractions,
-            'date_from' => $request->date_from,
-            'date_to' => $request->date_to
-        ], $pdfName, "reports");
+    $pdfName = $this->generatePdfFileName("Rapport-Infractions", "CC");
+    
+    // Generate and get the PDF file path
+    $pdfPath = $this->generatePdfAndSave("pdf.infractions-report", [
+        'infractions' => $infractions,
+        'date_from' => $request->date_from,
+        'date_to' => $request->date_to
+    ], $pdfName, "reports");
 
-        return redirect()->back()->with('success', 'Rapport généré avec succès');
+    // If the file exists, trigger download
+    if (file_exists(storage_path('app/public/reports/' . $pdfName))) {
+        return response()->download(
+            storage_path('app/public/reports/' . $pdfName),
+            $pdfName,
+            ['Content-Type' => 'application/pdf']
+        )->deleteFileAfterSend(true);  // Optional: delete file after download
     }
+
+    // If file doesn't exist, redirect back with error
+    return redirect()->back()->with('error', 'Le fichier PDF n\'a pas pu être généré');
+}
 }

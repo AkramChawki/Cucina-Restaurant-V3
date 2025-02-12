@@ -29,6 +29,26 @@ export default function Index({ employes, restaurants, postes, infractions }) {
         });
     };
 
+    const handleReportSubmit = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        
+        if (!form.date_from.value || !form.date_to.value) {
+            alert('Veuillez sélectionner les dates de début et de fin');
+            return;
+        }
+    
+        const date_from = form.date_from.value;
+        const date_to = form.date_to.value;
+    
+        if (date_from > date_to) {
+            alert('La date de début doit être antérieure à la date de fin');
+            return;
+        }
+    
+        const url = `${route('infractions.report')}?date_from=${date_from}&date_to=${date_to}`;
+        window.open(url, '_blank');
+    };
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -242,7 +262,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                     <h2 className="text-xl font-semibold text-gray-900">
                         Liste des infractions
                     </h2>
-                    <form action={route('infractions.report')} method="GET" className="flex flex-col sm:flex-row gap-2 sm:items-center sm:space-x-4">
+                    <form onSubmit={handleReportSubmit} className="flex flex-col sm:flex-row gap-2 sm:items-center sm:space-x-4">
                         <input
                             type="date"
                             name="date_from"
