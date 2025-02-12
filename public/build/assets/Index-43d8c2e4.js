@@ -1,0 +1,1 @@
+import{a as o,F as t,j as r}from"./app-8e7f2b31.js";import a from"./SelectType-40dc1c5d.js";import{F as s}from"./Footer-18727d0c.js";function i({restaurants:e}){return o(t,{children:[r(a,{restaurants:e}),r(s,{})]})}export{i as default};
