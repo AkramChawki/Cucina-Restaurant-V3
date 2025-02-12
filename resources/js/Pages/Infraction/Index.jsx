@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Camera, ChevronDown, Calendar, Clock } from 'lucide-react';
+import DateTimeFormatter from '@/utils/DateTimeFormatter';
 
 export default function Index({ employes, restaurants, postes, infractions }) {
     const [preview, setPreview] = useState(null);
@@ -294,7 +295,10 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                             </td>
                                             <td className="px-6 py-4">{infraction.infraction_constatee}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {infraction.infraction_date} {infraction.infraction_time }
+                                                <DateTimeFormatter
+                                                    dateStr={infraction.infraction_date}
+                                                    timeStr={infraction.infraction_time}
+                                                />
                                             </td>
                                         </tr>
                                     ))}

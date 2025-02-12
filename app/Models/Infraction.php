@@ -21,8 +21,8 @@ class Infraction extends Model
     ];
 
     protected $casts = [
-        'infraction_date' => 'date',
-        'infraction_time' => 'datetime'
+        'infraction_date' => 'date:Y-m-d',
+        'infraction_time' => 'datetime:H:i:s'
     ];
 
     // Relationship with Employee
