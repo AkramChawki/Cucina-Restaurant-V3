@@ -74,29 +74,52 @@ class InfractionController extends Controller
 
     public function report(Request $request)
     {
-        $infractions = Infraction::with('employe')
-            ->when($request->date_from, function ($query) use ($request) {
-                return $query->whereDate('infraction_date', '>=', $request->date_from);
-            })
-            ->when($request->date_to, function ($query) use ($request) {
-                return $query->whereDate('infraction_date', '<=', $request->date_to);
-            })
-            ->orderBy('infraction_date', 'desc')
+        $query = Infraction::with('employe');
+
+        // Apply date filters if provided
+        if ($request->date_from) {
+            $query->whereDate('infraction_date', '>=', $request->date_from);
+        }
+
+        if ($request->date_to) {
+            $query->whereDate('infraction_date', '<=', $request->date_to);
+        }
+
+        // Apply employee filter if provided
+        if ($request->employe_id) {
+            $query->where('employe_id', $request->employe_id);
+        }
+
+        $infractions = $query->orderBy('infraction_date', 'desc')
             ->orderBy('infraction_time', 'desc')
             ->get();
 
-        $pdfName = sprintf(
-            'Rapport-Infractions-%s-to-%s.pdf',
-            $request->date_from ?? 'all',
-            $request->date_to ?? 'all'
-        );
+        // Generate filename based on filters
+        $filenameParts = ['Rapport-Infractions'];
+
+        if ($request->employe_id) {
+            $employe = $infractions->first()->employe;
+            $filenameParts[] = $employe->first_name . '-' . $employe->last_name;
+        }
+
+        if ($request->date_from) {
+            $filenameParts[] = 'du-' . $request->date_from;
+        }
+
+        if ($request->date_to) {
+            $filenameParts[] = 'au-' . $request->date_to;
+        }
+
+        $pdfName = implode('-', $filenameParts) . '.pdf';
 
         $pdfUrl = $this->generatePdfAndSave("pdf.infractions-report", [
             'infractions' => $infractions,
             'date_from' => $request->date_from,
-            'date_to' => $request->date_to
+            'date_to' => $request->date_to,
+            'employe' => $request->employe_id ? $infractions->first()->employe : null
         ], $pdfName, "reports");
 
+        // If the file exists, trigger download
         if (file_exists(storage_path('app/public/reports/' . $pdfName))) {
             return response()->download(
                 storage_path('app/public/reports/' . $pdfName),

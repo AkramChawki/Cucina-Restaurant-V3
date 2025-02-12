@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Camera, ChevronDown, Calendar, Clock } from 'lucide-react';
-import DateTimeFormatter from '@/utils/DateTimeFormatter';
+import InfractionsTable from './InfractionsTable';
 
 export default function Index({ employes, restaurants, postes, infractions }) {
     const [preview, setPreview] = useState(null);
@@ -29,26 +29,6 @@ export default function Index({ employes, restaurants, postes, infractions }) {
         });
     };
 
-    const handleReportSubmit = async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        
-        if (!form.date_from.value || !form.date_to.value) {
-            alert('Veuillez sélectionner les dates de début et de fin');
-            return;
-        }
-    
-        const date_from = form.date_from.value;
-        const date_to = form.date_to.value;
-    
-        if (date_from > date_to) {
-            alert('La date de début doit être antérieure à la date de fin');
-            return;
-        }
-    
-        const url = `${route('infractions.report')}?date_from=${date_from}&date_to=${date_to}`;
-        window.open(url, '_blank');
-    };
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -66,7 +46,6 @@ export default function Index({ employes, restaurants, postes, infractions }) {
             <h1 className="text-2xl font-semibold text-gray-900 mb-8">
                 Nouvelle Infraction
             </h1>
-
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Restaurant Selection */}
                 <div>
@@ -255,79 +234,10 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                     </button>
                 </div>
             </form>
-
-            {/* List Section */}
-            <div className="mt-12">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        Liste des infractions
-                    </h2>
-                    <form onSubmit={handleReportSubmit} className="flex flex-col sm:flex-row gap-2 sm:items-center sm:space-x-4">
-                        <input
-                            type="date"
-                            name="date_from"
-                            className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                        <input
-                            type="date"
-                            name="date_to"
-                            className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                        >
-                            Générer Rapport
-                        </button>
-                    </form>
-                </div>
-
-                {/* List Section with Table */}
-                <div className="bg-white rounded-lg shadow">
-                    <div className="overflow-x-auto -mx-4 sm:mx-0">
-                        <div className="inline-block min-w-full align-middle">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restaurant</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Poste</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infraction</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Heure</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {infractions && infractions.map((infraction) => (
-                                        <tr key={infraction.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">{infraction.restaurant}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{infraction.poste}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    {infraction.employe?.profile_photo && (
-                                                        <img
-                                                            src={`https://restaurant.cucinanapoli.com/public/storage/${infraction.employe.profile_photo}`}
-                                                            alt=""
-                                                            className="h-8 w-8 rounded-full mr-2"
-                                                        />
-                                                    )}
-                                                    <span>{infraction.employe?.first_name} {infraction.employe?.last_name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">{infraction.infraction_constatee}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <DateTimeFormatter
-                                                    dateStr={infraction.infraction_date}
-                                                    timeStr={infraction.infraction_time}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <InfractionsTable
+                infractions={infractions}
+                employes={employes}
+            />
         </div >
     );
 }
