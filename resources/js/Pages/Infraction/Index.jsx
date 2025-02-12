@@ -294,14 +294,7 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                             </td>
                                             <td className="px-6 py-4">{infraction.infraction_constatee}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {infraction.infraction_date && (
-                                                    <>
-                                                        {infraction.infraction_date.split('T')[0].split('-').reverse().join('/')} {' '}
-                                                        {infraction.infraction_time && 
-                                                            infraction.infraction_time.substring(0, 5)
-                                                        }
-                                                    </>
-                                                )}
+                                                {infraction.infraction_date} {infraction.infraction_time }
                                             </td>
                                         </tr>
                                     ))}
