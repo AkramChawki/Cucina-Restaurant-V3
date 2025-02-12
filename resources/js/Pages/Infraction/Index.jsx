@@ -296,7 +296,11 @@ export default function Index({ employes, restaurants, postes, infractions }) {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {infraction.infraction_date && (
                                                     <>
-                                                        {infraction.infraction_date} {' '}
+                                                        {new Date(infraction.infraction_date).toLocaleDateString('fr-FR', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric'
+                                                        })} {' '}
                                                         {infraction.infraction_time && 
                                                             infraction.infraction_time.substring(0, 5)
                                                         }
