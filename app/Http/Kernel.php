@@ -48,7 +48,8 @@ class Kernel extends HttpKernel
 
         'auth' => [
         \App\Http\Middleware\Authenticate::class,
-        \App\Http\Middleware\TimeBasedAuth::class, 
+        \App\Http\Middleware\TimeBasedAuth::class,
+        \App\Http\Middleware\RequirePasswordChange::class, 
     ],
     ];
 
@@ -72,6 +73,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'time.auth' => \App\Http\Middleware\TimeBasedAuth::class,
         'rest.validation' => \App\Http\Middleware\RestValidationMiddleware::class,
-        
+        'password.change' => \App\Http\Middleware\RequirePasswordChange::class,
     ];
 }

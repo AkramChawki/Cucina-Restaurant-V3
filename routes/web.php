@@ -22,7 +22,7 @@ use App\Http\Controllers\InfractionController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'time.auth'])->group(function () {
+Route::middleware(['auth', 'time.auth','password.change'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraison.index');
 
