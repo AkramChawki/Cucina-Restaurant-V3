@@ -11,7 +11,9 @@ class RequirePasswordChange
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check() && Auth::user()->password_change_required) {
-            return redirect()->route('password.change');
+            if (!$request->routeIs('password.change') && !$request->routeIs('password.change.update')) {
+                return redirect()->route('password.change');
+            }
         }
 
         return $next($request);

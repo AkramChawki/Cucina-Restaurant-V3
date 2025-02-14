@@ -59,8 +59,10 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 
     Route::get('change-password', [PasswordChangeController::class, 'show'])
-        ->name('password.change');
+        ->name('password.change')
+        ->withoutMiddleware('password.change');
 
     Route::post('change-password', [PasswordChangeController::class, 'update'])
-        ->name('password.change.update');
+        ->name('password.change.update')
+        ->withoutMiddleware('password.change');
 });

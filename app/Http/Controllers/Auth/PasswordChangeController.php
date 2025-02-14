@@ -10,8 +10,18 @@ use Inertia\Inertia;
 
 class PasswordChangeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('password.change')->except(['show', 'update']);
+    }
+
     public function show()
     {
+        if (!auth()->user()->password_change_required) {
+            return redirect()->route('home');
+        }
+        
         return Inertia::render('Auth/PasswordChange');
     }
 
@@ -22,9 +32,14 @@ class PasswordChangeController extends Controller
         ]);
 
         $user = $request->user();
-        $user->password = Hash::make($request->password);
-        $user->password_change_required = false;
-        $user->save();
+        
+        if ($user->password_change_required) {
+            $user->password = Hash::make($request->password);
+            $user->password_change_required = false;
+            $user->save();
+
+            return redirect()->route('home')->with('status', 'Mot de passe modifié avec succès');
+        }
 
         return redirect()->route('home');
     }
