@@ -4,17 +4,20 @@ namespace App\Traits;
 
 trait CostTrackable
 {
-    protected $fillable = [
-        'restaurant_id',
-        'product_id',
-        'month',
-        'year',
-        'daily_data'
-    ];
+    public function initializeCostTrackable()
+    {
+        $this->fillable = [
+            'restaurant_id',
+            'product_id',
+            'month',
+            'year',
+            'daily_data'
+        ];
 
-    protected $casts = [
-        'daily_data' => 'array'
-    ];
+        $this->casts = array_merge($this->casts, [
+            'daily_data' => 'array'
+        ]);
+    }
 
     public function restaurant()
     {
