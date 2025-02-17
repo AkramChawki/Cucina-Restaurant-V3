@@ -18,9 +18,14 @@ return new class extends Migration
             $table->string('designation');
             $table->decimal('quantity', 10, 2);
             $table->decimal('price', 10, 2);
+            $table->decimal('total_ttc', 10, 2);
+            $table->string('unite');
+            $table->date('date');
+            $table->string('type');
             $table->integer('month');
             $table->integer('year');
             $table->timestamps();
+            $table->index(['restaurant_id', 'month', 'year', 'type']);
         });
     }
 

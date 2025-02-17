@@ -3,21 +3,38 @@ import { router } from '@inertiajs/react';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useToast, ToastContainer } from '@/Components/Toast';
 
-export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
+export default function BMLForm({ 
+    title,
+    routeName,
+    restaurant, 
+    currentMonth, 
+    existingEntries,
+    types = {
+        'Achat': 'achat',
+        'Livraison': 'livraison',
+        'Stock': 'stock',
+        'Autre': 'autre'
+    },
+    currentType 
+}) {
     const { toasts, addToast, removeToast } = useToast();
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
+    const [selectedType, setSelectedType] = useState(currentType || '');
 
     const [rows, setRows] = useState([{
         id: 1,
         fournisseur: '',
         designation: '',
         quantity: '',
-        price: ''
+        price: '',
+        unite: '',
+        date: new Date().toISOString().split('T')[0],
+        type: selectedType,
+        total_ttc: 0
     }]);
 
-    // Load existing entries when month changes or component mounts
     useEffect(() => {
         if (existingEntries && existingEntries.length > 0) {
             const formattedRows = existingEntries.map((entry, index) => ({
@@ -25,7 +42,11 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                 fournisseur: entry.fournisseur,
                 designation: entry.designation,
                 quantity: entry.quantity,
-                price: entry.price
+                price: entry.price,
+                unite: entry.unite,
+                date: entry.date,
+                type: entry.type,
+                total_ttc: entry.quantity * entry.price
             }));
             setRows(formattedRows);
         } else {
@@ -34,10 +55,20 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                 fournisseur: '',
                 designation: '',
                 quantity: '',
-                price: ''
+                price: '',
+                unite: '',
+                date: new Date().toISOString().split('T')[0],
+                type: selectedType,
+                total_ttc: 0
             }]);
         }
-    }, [existingEntries, monthDate]);
+    }, [existingEntries, monthDate, selectedType]);
+
+    const calculateTotal = (quantity, price) => {
+        const qty = parseFloat(quantity) || 0;
+        const prc = parseFloat(price) || 0;
+        return (qty * prc).toFixed(2);
+    };
 
     const addRow = () => {
         const newRow = {
@@ -45,7 +76,11 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
             fournisseur: '',
             designation: '',
             quantity: '',
-            price: ''
+            price: '',
+            unite: '',
+            date: new Date().toISOString().split('T')[0],
+            type: selectedType,
+            total_ttc: 0
         };
         setRows([...rows, newRow]);
     };
@@ -59,36 +94,30 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
     const handleInputChange = (id, field, value) => {
         setRows(rows.map(row => {
             if (row.id === id) {
-                return { ...row, [field]: value };
+                const updatedRow = { ...row, [field]: value };
+                if (field === 'quantity' || field === 'price') {
+                    updatedRow.total_ttc = calculateTotal(
+                        field === 'quantity' ? value : row.quantity,
+                        field === 'price' ? value : row.price
+                    );
+                }
+                return updatedRow;
             }
             return row;
         }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        router.post(route('bml.update-value'), {
-            restaurant_id: restaurant.id,
-            rows: rows,
+    const handleTypeChange = (e) => {
+        const newType = e.target.value;
+        setSelectedType(newType);
+        
+        router.get(route('BL.show', [restaurant.slug]), {
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
+            type: newType
         }, {
             preserveScroll: true,
-            onSuccess: () => {
-                addToast('Les données ont été enregistrées avec succès.', 'success');
-                if (!existingEntries || existingEntries.length === 0) {
-                    setRows([{
-                        id: 1,
-                        fournisseur: '',
-                        designation: '',
-                        quantity: '',
-                        price: ''
-                    }]);
-                }
-            },
-            onError: (errors) => {
-                addToast('Une erreur est survenue lors de l\'enregistrement.', 'error');
-            }
+            preserveState: true
         });
     };
 
@@ -98,10 +127,32 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
         
         router.get(route('BL.show', [restaurant.slug]), {
             month: newDate.getMonth() + 1,
-            year: newDate.getFullYear()
+            year: newDate.getFullYear(),
+            type: selectedType
         }, {
             preserveScroll: true,
             preserveState: true
+        });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        router.post(route(routeName), {
+            restaurant_id: restaurant.id,
+            rows: rows.map(row => ({
+                ...row,
+                type: selectedType || row.type
+            })),
+            month: monthDate.getMonth() + 1,
+            year: monthDate.getFullYear(),
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                addToast('Les données ont été enregistrées avec succès.', 'success');
+            },
+            onError: (errors) => {
+                addToast('Une erreur est survenue lors de l\'enregistrement.', 'error');
+            }
         });
     };
 
@@ -110,11 +161,25 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
             {/* Header Section */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    <div className="flex-1">
-                        <h2 className="text-lg font-semibold text-gray-900">BML</h2>
-                        <p className="mt-1 text-sm text-gray-600">
-                            {restaurant.name} - {monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                        </p>
+                    <div className="flex-1 flex items-center gap-4">
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-900">BML</h2>
+                            <p className="mt-1 text-sm text-gray-600">
+                                {restaurant.name} - {monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                            </p>
+                        </div>
+                        <select
+                            value={selectedType}
+                            onChange={handleTypeChange}
+                            className="border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                        >
+                            <option value="">Tous les types</option>
+                            {Object.entries(types).map(([label, value]) => (
+                                <option key={value} value={value}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="flex-shrink-0">
                         <input
@@ -135,6 +200,9 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Fournisseur
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -144,7 +212,13 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                                         Quantité
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Unité
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Prix
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Total TTC
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Action
@@ -154,6 +228,15 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {rows.map((row) => (
                                     <tr key={row.id}>
+                                        <td className="px-4 py-2">
+                                            <input
+                                                type="date"
+                                                value={row.date}
+                                                onChange={(e) => handleInputChange(row.id, 'date', e.target.value)}
+                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                required
+                                            />
+                                        </td>
                                         <td className="px-4 py-2">
                                             <input
                                                 type="text"
@@ -185,6 +268,15 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                                         </td>
                                         <td className="px-4 py-2">
                                             <input
+                                                type="text"
+                                                value={row.unite}
+                                                onChange={(e) => handleInputChange(row.id, 'unite', e.target.value)}
+                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                required
+                                            />
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <input
                                                 type="number"
                                                 value={row.price}
                                                 onChange={(e) => handleInputChange(row.id, 'price', e.target.value)}
@@ -193,6 +285,11 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                                                 step="0.01"
                                                 required
                                             />
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <div className="text-sm text-gray-900">
+                                                {row.total_ttc}€
+                                            </div>
                                         </td>
                                         <td className="px-4 py-2">
                                             <button
@@ -229,7 +326,6 @@ export default function BMLForm({ restaurant, currentMonth, existingEntries }) {
                 </form>
             </div>
 
-            {/* Toast Container */}
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
     );
