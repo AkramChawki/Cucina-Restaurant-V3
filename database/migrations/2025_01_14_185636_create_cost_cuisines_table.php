@@ -1,4 +1,3 @@
-// database/migrations/[timestamp]_create_cost_cuisines_table.php
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -15,11 +14,9 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('cuisinier_products')->onDelete('cascade');
             $table->integer('month');
             $table->integer('year');
-            $table->integer('day');
-            $table->float('value')->default(0);
+            $table->json('daily_data');
             $table->timestamps();
-            
-            $table->unique(['restaurant_id', 'product_id', 'month', 'year', 'day']);
+            $table->unique(['restaurant_id', 'product_id', 'month', 'year']);
         });
     }
 

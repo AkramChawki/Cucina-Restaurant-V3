@@ -14,8 +14,11 @@ class CostCuisine extends Model
         'product_id',
         'month',
         'year',
-        'day',
-        'value'
+        'daily_data'
+    ];
+
+    protected $casts = [
+        'daily_data' => 'array'
     ];
 
     public function restaurant()
@@ -34,6 +37,8 @@ class CostCuisine extends Model
             ->where('month', $month)
             ->where('year', $year)
             ->get()
-            ->groupBy('product_id');
+            ->mapWithKeys(function ($record) {
+                return [$record->product_id => $record->daily_data];
+            });
     }
 }

@@ -27,25 +27,17 @@ class CostCuisineController extends Controller
         $currentMonth = $request->get('month', now()->month);
         $currentYear = $request->get('year', now()->year);
 
-        // Get products from fiche_id = 1
         $products = Fiche::find(1)->cuisinier_products;
 
-        $costData = CostCuisine::where('restaurant_id', $restaurant->id)
-            ->where('month', $currentMonth)
-            ->where('year', $currentYear)
-            ->get()
-            ->groupBy('product_id');
+        $costData = CostCuisine::getMonthlyData($restaurant->id, $currentMonth, $currentYear);
 
-        // Transform products to include their values
         $transformedProducts = $products->map(function ($product) use ($costData) {
             return [
                 'id' => $product->id,
                 'designation' => $product->designation,
                 'unite' => $product->unite,
                 'image' => $product->image,
-                'values' => isset($costData[$product->id])
-                    ? $costData[$product->id]->pluck('value', 'day')->toArray()
-                    : []
+                'values' => $costData[$product->id] ?? []
             ];
         });
 
@@ -58,6 +50,7 @@ class CostCuisineController extends Controller
             ]
         ]);
     }
+
     public function updateValue(Request $request)
     {
         $request->validate([
@@ -66,21 +59,32 @@ class CostCuisineController extends Controller
             'day' => 'required|integer|min:1|max:31',
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer',
+            'period' => 'required|in:morning,afternoon',
             'value' => 'required|numeric|min:0'
         ]);
 
-        CostCuisine::updateOrCreate(
+        $costCuisine = CostCuisine::firstOrCreate(
             [
                 'restaurant_id' => $request->restaurant_id,
                 'product_id' => $request->product_id,
-                'day' => $request->day,
                 'month' => $request->month,
                 'year' => $request->year,
             ],
-            ['value' => $request->value]
+            ['daily_data' => []]
         );
 
-        return redirect()->back()->with('success', 'Employee added successfully.');
+        $dailyData = $costCuisine->daily_data ?: [];
 
+        if (!isset($dailyData[$request->day])) {
+            $dailyData[$request->day] = [
+                'morning' => 0,
+                'afternoon' => 0
+            ];
+        }
+        $dailyData[$request->day][$request->period] = (float)$request->value;
+
+        $costCuisine->update(['daily_data' => $dailyData]);
+
+        return redirect()->back();
     }
 }
