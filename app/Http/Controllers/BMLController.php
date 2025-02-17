@@ -37,14 +37,14 @@ class BMLController extends Controller
             ->map(function ($entry) {
                 return [
                     'id' => $entry->id,
-                    'fournisseur' => $entry->fournisseur,
-                    'designation' => $entry->designation,
-                    'quantity' => $entry->quantity,
-                    'price' => $entry->price,
-                    'unite' => $entry->unite,
-                    'date' => $entry->date,
-                    'type' => $entry->type,
-                    'total_ttc' => $entry->total_ttc
+                    'fournisseur' => $entry->fournisseur ?? '',
+                    'designation' => $entry->designation ?? '',
+                    'quantity' => $entry->quantity ?? 0,
+                    'price' => $entry->price ?? 0,
+                    'unite' => $entry->unite ?? '',
+                    'date' => optional($entry->date)->format('Y-m-d') ?? now()->format('Y-m-d'),
+                    'type' => $entry->type ?? '',
+                    'total_ttc' => $entry->total_ttc ?? 0
                 ];
             });
 
@@ -56,7 +56,7 @@ class BMLController extends Controller
             ],
             'existingEntries' => $existingEntries,
             'types' => BML::TYPES,
-            'currentType' => $type
+            'currentType' => $type ?? ''
         ]);
     }
 
