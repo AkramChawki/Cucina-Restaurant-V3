@@ -121,7 +121,7 @@ export default function SharedCostForm({
                                     <th key={day} className="px-3 py-3 text-center border-x">
                                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
                                         <div className="text-sm font-semibold text-green-600">
-                                            {calculateDayTotal(day).toFixed(2)}€
+                                            {calculateDayTotal(day).toFixed(2)}DH
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mt-1">
                                             <div className="text-xs text-gray-500">Matin</div>
@@ -146,7 +146,7 @@ export default function SharedCostForm({
                                                     {product.designation}
                                                 </span>
                                                 <span className="text-xs text-gray-500">
-                                                    {product.prix}€/{product.unite}
+                                                    {product.prix}DH/{product.unite}
                                                 </span>
                                             </div>
                                         </div>
@@ -177,7 +177,7 @@ export default function SharedCostForm({
                                                     />
                                                 </div>
                                                 <div className="text-xs text-right text-gray-600 pr-1">
-                                                    {calculateProductDayTotal(product, day).toFixed(2)}€
+                                                    {calculateProductDayTotal(product, day).toFixed(2)}DH
                                                 </div>
                                             </div>
                                         </td>
