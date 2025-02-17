@@ -33,6 +33,7 @@ trait CostControllerTrait
                 'designation' => $product->designation,
                 'unite' => $product->unite,
                 'image' => $product->image,
+                'prix' => $product->prix,
                 'values' => $costData[$product->id] ?? []
             ];
         });

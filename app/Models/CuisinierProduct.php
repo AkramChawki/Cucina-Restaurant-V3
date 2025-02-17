@@ -13,8 +13,11 @@ class CuisinierProduct extends Model
         'designation',
         'image',
         'unite',
+        'type',
+        'cr',
         'prix',
-        'category_id',
+        'moy',
+        'cuisinier_category_id',
     ];
 
     public function cuisinier_category()
