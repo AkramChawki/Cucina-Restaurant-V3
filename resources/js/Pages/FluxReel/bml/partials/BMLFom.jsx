@@ -96,7 +96,7 @@ export default function BMLForm({
         const newType = e.target.value;
         setSelectedType(newType);
         
-        router.get(route('BL.show', [restaurant.slug]), {
+        router.get(route('BML.show', [restaurant.slug]), {
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
             type: newType
@@ -110,7 +110,7 @@ export default function BMLForm({
         const newDate = new Date(e.target.value);
         setMonthDate(newDate);
         
-        router.get(route('BL.show', [restaurant.slug]), {
+        router.get(route('BML.show', [restaurant.slug]), {
             month: newDate.getMonth() + 1,
             year: newDate.getFullYear(),
             type: selectedType
