@@ -150,8 +150,17 @@ export default function BMLForm({
         });
     };
 
+    const calculateGrandTotal = () => {
+        return rows.reduce((total, row) => {
+            return total + (parseFloat(row.total_ttc) || 0);
+        }, 0).toFixed(2);
+    };
+    
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const dayTotal = calculateGrandTotal();
 
         const submissionData = {
             restaurant_id: restaurant.id,
@@ -162,14 +171,14 @@ export default function BMLForm({
             })),
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
-            type: selectedType
+            type: selectedType,
+            day_total: dayTotal
         };
 
         router.post(route('bml.update-value'), submissionData, {
             preserveScroll: true,
             onSuccess: () => {
                 addToast('Les données ont été enregistrées avec succès.', 'success');
-                // Refresh the data after successful submission
                 router.get(route('bml.show', [restaurant.slug]), {
                     month: monthDate.getMonth() + 1,
                     year: monthDate.getFullYear(),
@@ -332,6 +341,15 @@ export default function BMLForm({
                                         </td>
                                     </tr>
                                 ))}
+                                <tr className="bg-gray-50 font-semibold">
+                                    <td colSpan="6" className="px-4 py-2 text-right">
+                                        Total TTC
+                                    </td>
+                                    <td className="px-4 py-2 text-gray-900">
+                                        {calculateGrandTotal()}€
+                                    </td>
+                                    <td></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

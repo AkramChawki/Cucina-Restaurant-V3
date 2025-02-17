@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\BML;
+use App\Models\DayTotal;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class BMLController extends Controller
@@ -34,19 +36,25 @@ class BMLController extends Controller
         }
 
         $existingEntries = $query->get()
-        ->map(function ($entry) {
-            return [
-                'id' => $entry->id,
-                'fournisseur' => $entry->fournisseur,
-                'designation' => $entry->designation,
-                'quantity' => $entry->quantity,
-                'price' => $entry->price,
-                'unite' => $entry->unite,
-                'date' => $entry->date,
-                'type' => $entry->type,
-                'total_ttc' => $entry->total_ttc
-            ];
-        });
+            ->map(function ($entry) {
+                return [
+                    'id' => $entry->id,
+                    'fournisseur' => $entry->fournisseur,
+                    'designation' => $entry->designation,
+                    'quantity' => $entry->quantity,
+                    'price' => $entry->price,
+                    'unite' => $entry->unite,
+                    'date' => $entry->date,
+                    'type' => $entry->type,
+                    'total_ttc' => $entry->total_ttc
+                ];
+            });
+        $dayTotal = DayTotal::where('restaurant_id', $restaurant->id)
+            ->where('month', $currentMonth)
+            ->where('year', $currentYear)
+            ->where('type', 'bml_' . ($type ?: ''))
+            ->first();
+
         return Inertia::render('FluxReel/bml/BML', [
             'restaurant' => $restaurant,
             'currentMonth' => [
@@ -55,7 +63,8 @@ class BMLController extends Controller
             ],
             'existingEntries' => $existingEntries,
             'types' => BML::TYPES,
-            'currentType' => $type
+            'currentType' => $type,
+            'dayTotal' => $dayTotal ? $dayTotal->total : 0
         ]);
     }
 
@@ -73,6 +82,7 @@ class BMLController extends Controller
             'rows.*.type' => 'required|string',
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer',
+            'day_total' => 'required|numeric|min:0'
         ]);
 
         // First, delete existing entries for this month/year/type if any
@@ -98,6 +108,17 @@ class BMLController extends Controller
                 'year' => $request->year,
             ]);
         }
+
+        DayTotal::updateOrCreate(
+            [
+                'restaurant_id' => $request->restaurant_id,
+                'day' => Carbon::parse($request->rows[0]['date'])->day,
+                'month' => $request->month,
+                'year' => $request->year,
+                'type' => 'bml_' . ($request->type ?: $request->rows[0]['type'])
+            ],
+            ['total' => $request->day_total]
+        );
 
         return redirect()->back()->with('success', 'BML enregistré avec succès');
     }
