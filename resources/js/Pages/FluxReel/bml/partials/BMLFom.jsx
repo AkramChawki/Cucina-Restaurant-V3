@@ -9,12 +9,12 @@ const DEFAULT_TYPES = {
     'Stock': 'stock',
     'Autre': 'autre'
 };
-export default function BMLForm({ 
-    restaurant, 
-    currentMonth, 
+export default function BMLForm({
+    restaurant,
+    currentMonth,
     existingEntries = [],
     types = DEFAULT_TYPES,
-    currentType = '' 
+    currentType = ''
 }) {
     const { toasts, addToast, removeToast } = useToast();
     const [monthDate, setMonthDate] = useState(
@@ -53,7 +53,7 @@ export default function BMLForm({
         } else {
             setRows([defaultRow]);
         }
-    }, [existingEntries, monthDate, selectedType]);
+    }, [existingEntries]);
 
     const calculateTotal = (quantity, price) => {
         const qty = parseFloat(quantity) || 0;
@@ -63,9 +63,15 @@ export default function BMLForm({
 
     const addRow = () => {
         const newRow = {
-            ...defaultRow,
             id: rows.length + 1,
-            type: selectedType
+            fournisseur: '',
+            designation: '',
+            quantity: '',
+            price: '',
+            unite: '',
+            date: new Date().toISOString().split('T')[0],
+            type: selectedType,
+            total_ttc: 0
         };
         setRows([...rows, newRow]);
     };
@@ -95,7 +101,7 @@ export default function BMLForm({
     const handleTypeChange = (e) => {
         const newType = e.target.value;
         setSelectedType(newType);
-        
+
         router.get(route('BML.show', [restaurant.slug]), {
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
@@ -109,7 +115,7 @@ export default function BMLForm({
     const handleMonthChange = (e) => {
         const newDate = new Date(e.target.value);
         setMonthDate(newDate);
-        
+
         router.get(route('BML.show', [restaurant.slug]), {
             month: newDate.getMonth() + 1,
             year: newDate.getFullYear(),
