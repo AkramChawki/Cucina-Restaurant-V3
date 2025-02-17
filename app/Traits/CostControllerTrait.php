@@ -70,6 +70,7 @@ trait CostControllerTrait
             'year' => 'required|integer',
             'period' => 'required|in:morning,afternoon',
             'value' => 'required|numeric|min:0',
+            'daily_data' => 'required|array',
             'day_total' => 'required|numeric|min:0'
         ]);
 
@@ -85,13 +86,11 @@ trait CostControllerTrait
 
         $dailyData = $costEntry->daily_data ?: [];
 
-        if (!isset($dailyData[$request->day])) {
-            $dailyData[$request->day] = [
-                'morning' => 0,
-                'afternoon' => 0
-            ];
-        }
-        $dailyData[$request->day][$request->period] = (float)$request->value;
+        $dailyData[$request->day] = [
+            'morning' => (float)$request->daily_data['morning'],
+            'afternoon' => (float)$request->daily_data['afternoon'],
+            'total' => (float)$request->daily_data['total']
+        ];
 
         $costEntry->update(['daily_data' => $dailyData]);
 

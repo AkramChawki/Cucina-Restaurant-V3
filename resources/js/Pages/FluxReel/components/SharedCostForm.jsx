@@ -30,6 +30,29 @@ export default function SharedCostForm({
     };
 
     const handleValueChange = (productId, day, period, value) => {
+        const morning = period === 'morning' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'morning')) || 0;
+        const afternoon = period === 'afternoon' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'afternoon')) || 0;
+        const productTotal = (morning + afternoon) * (product.prix || 0);
+
+        let dailyData = {...(product.values || {})};
+        if (!dailyData[day]) {
+            dailyData[day] = { morning: 0, afternoon: 0, total: 0 };
+        }
+        
+        dailyData[day] = {
+            morning: morning,
+            afternoon: afternoon,
+            total: productTotal
+        };
+
+        let newDayTotal = 0;
+        products.forEach(p => {
+            if (p.id === product.id) {
+                newDayTotal += productTotal;
+            } else {
+                newDayTotal += calculateProductDayTotal(p, day);
+            }
+        });
         router.post(route(routeName), {
             restaurant_id: restaurant.id,
             product_id: productId,
@@ -38,7 +61,8 @@ export default function SharedCostForm({
             year: monthDate.getFullYear(),
             period: period,
             value: value || 0,
-            day_total: calculateDayTotal(day)
+            daily_data: dailyData[day],
+            day_total: newDayTotal
         }, {
             preserveScroll: true,
             preserveState: true
