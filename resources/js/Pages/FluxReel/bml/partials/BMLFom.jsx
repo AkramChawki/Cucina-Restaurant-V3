@@ -3,27 +3,26 @@ import { router } from '@inertiajs/react';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useToast, ToastContainer } from '@/Components/Toast';
 
+const DEFAULT_TYPES = {
+    'Achat': 'achat',
+    'Livraison': 'livraison',
+    'Stock': 'stock',
+    'Autre': 'autre'
+};
 export default function BMLForm({ 
-    title,
-    routeName,
     restaurant, 
     currentMonth, 
-    existingEntries,
-    types = {
-        'Achat': 'achat',
-        'Livraison': 'livraison',
-        'Stock': 'stock',
-        'Autre': 'autre'
-    },
-    currentType 
+    existingEntries = [],
+    types = DEFAULT_TYPES,
+    currentType = '' 
 }) {
     const { toasts, addToast, removeToast } = useToast();
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
-    const [selectedType, setSelectedType] = useState(currentType || '');
+    const [selectedType, setSelectedType] = useState(currentType);
 
-    const [rows, setRows] = useState([{
+    const defaultRow = {
         id: 1,
         fournisseur: '',
         designation: '',
@@ -33,34 +32,26 @@ export default function BMLForm({
         date: new Date().toISOString().split('T')[0],
         type: selectedType,
         total_ttc: 0
-    }]);
+    };
+
+    const [rows, setRows] = useState([defaultRow]);
 
     useEffect(() => {
         if (existingEntries && existingEntries.length > 0) {
             const formattedRows = existingEntries.map((entry, index) => ({
                 id: index + 1,
-                fournisseur: entry.fournisseur,
-                designation: entry.designation,
-                quantity: entry.quantity,
-                price: entry.price,
-                unite: entry.unite,
-                date: entry.date,
-                type: entry.type,
-                total_ttc: entry.quantity * entry.price
+                fournisseur: entry.fournisseur || '',
+                designation: entry.designation || '',
+                quantity: entry.quantity || '',
+                price: entry.price || '',
+                unite: entry.unite || '',
+                date: entry.date || new Date().toISOString().split('T')[0],
+                type: entry.type || selectedType,
+                total_ttc: entry.total_ttc || 0
             }));
             setRows(formattedRows);
         } else {
-            setRows([{
-                id: 1,
-                fournisseur: '',
-                designation: '',
-                quantity: '',
-                price: '',
-                unite: '',
-                date: new Date().toISOString().split('T')[0],
-                type: selectedType,
-                total_ttc: 0
-            }]);
+            setRows([defaultRow]);
         }
     }, [existingEntries, monthDate, selectedType]);
 
@@ -72,15 +63,9 @@ export default function BMLForm({
 
     const addRow = () => {
         const newRow = {
+            ...defaultRow,
             id: rows.length + 1,
-            fournisseur: '',
-            designation: '',
-            quantity: '',
-            price: '',
-            unite: '',
-            date: new Date().toISOString().split('T')[0],
-            type: selectedType,
-            total_ttc: 0
+            type: selectedType
         };
         setRows([...rows, newRow]);
     };
@@ -137,21 +122,26 @@ export default function BMLForm({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.post(route(routeName), {
+
+        const submissionData = {
             restaurant_id: restaurant.id,
             rows: rows.map(row => ({
                 ...row,
-                type: selectedType || row.type
+                type: selectedType || row.type,
+                total_ttc: calculateTotal(row.quantity, row.price)
             })),
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
-        }, {
+        };
+
+        router.post(route('bml.update-value'), submissionData, {
             preserveScroll: true,
             onSuccess: () => {
                 addToast('Les données ont été enregistrées avec succès.', 'success');
             },
             onError: (errors) => {
                 addToast('Une erreur est survenue lors de l\'enregistrement.', 'error');
+                console.error('Submission errors:', errors);
             }
         });
     };
