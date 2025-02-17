@@ -22,8 +22,8 @@ export default function BMLForm({
     );
     const [selectedType, setSelectedType] = useState(currentType);
 
-    const defaultRow = {
-        id: 1,
+    const getDefaultRow = () => ({
+        id: Date.now(),
         fournisseur: '',
         designation: '',
         quantity: '',
@@ -32,14 +32,14 @@ export default function BMLForm({
         date: new Date().toISOString().split('T')[0],
         type: selectedType,
         total_ttc: 0
-    };
+    });
 
-    const [rows, setRows] = useState([defaultRow]);
+    const [rows, setRows] = useState([getDefaultRow()]);
 
     useEffect(() => {
         if (existingEntries && existingEntries.length > 0) {
             const formattedRows = existingEntries.map((entry, index) => ({
-                id: index + 1,
+                id: Date.now() + index, // Ensure unique IDs
                 fournisseur: entry.fournisseur || '',
                 designation: entry.designation || '',
                 quantity: entry.quantity || '',
@@ -50,8 +50,6 @@ export default function BMLForm({
                 total_ttc: entry.total_ttc || 0
             }));
             setRows(formattedRows);
-        } else {
-            setRows([defaultRow]);
         }
     }, [existingEntries]);
 
@@ -62,40 +60,32 @@ export default function BMLForm({
     };
 
     const addRow = () => {
-        const newRow = {
-            id: rows.length + 1,
-            fournisseur: '',
-            designation: '',
-            quantity: '',
-            price: '',
-            unite: '',
-            date: new Date().toISOString().split('T')[0],
-            type: selectedType,
-            total_ttc: 0
-        };
-        setRows([...rows, newRow]);
+        setRows(currentRows => [...currentRows, getDefaultRow()]);
     };
 
     const removeRow = (id) => {
-        if (rows.length > 1) {
-            setRows(rows.filter(row => row.id !== id));
-        }
+        setRows(currentRows => {
+            if (currentRows.length <= 1) return currentRows;
+            return currentRows.filter(row => row.id !== id);
+        });
     };
 
     const handleInputChange = (id, field, value) => {
-        setRows(rows.map(row => {
-            if (row.id === id) {
-                const updatedRow = { ...row, [field]: value };
-                if (field === 'quantity' || field === 'price') {
-                    updatedRow.total_ttc = calculateTotal(
-                        field === 'quantity' ? value : row.quantity,
-                        field === 'price' ? value : row.price
-                    );
+        setRows(currentRows => 
+            currentRows.map(row => {
+                if (row.id === id) {
+                    const updatedRow = { ...row, [field]: value };
+                    if (field === 'quantity' || field === 'price') {
+                        updatedRow.total_ttc = calculateTotal(
+                            field === 'quantity' ? value : row.quantity,
+                            field === 'price' ? value : row.price
+                        );
+                    }
+                    return updatedRow;
                 }
-                return updatedRow;
-            }
-            return row;
-        }));
+                return row;
+            })
+        );
     };
 
     const handleTypeChange = (e) => {
