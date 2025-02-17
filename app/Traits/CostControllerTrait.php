@@ -37,7 +37,7 @@ trait CostControllerTrait
             ];
         });
 
-        return Inertia::render($this->getViewPath('Index'), [
+        return Inertia::render($this->getViewPath(''), [
             'restaurant' => $restaurant,
             'products' => $transformedProducts,
             'currentMonth' => [
