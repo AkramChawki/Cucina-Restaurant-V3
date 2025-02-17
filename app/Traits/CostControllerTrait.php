@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
+use App\Models\DayTotal;
 use App\Models\Restaurant;
-use DayTotal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
