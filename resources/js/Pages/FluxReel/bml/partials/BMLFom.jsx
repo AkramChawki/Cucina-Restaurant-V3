@@ -71,7 +71,7 @@ export default function BMLForm({
     };
 
     const handleInputChange = (id, field, value) => {
-        setRows(currentRows => 
+        setRows(currentRows =>
             currentRows.map(row => {
                 if (row.id === id) {
                     const updatedRow = { ...row, [field]: value };
@@ -91,14 +91,30 @@ export default function BMLForm({
     const handleTypeChange = (e) => {
         const newType = e.target.value;
         setSelectedType(newType);
-
+        setRows([getDefaultRow()]);
         router.get(route('bml.show', [restaurant.slug]), {
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
             type: newType
         }, {
             preserveScroll: true,
-            preserveState: true
+            preserveState: true,
+            onSuccess: (page) => {
+                if (page.props.existingEntries.length > 0) {
+                    const formattedRows = page.props.existingEntries.map((entry, index) => ({
+                        id: Date.now() + index,
+                        fournisseur: entry.fournisseur || '',
+                        designation: entry.designation || '',
+                        quantity: entry.quantity || '',
+                        price: entry.price || '',
+                        unite: entry.unite || '',
+                        date: entry.date || new Date().toISOString().split('T')[0],
+                        type: entry.type || newType,
+                        total_ttc: entry.total_ttc || 0
+                    }));
+                    setRows(formattedRows);
+                }
+            }
         });
     };
 
@@ -106,13 +122,31 @@ export default function BMLForm({
         const newDate = new Date(e.target.value);
         setMonthDate(newDate);
 
+        setRows([getDefaultRow()]);
+
         router.get(route('bml.show', [restaurant.slug]), {
             month: newDate.getMonth() + 1,
             year: newDate.getFullYear(),
             type: selectedType
         }, {
             preserveScroll: true,
-            preserveState: true
+            preserveState: true,
+            onSuccess: (page) => {
+                if (page.props.existingEntries.length > 0) {
+                    const formattedRows = page.props.existingEntries.map((entry, index) => ({
+                        id: Date.now() + index,
+                        fournisseur: entry.fournisseur || '',
+                        designation: entry.designation || '',
+                        quantity: entry.quantity || '',
+                        price: entry.price || '',
+                        unite: entry.unite || '',
+                        date: entry.date || new Date().toISOString().split('T')[0],
+                        type: entry.type || selectedType,
+                        total_ttc: entry.total_ttc || 0
+                    }));
+                    setRows(formattedRows);
+                }
+            }
         });
     };
 
@@ -128,12 +162,22 @@ export default function BMLForm({
             })),
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
+            type: selectedType
         };
 
         router.post(route('bml.update-value'), submissionData, {
             preserveScroll: true,
             onSuccess: () => {
                 addToast('Les données ont été enregistrées avec succès.', 'success');
+                // Refresh the data after successful submission
+                router.get(route('bml.show', [restaurant.slug]), {
+                    month: monthDate.getMonth() + 1,
+                    year: monthDate.getFullYear(),
+                    type: selectedType
+                }, {
+                    preserveScroll: true,
+                    preserveState: true
+                });
             },
             onError: (errors) => {
                 addToast('Une erreur est survenue lors de l\'enregistrement.', 'error');

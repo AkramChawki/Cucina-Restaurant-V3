@@ -29,25 +29,24 @@ class BMLController extends Controller
             ->where('month', $currentMonth)
             ->where('year', $currentYear);
 
-        if ($type) {
+        if ($type && $type !== '') {
             $query->where('type', $type);
         }
 
         $existingEntries = $query->get()
-            ->map(function ($entry) {
-                return [
-                    'id' => $entry->id,
-                    'fournisseur' => $entry->fournisseur ?? '',
-                    'designation' => $entry->designation ?? '',
-                    'quantity' => $entry->quantity ?? 0,
-                    'price' => $entry->price ?? 0,
-                    'unite' => $entry->unite ?? '',
-                    'date' => optional($entry->date)->format('Y-m-d') ?? now()->format('Y-m-d'),
-                    'type' => $entry->type ?? '',
-                    'total_ttc' => $entry->total_ttc ?? 0
-                ];
-            });
-
+        ->map(function ($entry) {
+            return [
+                'id' => $entry->id,
+                'fournisseur' => $entry->fournisseur,
+                'designation' => $entry->designation,
+                'quantity' => $entry->quantity,
+                'price' => $entry->price,
+                'unite' => $entry->unite,
+                'date' => $entry->date,
+                'type' => $entry->type,
+                'total_ttc' => $entry->total_ttc
+            ];
+        });
         return Inertia::render('FluxReel/bml/BML', [
             'restaurant' => $restaurant,
             'currentMonth' => [
@@ -56,7 +55,7 @@ class BMLController extends Controller
             ],
             'existingEntries' => $existingEntries,
             'types' => BML::TYPES,
-            'currentType' => $type ?? ''
+            'currentType' => $type
         ]);
     }
 
@@ -93,8 +92,8 @@ class BMLController extends Controller
                 'price' => $row['price'],
                 'unite' => $row['unite'],
                 'date' => $row['date'],
-                'type' => $row['type'],
-                'total_ttc' => $row['quantity'] * $row['price'],
+                'type' => $row['type'] ?: $request->type,
+                'total_ttc' => $row['total_ttc'],
                 'month' => $request->month,
                 'year' => $request->year,
             ]);
