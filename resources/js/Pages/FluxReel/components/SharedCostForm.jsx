@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { router } from '@inertiajs/react';
 
 export default function SharedCostForm({ 
@@ -18,7 +18,6 @@ export default function SharedCostForm({
     );
 
     const handleValueChange = (productId, day, period, value) => {
-
         router.post(route(routeName), {
             restaurant_id: restaurant.id,
             product_id: productId,
@@ -44,9 +43,28 @@ export default function SharedCostForm({
         return product.values[day][period] || '';
     };
 
+    const calculateDayTotal = (product, day) => {
+        const morning = parseFloat(getValue(product, day, 'morning')) || 0;
+        const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
+        const total = (morning + afternoon) * (product.prix || 0);
+        return total;
+    };
+
+    const calculateColumnTotal = (day) => {
+        return products.reduce((sum, product) => {
+            return sum + calculateDayTotal(product, day);
+        }, 0);
+    };
+
+    const columnTotals = useMemo(() => {
+        return daysInMonth.reduce((totals, day) => {
+            totals[day] = calculateColumnTotal(day);
+            return totals;
+        }, {});
+    }, [products, daysInMonth]);
+
     return (
         <div className="flex flex-col h-full">
-            {/* Header Section - Always Visible */}
             <div className="bg-white p-4 border-b shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
                     <div>
@@ -64,25 +82,23 @@ export default function SharedCostForm({
                 </div>
             </div>
 
-            {/* Table Container with Shadow Indicators */}
             <div className="relative flex-1 overflow-hidden">
-                {/* Horizontal Scroll Shadow Indicators */}
                 <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
                 <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
-                {/* Main Table Scroll Container */}
                 <div className="overflow-x-auto overflow-y-auto h-full">
                     <table className="w-full border-collapse min-w-max">
                         <thead className="bg-gray-50 sticky top-0 z-20">
                             <tr>
-                                {/* Fixed Product Column Header */}
                                 <th className="sticky left-0 z-30 bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[240px]">
                                     Produit
                                 </th>
-                                {/* Day Column Headers */}
                                 {daysInMonth.map(day => (
                                     <th key={day} className="px-3 py-3 text-center border-x">
                                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
+                                        <div className="text-sm font-semibold text-green-600">
+                                            {columnTotals[day].toFixed(2)}€
+                                        </div>
                                         <div className="grid grid-cols-2 gap-2 mt-1">
                                             <div className="text-xs text-gray-500">Matin</div>
                                             <div className="text-xs text-gray-500">Midi</div>
@@ -94,7 +110,6 @@ export default function SharedCostForm({
                         <tbody className="bg-white divide-y divide-gray-200">
                             {products.map((product) => (
                                 <tr key={product.id} className="hover:bg-gray-50">
-                                    {/* Fixed Product Column */}
                                     <td className="sticky left-0 bg-white border-r px-6 py-4 whitespace-nowrap z-20 hover:bg-gray-50">
                                         <div className="flex items-center gap-3">
                                             <img
@@ -102,37 +117,44 @@ export default function SharedCostForm({
                                                 alt={product.designation}
                                                 className="h-12 w-12 object-cover rounded-md"
                                             />
-                                            <span className="text-sm font-medium text-gray-900">
-                                                {product.designation}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {product.designation}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {product.prix}€/{product.unite}
+                                                </span>
+                                            </div>
                                         </div>
                                     </td>
-                                    {/* Day Cells */}
                                     {daysInMonth.map(day => (
                                         <td key={day} className="px-1 py-2 border-x">
-                                            <div className="grid grid-cols-2 gap-1">
-                                                {/* Morning Input */}
-                                                <input
-                                                    type="number"
-                                                    className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
-                                                    value={getValue(product, day, 'morning')}
-                                                    onChange={(e) => handleValueChange(product.id, day, 'morning', e.target.value)}
-                                                    onWheel={handleWheel}
-                                                    step="0.01"
-                                                    min="0"
-                                                    placeholder="0"
-                                                />
-                                                {/* Afternoon Input */}
-                                                <input
-                                                    type="number"
-                                                    className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
-                                                    value={getValue(product, day, 'afternoon')}
-                                                    onChange={(e) => handleValueChange(product.id, day, 'afternoon', e.target.value)}
-                                                    onWheel={handleWheel}
-                                                    step="0.01"
-                                                    min="0"
-                                                    placeholder="0"
-                                                />
+                                            <div className="flex flex-col gap-1">
+                                                <div className="grid grid-cols-2 gap-1">
+                                                    <input
+                                                        type="number"
+                                                        className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
+                                                        value={getValue(product, day, 'morning')}
+                                                        onChange={(e) => handleValueChange(product.id, day, 'morning', e.target.value)}
+                                                        onWheel={handleWheel}
+                                                        step="0.01"
+                                                        min="0"
+                                                        placeholder="0"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
+                                                        value={getValue(product, day, 'afternoon')}
+                                                        onChange={(e) => handleValueChange(product.id, day, 'afternoon', e.target.value)}
+                                                        onWheel={handleWheel}
+                                                        step="0.01"
+                                                        min="0"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                                <div className="text-xs text-right text-gray-600 pr-1">
+                                                    {calculateDayTotal(product, day).toFixed(2)}€
+                                                </div>
                                             </div>
                                         </td>
                                     ))}

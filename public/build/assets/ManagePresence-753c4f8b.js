@@ -1,0 +1,1 @@
+import{j as r,F as o}from"./app-cabdf4ed.js";import t from"./Form-3d567e42.js";function f({restaurant:e,presences:a,currentMonth:n}){return r(o,{children:r(t,{restaurant:e,presences:a,currentMonth:n})})}export{f as default};
