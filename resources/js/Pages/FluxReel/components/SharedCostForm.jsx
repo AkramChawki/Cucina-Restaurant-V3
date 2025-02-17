@@ -17,34 +17,40 @@ export default function SharedCostForm({
         (_, i) => i + 1
     );
 
+    // Calculate total for a specific product on a specific day
     const calculateProductDayTotal = (product, day) => {
         const morning = parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
         return (morning + afternoon) * (product.prix || 0);
     };
 
+    // Calculate total for all products for a specific day
     const calculateDayTotal = (day) => {
         return products.reduce((sum, product) => {
             return sum + calculateProductDayTotal(product, day);
         }, 0);
     };
 
-    const handleValueChange = (productId, day, period, value) => {
+    const handleValueChange = (product, day, period, value) => {
+        // Calculate the new values for this product
         const morning = period === 'morning' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = period === 'afternoon' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'afternoon')) || 0;
         const productTotal = (morning + afternoon) * (product.prix || 0);
 
+        // Get the current daily data
         let dailyData = {...(product.values || {})};
         if (!dailyData[day]) {
             dailyData[day] = { morning: 0, afternoon: 0, total: 0 };
         }
         
+        // Update the values
         dailyData[day] = {
             morning: morning,
             afternoon: afternoon,
             total: productTotal
         };
 
+        // Calculate the new day total after this update
         let newDayTotal = 0;
         products.forEach(p => {
             if (p.id === product.id) {
@@ -53,9 +59,10 @@ export default function SharedCostForm({
                 newDayTotal += calculateProductDayTotal(p, day);
             }
         });
+
         router.post(route(routeName), {
             restaurant_id: restaurant.id,
-            product_id: productId,
+            product_id: product.id,
             day: day,
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
@@ -152,7 +159,7 @@ export default function SharedCostForm({
                                                         type="number"
                                                         className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
                                                         value={getValue(product, day, 'morning')}
-                                                        onChange={(e) => handleValueChange(product.id, day, 'morning', e.target.value)}
+                                                        onChange={(e) => handleValueChange(product, day, 'morning', e.target.value)}
                                                         onWheel={handleWheel}
                                                         step="0.01"
                                                         min="0"
@@ -162,7 +169,7 @@ export default function SharedCostForm({
                                                         type="number"
                                                         className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
                                                         value={getValue(product, day, 'afternoon')}
-                                                        onChange={(e) => handleValueChange(product.id, day, 'afternoon', e.target.value)}
+                                                        onChange={(e) => handleValueChange(product, day, 'afternoon', e.target.value)}
                                                         onWheel={handleWheel}
                                                         step="0.01"
                                                         min="0"
