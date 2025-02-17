@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Restaurant;
+use DayTotal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,6 +18,17 @@ trait CostControllerTrait
         ]);
     }
 
+    protected function getCostType()
+    {
+        return match (class_basename($this->model)) {
+            'CostConsomable' => DayTotal::TYPE_CONSOMMABLE,
+            'CostCuisine' => DayTotal::TYPE_CUISINE,
+            'CostEconomat' => DayTotal::TYPE_ECONOMAT,
+            'CostPizza' => DayTotal::TYPE_PIZZA,
+            default => throw new \Exception('Invalid cost type')
+        };
+    }
+
     public function show(Request $request, $restaurantSlug)
     {
         $restaurant = Restaurant::where('slug', $restaurantSlug)->firstOrFail();
@@ -24,7 +36,7 @@ trait CostControllerTrait
         $currentYear = $request->get('year', now()->year);
 
         $products = $this->getProducts();
-        
+
         $costData = $this->model::getMonthlyData($restaurant->id, $currentMonth, $currentYear);
 
         $transformedProducts = $products->map(function ($product) use ($costData) {
@@ -57,7 +69,8 @@ trait CostControllerTrait
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer',
             'period' => 'required|in:morning,afternoon',
-            'value' => 'required|numeric|min:0'
+            'value' => 'required|numeric|min:0',
+            'day_total' => 'required|numeric|min:0'
         ]);
 
         $costEntry = $this->model::firstOrCreate(
@@ -67,11 +80,11 @@ trait CostControllerTrait
                 'month' => $request->month,
                 'year' => $request->year,
             ],
-            ['daily_data' => []] 
+            ['daily_data' => []]
         );
 
         $dailyData = $costEntry->daily_data ?: [];
-        
+
         if (!isset($dailyData[$request->day])) {
             $dailyData[$request->day] = [
                 'morning' => 0,
@@ -81,6 +94,17 @@ trait CostControllerTrait
         $dailyData[$request->day][$request->period] = (float)$request->value;
 
         $costEntry->update(['daily_data' => $dailyData]);
+
+        DayTotal::updateOrCreate(
+            [
+                'restaurant_id' => $request->restaurant_id,
+                'day' => $request->day,
+                'month' => $request->month,
+                'year' => $request->year,
+                'type' => $this->getCostType()
+            ],
+            ['total' => $request->day_total]
+        );
 
         return redirect()->back();
     }

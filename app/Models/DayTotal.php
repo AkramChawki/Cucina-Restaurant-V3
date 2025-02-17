@@ -1,0 +1,20 @@
+<?php
+
+use Illuminate\Database\Eloquent\Model;
+
+class DayTotal extends Model
+{
+    protected $fillable = [
+        'restaurant_id',
+        'type',
+        'day',
+        'month',
+        'year',
+        'total',
+    ];
+
+    const TYPE_CONSOMMABLE = 'consommable';
+    const TYPE_CUISINE = 'cuisine';
+    const TYPE_ECONOMAT = 'economat';
+    const TYPE_PIZZA = 'pizza';
+}

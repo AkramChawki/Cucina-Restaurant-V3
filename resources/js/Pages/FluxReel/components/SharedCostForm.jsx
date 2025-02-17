@@ -17,6 +17,18 @@ export default function SharedCostForm({
         (_, i) => i + 1
     );
 
+    const calculateProductDayTotal = (product, day) => {
+        const morning = parseFloat(getValue(product, day, 'morning')) || 0;
+        const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
+        return (morning + afternoon) * (product.prix || 0);
+    };
+
+    const calculateDayTotal = (day) => {
+        return products.reduce((sum, product) => {
+            return sum + calculateProductDayTotal(product, day);
+        }, 0);
+    };
+
     const handleValueChange = (productId, day, period, value) => {
         router.post(route(routeName), {
             restaurant_id: restaurant.id,
@@ -25,7 +37,8 @@ export default function SharedCostForm({
             month: monthDate.getMonth() + 1,
             year: monthDate.getFullYear(),
             period: period,
-            value: value || 0
+            value: value || 0,
+            day_total: calculateDayTotal(day)
         }, {
             preserveScroll: true,
             preserveState: true
@@ -42,26 +55,6 @@ export default function SharedCostForm({
         }
         return product.values[day][period] || '';
     };
-
-    const calculateDayTotal = (product, day) => {
-        const morning = parseFloat(getValue(product, day, 'morning')) || 0;
-        const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
-        const total = (morning + afternoon) * (product.prix || 0);
-        return total;
-    };
-
-    const calculateColumnTotal = (day) => {
-        return products.reduce((sum, product) => {
-            return sum + calculateDayTotal(product, day);
-        }, 0);
-    };
-
-    const columnTotals = useMemo(() => {
-        return daysInMonth.reduce((totals, day) => {
-            totals[day] = calculateColumnTotal(day);
-            return totals;
-        }, {});
-    }, [products, daysInMonth]);
 
     return (
         <div className="flex flex-col h-full">
@@ -97,7 +90,7 @@ export default function SharedCostForm({
                                     <th key={day} className="px-3 py-3 text-center border-x">
                                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
                                         <div className="text-sm font-semibold text-green-600">
-                                            {columnTotals[day].toFixed(2)}€
+                                            {calculateDayTotal(day).toFixed(2)}€
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mt-1">
                                             <div className="text-xs text-gray-500">Matin</div>
@@ -153,7 +146,7 @@ export default function SharedCostForm({
                                                     />
                                                 </div>
                                                 <div className="text-xs text-right text-gray-600 pr-1">
-                                                    {calculateDayTotal(product, day).toFixed(2)}€
+                                                    {calculateProductDayTotal(product, day).toFixed(2)}€
                                                 </div>
                                             </div>
                                         </td>
