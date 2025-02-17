@@ -66,7 +66,7 @@ trait CostControllerTrait
                 'month' => $request->month,
                 'year' => $request->year,
             ],
-            ['daily_data' => []]
+            ['daily_data' => []] 
         );
 
         $dailyData = $costEntry->daily_data ?: [];

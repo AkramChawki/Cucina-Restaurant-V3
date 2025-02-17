@@ -18,6 +18,7 @@ export default function SharedCostForm({
     );
 
     const handleValueChange = (productId, day, period, value) => {
+
         router.post(route(routeName), {
             restaurant_id: restaurant.id,
             product_id: productId,

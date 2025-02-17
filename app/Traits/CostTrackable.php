@@ -33,7 +33,17 @@ trait CostTrackable
             ->where('year', $year)
             ->get()
             ->mapWithKeys(function ($record) {
-                return [$record->product_id => $record->daily_data];
+                // Ensure daily_data has both periods for each day
+                $standardizedData = [];
+                if ($record->daily_data) {
+                    foreach ($record->daily_data as $day => $periods) {
+                        $standardizedData[$day] = [
+                            'morning' => $periods['morning'] ?? 0,
+                            'afternoon' => $periods['afternoon'] ?? 0
+                        ];
+                    }
+                }
+                return [$record->product_id => $standardizedData];
             });
     }
 }
