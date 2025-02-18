@@ -25,9 +25,6 @@ export default function Livraison({ livraisons }) {
             setIsPrinting(true);
             console.log('Starting print process...');
     
-            // Add version check
-            console.log('React Thermal Printer version:', require('react-thermal-printer/package.json').version);
-    
             // Test with basic receipt first
             console.log('Rendering receipt...');
             const data = await render(

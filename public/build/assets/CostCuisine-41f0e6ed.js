@@ -1,1 +1,0 @@
-import{j as i}from"./app-c91fede0.js";import s from"./CostCuisineForm-fc73abda.js";import"./SharedCostForm-151a7ecb.js";function u({restaurant:o,products:r,currentMonth:t}){return i(s,{restaurant:o,products:r,currentMonth:t})}export{u as default};

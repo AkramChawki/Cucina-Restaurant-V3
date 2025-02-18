@@ -1,0 +1,1 @@
+import{j as t}from"./app-14f9a267.js";import m from"./BMLFom-8593d0d1.js";import"./createLucideIcon-99a4caa9.js";function a({restaurant:r,currentMonth:o}){return t(m,{restaurant:r,currentMonth:o})}export{a as default};

@@ -1,0 +1,1 @@
+import{j as r,F as a}from"./app-14f9a267.js";import m from"./Form-f22c3e7c.js";import"./createLucideIcon-99a4caa9.js";function f({restaurant:e,presences:o,currentMonth:t}){return r(a,{children:r(m,{restaurant:e,presences:o,currentMonth:t})})}export{f as default};
