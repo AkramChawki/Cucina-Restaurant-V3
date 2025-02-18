@@ -25,6 +25,7 @@
         "lucide-react": "^0.473.0",
         "react-multivalue-text-input": "^2.5.0",
         "react-signature-canvas": "^1.0.7",
+        "react-thermal-printer": "^0.19.3",
         "xlsx": "^0.18.5"
     }
 }

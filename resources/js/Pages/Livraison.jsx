@@ -1,6 +1,10 @@
+import BLThermalReceipt from "@/Components/BLThermalReceipt";
 import React, { useState } from "react";
+import { render } from 'react-thermal-printer';
 
 export default function Livraison({ livraisons }) {
+    const [isPrinting, setIsPrinting] = useState(false);
+    
     const groupedLivraisons = livraisons.reduce((acc, livraison) => {
         const date = livraison.created_at.split("T")[0];
         if (!acc[date]) {
@@ -15,6 +19,34 @@ export default function Livraison({ livraisons }) {
     const [selectedRestaurant, setSelectedRestaurant] = useState("");
     const uniqueTypes = [...new Set(livraisons.map(l => l.type))].sort();
     const uniqueRestaurants = [...new Set(livraisons.map(l => l.restaurant_group))].sort();
+
+    const handlePrint = async (livraison) => {
+        try {
+            setIsPrinting(true);
+
+            const data = await render(
+                <BLThermalReceipt livraison={livraison} />
+            );
+
+            const port = await window.navigator.serial.requestPort();
+            await port.open({ baudRate: 9600 });
+
+            const writer = port.writable?.getWriter();
+            if (writer) {
+                await writer.write(data);
+                writer.releaseLock();
+            }
+
+            await port.close();
+            
+        } catch (error) {
+            console.error('Printing failed:', error);
+            alert('Échec de l\'impression. Veuillez vérifier la connexion de l\'imprimante.');
+        } finally {
+            setIsPrinting(false);
+        }
+    };
+
     const filterLivraisons = (livraisonsArray) => {
         return livraisonsArray.filter(livraison => {
             const matchesType = !selectedType || livraison.type === selectedType;
@@ -22,13 +54,16 @@ export default function Livraison({ livraisons }) {
             return matchesType && matchesRestaurant;
         });
     };
+
     return (
         <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Filters */}
                 <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap gap-4">
                     <div className="flex-1 min-w-[200px]">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Type de BL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Type de BL
+                        </label>
                         <select 
                             className="w-full border-gray-300 rounded-md shadow-sm"
                             value={selectedType}
@@ -41,7 +76,9 @@ export default function Livraison({ livraisons }) {
                         </select>
                     </div>
                     <div className="flex-1 min-w-[200px]">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Restaurant
+                        </label>
                         <select 
                             className="w-full border-gray-300 rounded-md shadow-sm"
                             value={selectedRestaurant}
@@ -54,6 +91,7 @@ export default function Livraison({ livraisons }) {
                         </select>
                     </div>
                 </div>
+
                 {sortedDates.map((date) => {
                     const filteredLivraisons = filterLivraisons(groupedLivraisons[date]);
                     
@@ -102,7 +140,7 @@ export default function Livraison({ livraisons }) {
                                                             hour12: false,
                                                         })}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
                                                         <a 
                                                             href={livraison.pdf_url}
                                                             className="text-blue-600 hover:text-blue-800 font-medium"
@@ -111,6 +149,15 @@ export default function Livraison({ livraisons }) {
                                                         >
                                                             Télécharger PDF
                                                         </a>
+                                                        <button
+                                                            onClick={() => handlePrint(livraison)}
+                                                            disabled={isPrinting}
+                                                            className={`text-green-600 hover:text-green-800 font-medium ${
+                                                                isPrinting ? 'opacity-50 cursor-not-allowed' : ''
+                                                            }`}
+                                                        >
+                                                            {isPrinting ? 'Impression...' : 'Imprimer BL'}
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
