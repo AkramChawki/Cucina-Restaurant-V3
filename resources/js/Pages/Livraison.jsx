@@ -25,46 +25,45 @@ export default function Livraison({ livraisons }) {
             setIsPrinting(true);
             console.log('Starting print process...');
     
-            // Test with basic receipt first
-            console.log('Rendering receipt...');
-            const data = await render(
-                <BasicReceipt />,
-                {
-                    debug: true // Enable debug mode
-                }
-            );
-            console.log('Receipt rendered:', data);
+            // Get receipt commands
+            const commands = BasicReceipt();
+            console.log('Commands generated:', commands);
     
-            console.log('Requesting serial port...');
+            // Request port access
             const port = await navigator.serial.requestPort();
-            
-            console.log('Opening port...');
-            await port.open({ 
-                baudRate: 9600,
-                dataBits: 8,
-                stopBits: 1,
-                parity: "none",
-                flowControl: "none"
-            });
+            await port.open({ baudRate: 9600 });
     
-            console.log('Getting writer...');
             const writer = port.writable.getWriter();
     
             try {
                 // Initialize printer
-                console.log('Initializing printer...');
                 await writer.write(new Uint8Array([0x1B, 0x40])); // ESC @
     
-                // Write with encoding
-                console.log('Writing data...');
-                const encoder = new TextEncoder();
-                await writer.write(encoder.encode(data));
-                
+                // Process each command
+                for (const command of commands) {
+                    let bytes;
+                    
+                    switch (command.type) {
+                        case 'text':
+                            bytes = new TextEncoder().encode(command.value + '\n');
+                            break;
+                        case 'line':
+                            bytes = new Uint8Array([0x1B, 0x4D]); // Just an example line command
+                            break;
+                        case 'cut':
+                            bytes = new Uint8Array([0x1D, 0x56, 0x41, 0x00]);
+                            break;
+                        default:
+                            console.log('Unknown command:', command);
+                            continue;
+                    }
+                    
+                    await writer.write(bytes);
+                }
+    
                 console.log('Print job completed successfully');
             } finally {
-                console.log('Releasing writer...');
                 writer.releaseLock();
-                console.log('Closing port...');
                 await port.close();
             }
             
