@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
+import { Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 export default function Form({ restaurant, presences, currentMonth }) {
   const today = new Date();
@@ -46,6 +48,49 @@ export default function Form({ restaurant, presences, currentMonth }) {
     return colors[status] || '';
   };
 
+  const getStatusLabel = (status) => {
+    const labels = {
+      'present': 'P',
+      'absent': 'A',
+      'conge-paye': 'CP',
+      'conge-non-paye': 'CNP',
+      'repos': 'R',
+      'continue': 'CC',
+    };
+    return labels[status] || '-';
+  };
+
+  const handleExport = () => {
+    // Prepare the data for export
+    const exportData = presences.map(({ employe, presence }) => {
+      const rowData = {
+        'ID': employe.id,
+        'Nom': `${employe.first_name} ${employe.last_name}`,
+      };
+
+      // Add a column for each day
+      daysInMonth.forEach(day => {
+        rowData[`${day}`] = getStatusLabel(presence.attendance_data[day]);
+      });
+
+      return rowData;
+    });
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Présences');
+
+    // Generate filename with restaurant name and month/year
+    const monthName = monthDate.toLocaleDateString('fr-FR', { month: 'long' });
+    const filename = `presences_${restaurant?.name || 'restaurant'}_${monthName}_${monthDate.getFullYear()}.xlsx`;
+
+    // Save the file
+    XLSX.writeFile(wb, filename);
+  };
+
   return (
     <div className="p-4 sm:p-6">
       {/* Header Section */}
@@ -72,6 +117,14 @@ export default function Form({ restaurant, presences, currentMonth }) {
               onChange={(e) => setMonthDate(new Date(e.target.value))}
               className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
             />
+
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exporter
+            </button>
           </div>
         </div>
       </div>
