@@ -103,8 +103,21 @@ class GenerateTestBL extends Command
 
     private function generate_pdf_and_save($view, $data, $file_name, $directory)
     {
-        $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
+        $pdf = new \mikehaertl\wkhtmlto\Pdf([
+            'page-width' => '110mm',
+            'page-height' => null,  // Auto-height
+            'margin-top' => '5mm',
+            'margin-right' => '5mm',
+            'margin-bottom' => '5mm',
+            'margin-left' => '5mm',
+            'encoding' => 'UTF-8',
+            'no-outline',  // No PDF bookmarks
+            'print-media-type',  // Use print media CSS
+            'dpi' => '203',  // Common thermal printer DPI
+        ]);
+        
         $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
+        $pdf->addPage(view($view, $data)->render());
         
         if (!file_exists(public_path("storage/$directory"))) {
             mkdir(public_path("storage/$directory"), 0755, true);
