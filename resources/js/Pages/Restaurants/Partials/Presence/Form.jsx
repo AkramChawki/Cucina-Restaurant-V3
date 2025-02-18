@@ -64,8 +64,7 @@ export default function Form({ restaurant, presences, currentMonth }) {
     // Prepare the data for export
     const exportData = presences.map(({ employe, presence }) => {
       const rowData = {
-        'ID': employe.id,
-        'Nom': `${employe.first_name} ${employe.last_name}`,
+        'Nom': `${employe.first_name} ${employe.last_name}`
       };
 
       // Add a column for each day
