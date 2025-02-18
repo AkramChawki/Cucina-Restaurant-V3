@@ -17,24 +17,28 @@ class GenerateTestBL extends Command
                 'product_id' => 1,
                 'designation' => 'Pizza Margherita Base',
                 'qty' => '50',
+                'image' => 'products/pizza.jpg',
                 'unite' => 'pcs'
             ],
             [
                 'product_id' => 2,
                 'designation' => 'Sauce Tomate',
                 'qty' => '20',
+                'image' => 'products/sauce.jpg',
                 'unite' => 'L'
             ],
             [
                 'product_id' => 3,
                 'designation' => 'Mozzarella',
                 'qty' => '15',
+                'image' => 'products/cheese.jpg',
                 'unite' => 'kg'
             ],
             [
                 'product_id' => 4,
                 'designation' => 'Basilic Frais',
                 'qty' => '2',
+                'image' => 'products/basil.jpg',
                 'unite' => 'kg'
             ]
         ]
@@ -137,16 +141,18 @@ class GenerateTestBL extends Command
         $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
         $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
         
-        // Set options for thermal paper size (80mm width)
+        // Set options for thermal paper size
         $pdf->setOptions([
-            'page-width' => '80mm',
-            'page-height' => null,
-            'margin-top' => '0',
-            'margin-bottom' => '0',
-            'margin-left' => '0',
-            'margin-right' => '0',
+            'page-size' => 'A7',        // A7 is closest to thermal paper width
+            'orientation' => 'Portrait', // Use portrait for narrow width
+            'margin-top' => '0mm',
+            'margin-bottom' => '0mm',
+            'margin-left' => '0mm',
+            'margin-right' => '0mm',
             'dpi' => '203',
             'disable-smart-shrinking' => true,
+            'zoom' => '0.7',            // Adjust zoom to fit thermal paper width
+            'print-media-type' => true  // Use print media type for better formatting
         ]);
 
         // Ensure directory exists
