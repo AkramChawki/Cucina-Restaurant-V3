@@ -1,5 +1,6 @@
 import BLThermalReceipt from "@/Components/BLThermalReceipt";
 import React, { useState } from "react";
+import { Printer } from 'react-thermal-printer';
 import { render } from 'react-thermal-printer';
 
 export default function Livraison({ livraisons }) {
@@ -27,36 +28,29 @@ export default function Livraison({ livraisons }) {
     
             // Render the receipt content
             const data = await render(
-                <BLThermalReceipt livraison={livraison} />
+                // Printer component is used here during render
+                <Printer type="epson">
+                    <BLThermalReceipt livraison={livraison} />
+                </Printer>
             );
     
-            // Specific filters for Xprinter XP-TT426B
-            const filters = [
-                { usbVendorId: 0x0483 },  // Known vendor ID for Xprinter
-                { usbVendorId: 0x0416 },  // Alternative vendor ID
-                { usbVendorId: 0x0525 }   // Another possible vendor ID
-            ];
+            console.log('Receipt rendered successfully');
     
-            console.log('Requesting port access with filters:', filters);
-            const port = await navigator.serial.requestPort({ filters });
+            // Request port access
+            console.log('Requesting port access...');
+            const port = await navigator.serial.requestPort();
             
-            const portInfo = port.getInfo();
-            console.log('Selected port info:', portInfo);
-    
-            // Xprinter typically uses 9600 baud rate
-            console.log('Opening port with 9600 baud rate...');
+            console.log('Opening port...');
             await port.open({ 
                 baudRate: 9600,
                 dataBits: 8,
                 stopBits: 1,
-                parity: "none",
-                bufferSize: 255,
-                flowControl: "none"
+                parity: "none"
             });
     
             console.log('Port opened successfully');
     
-            // Initialize printer
+            // Get a writer
             const writer = port.writable?.getWriter();
             if (!writer) {
                 throw new Error('Failed to get writer');
@@ -85,19 +79,7 @@ export default function Livraison({ livraisons }) {
             
         } catch (error) {
             console.error('Detailed error:', error);
-            
-            let errorMessage = 'Échec de l\'impression. ';
-            if (error.name === 'NotFoundError') {
-                errorMessage += 'Aucune imprimante trouvée. Veuillez connecter votre imprimante.';
-            } else if (error.name === 'SecurityError') {
-                errorMessage += 'Accès à l\'imprimante refusé. Veuillez autoriser l\'accès.';
-            } else if (error.name === 'NetworkError') {
-                errorMessage += 'Erreur de connexion à l\'imprimante. Vérifiez le câble USB.';
-            } else {
-                errorMessage += `Erreur: ${error.message}`;
-            }
-            
-            alert(errorMessage);
+            alert(`Échec de l'impression. Erreur: ${error.message}`);
         } finally {
             setIsPrinting(false);
         }

@@ -1,9 +1,10 @@
 import React from 'react';
-import { Printer, Text, Row, Line, Cut } from 'react-thermal-printer';
+import { Text, Row, Line } from 'react-thermal-printer';
 
+// Note: removed Printer and Cut from imports as they're not needed in the component
 const BLThermalReceipt = ({ livraison }) => (
-  <Printer type="epson" width={48}> {/* XP-TT426B typically has 48 characters per line */}
-    <Text size={{ width: 2, height: 2 }} align="center" bold={true}>
+  <>
+    <Text align="center" bold={true}>
       {livraison.type}
     </Text>
     <Text align="center">
@@ -23,15 +24,15 @@ const BLThermalReceipt = ({ livraison }) => (
     
     {livraison.data.map((restau, idx) => (
       <React.Fragment key={idx}>
-        <Text size={{ width: 1, height: 1 }} bold={true}>
+        <Text bold={true}>
           {restau.restau}
         </Text>
         <Line />
         
         {restau.products.map((product, prodIdx) => (
           <Row key={prodIdx}>
-            <Text width={2} wordWrap={true}>{product.designation}</Text>
-            <Text width={1} align="right">{`${product.qty} ${product.unite}`}</Text>
+            <Text>{product.designation}</Text>
+            <Text>{`${product.qty} ${product.unite}`}</Text>
           </Row>
         ))}
         
@@ -39,11 +40,10 @@ const BLThermalReceipt = ({ livraison }) => (
         <Text>Expediteur: _________________</Text>
         <Text>Transporteur: _______________</Text>
         <Text>Recepteur: _________________</Text>
-        {idx < livraison.data.length - 1 && <Cut partial={true} />}
+        <Line />
       </React.Fragment>
     ))}
-    <Cut />
-  </Printer>
+  </>
 );
 
 export default BLThermalReceipt;
