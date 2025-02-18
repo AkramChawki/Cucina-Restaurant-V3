@@ -23,25 +23,81 @@ export default function Livraison({ livraisons }) {
     const handlePrint = async (livraison) => {
         try {
             setIsPrinting(true);
-
+            console.log('Starting print process...');
+    
+            // Render the receipt content
             const data = await render(
                 <BLThermalReceipt livraison={livraison} />
             );
-
-            const port = await window.navigator.serial.requestPort();
-            await port.open({ baudRate: 9600 });
-
+    
+            // Specific filters for Xprinter XP-TT426B
+            const filters = [
+                { usbVendorId: 0x0483 },  // Known vendor ID for Xprinter
+                { usbVendorId: 0x0416 },  // Alternative vendor ID
+                { usbVendorId: 0x0525 }   // Another possible vendor ID
+            ];
+    
+            console.log('Requesting port access with filters:', filters);
+            const port = await navigator.serial.requestPort({ filters });
+            
+            const portInfo = port.getInfo();
+            console.log('Selected port info:', portInfo);
+    
+            // Xprinter typically uses 9600 baud rate
+            console.log('Opening port with 9600 baud rate...');
+            await port.open({ 
+                baudRate: 9600,
+                dataBits: 8,
+                stopBits: 1,
+                parity: "none",
+                bufferSize: 255,
+                flowControl: "none"
+            });
+    
+            console.log('Port opened successfully');
+    
+            // Initialize printer
             const writer = port.writable?.getWriter();
-            if (writer) {
+            if (!writer) {
+                throw new Error('Failed to get writer');
+            }
+    
+            try {
+                // Initialize printer
+                console.log('Initializing printer...');
+                await writer.write(new Uint8Array([0x1B, 0x40])); // ESC @ - Initialize printer
+                
+                // Write the data
+                console.log('Writing data to printer...');
                 await writer.write(data);
+                
+                // Cut paper
+                console.log('Cutting paper...');
+                await writer.write(new Uint8Array([0x1D, 0x56, 0x41, 0x00])); // GS V A - Cut paper
+                
+                console.log('Print job completed successfully');
+            } finally {
                 writer.releaseLock();
             }
-
+    
             await port.close();
+            console.log('Port closed');
             
         } catch (error) {
-            console.error('Printing failed:', error);
-            alert('Échec de l\'impression. Veuillez vérifier la connexion de l\'imprimante.');
+            console.error('Detailed error:', error);
+            
+            let errorMessage = 'Échec de l\'impression. ';
+            if (error.name === 'NotFoundError') {
+                errorMessage += 'Aucune imprimante trouvée. Veuillez connecter votre imprimante.';
+            } else if (error.name === 'SecurityError') {
+                errorMessage += 'Accès à l\'imprimante refusé. Veuillez autoriser l\'accès.';
+            } else if (error.name === 'NetworkError') {
+                errorMessage += 'Erreur de connexion à l\'imprimante. Vérifiez le câble USB.';
+            } else {
+                errorMessage += `Erreur: ${error.message}`;
+            }
+            
+            alert(errorMessage);
         } finally {
             setIsPrinting(false);
         }
