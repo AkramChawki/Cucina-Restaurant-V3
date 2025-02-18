@@ -1,7 +1,6 @@
-import BLThermalReceipt from "@/Components/BLThermalReceipt";
 import React, { useState } from "react";
-import { Printer } from 'react-thermal-printer';
 import { render } from 'react-thermal-printer';
+import { BasicReceipt } from "@/Components/BLThermalReceipt";
 
 export default function Livraison({ livraisons }) {
     const [isPrinting, setIsPrinting] = useState(false);
@@ -25,57 +24,24 @@ export default function Livraison({ livraisons }) {
         try {
             setIsPrinting(true);
             console.log('Starting print process...');
-    
-            // Render the receipt content
-            const data = await render(
-                // Printer component is used here during render
-                <Printer type="epson">
-                    <BLThermalReceipt livraison={livraison} />
-                </Printer>
-            );
-    
+
+            // Test with basic receipt first
+            const data = await render(<BasicReceipt />);
             console.log('Receipt rendered successfully');
-    
-            // Request port access
-            console.log('Requesting port access...');
+
             const port = await navigator.serial.requestPort();
-            
-            console.log('Opening port...');
-            await port.open({ 
-                baudRate: 9600,
-                dataBits: 8,
-                stopBits: 1,
-                parity: "none"
-            });
-    
-            console.log('Port opened successfully');
-    
-            // Get a writer
-            const writer = port.writable?.getWriter();
-            if (!writer) {
-                throw new Error('Failed to get writer');
-            }
-    
+            await port.open({ baudRate: 9600 });
+
+            const writer = port.writable.getWriter();
+
             try {
-                // Initialize printer
-                console.log('Initializing printer...');
-                await writer.write(new Uint8Array([0x1B, 0x40])); // ESC @ - Initialize printer
-                
-                // Write the data
-                console.log('Writing data to printer...');
+                await writer.write(new Uint8Array([0x1B, 0x40]));
                 await writer.write(data);
-                
-                // Cut paper
-                console.log('Cutting paper...');
-                await writer.write(new Uint8Array([0x1D, 0x56, 0x41, 0x00])); // GS V A - Cut paper
-                
                 console.log('Print job completed successfully');
             } finally {
                 writer.releaseLock();
+                await port.close();
             }
-    
-            await port.close();
-            console.log('Port closed');
             
         } catch (error) {
             console.error('Detailed error:', error);
