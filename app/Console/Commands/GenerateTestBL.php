@@ -91,7 +91,7 @@ class GenerateTestBL extends Command
 
     private function generatePdfForType($type, $data, $restaurant)
     {
-        $view = 'pdf.livraison-summary';
+        $view = 'pdf.livraison-summary-receipt';
         $fileName = 'test_livraison_' . str_slug($type) . '_' . str_slug($restaurant) . '_' . now()->format('Y-m-d_H-i') . '.pdf';
         $directory = 'livraisons';
 
