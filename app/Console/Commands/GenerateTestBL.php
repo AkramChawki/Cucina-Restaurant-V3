@@ -138,34 +138,61 @@ class GenerateTestBL extends Command
 
     private function generate_thermal_pdf($view, $data, $file_name, $directory)
     {
-        $pdf = new \mikehaertl\wkhtmlto\Pdf(view($view, $data)->render());
-        $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        
-        // Set options for thermal paper size
-        $pdf->setOptions([
-            'page-size' => 'A7',        // A7 is closest to thermal paper width
-            'orientation' => 'Portrait', // Use portrait for narrow width
-            'margin-top' => '0mm',
-            'margin-bottom' => '0mm',
-            'margin-left' => '0mm',
-            'margin-right' => '0mm',
-            'dpi' => '203',
-            'disable-smart-shrinking' => true,
-            'zoom' => '0.7',            // Adjust zoom to fit thermal paper width
-            'print-media-type' => true  // Use print media type for better formatting
-        ]);
+        try {
+            // Generate the HTML content
+            $htmlContent = view($view, $data)->render();
+            
+            // Create temporary file for HTML content
+            $tempFile = storage_path('app/temp_' . uniqid() . '.html');
+            file_put_contents($tempFile, $htmlContent);
+            
+            // Create PDF from temporary file
+            $pdf = new \mikehaertl\wkhtmlto\Pdf($tempFile);
+            $pdf->binary = base_path('vendor/silvertipsoftware/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
+            
+            // Set options for thermal paper size with error handling
+            $pdf->setOptions([
+                'page-size' => 'A7',
+                'orientation' => 'Portrait',
+                'margin-top' => '0mm',
+                'margin-bottom' => '0mm',
+                'margin-left' => '0mm',
+                'margin-right' => '0mm',
+                'dpi' => '203',
+                'disable-smart-shrinking' => true,
+                'zoom' => '0.7',
+                'print-media-type' => true,
+                'load-error-handling' => 'ignore',
+                'load-media-error-handling' => 'ignore'
+            ]);
 
         // Ensure directory exists
         if (!file_exists(public_path("storage/$directory"))) {
             mkdir(public_path("storage/$directory"), 0755, true);
         }
 
+        // Ensure directory exists
+        if (!file_exists(public_path("storage/$directory"))) {
+            mkdir(public_path("storage/$directory"), 0755, true);
+        }
+
+        // Generate PDF
         if (!$pdf->saveAs(public_path("storage/$directory/$file_name.pdf"))) {
             $error = $pdf->getError();
             $this->error("PDF generation failed: $error");
             return null;
         }
+
+        // Clean up temporary file
+        if (file_exists($tempFile)) {
+            unlink($tempFile);
+        }
+
         return asset("storage/$directory/$file_name.pdf");
+    } catch (\Exception $e) {
+        $this->error("PDF generation failed: " . $e->getMessage());
+        return null;
+    }
     }
 
     private function generate_a4_pdf($view, $data, $file_name, $directory)
