@@ -24,22 +24,50 @@ export default function Livraison({ livraisons }) {
         try {
             setIsPrinting(true);
             console.log('Starting print process...');
-
+    
+            // Add version check
+            console.log('React Thermal Printer version:', require('react-thermal-printer/package.json').version);
+    
             // Test with basic receipt first
-            const data = await render(<BasicReceipt />);
-            console.log('Receipt rendered successfully');
-
+            console.log('Rendering receipt...');
+            const data = await render(
+                <BasicReceipt />,
+                {
+                    debug: true // Enable debug mode
+                }
+            );
+            console.log('Receipt rendered:', data);
+    
+            console.log('Requesting serial port...');
             const port = await navigator.serial.requestPort();
-            await port.open({ baudRate: 9600 });
-
+            
+            console.log('Opening port...');
+            await port.open({ 
+                baudRate: 9600,
+                dataBits: 8,
+                stopBits: 1,
+                parity: "none",
+                flowControl: "none"
+            });
+    
+            console.log('Getting writer...');
             const writer = port.writable.getWriter();
-
+    
             try {
-                await writer.write(new Uint8Array([0x1B, 0x40]));
-                await writer.write(data);
+                // Initialize printer
+                console.log('Initializing printer...');
+                await writer.write(new Uint8Array([0x1B, 0x40])); // ESC @
+    
+                // Write with encoding
+                console.log('Writing data...');
+                const encoder = new TextEncoder();
+                await writer.write(encoder.encode(data));
+                
                 console.log('Print job completed successfully');
             } finally {
+                console.log('Releasing writer...');
                 writer.releaseLock();
+                console.log('Closing port...');
                 await port.close();
             }
             
