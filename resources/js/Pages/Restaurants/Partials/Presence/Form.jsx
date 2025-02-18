@@ -56,30 +56,32 @@ export default function Form({ restaurant, presences, currentMonth }) {
       'conge-non-paye': 'CNP',
       'repos': 'R',
       'continue': 'CC',
+      '': '-'
     };
     return labels[status] || '-';
   };
 
   const handleExport = () => {
-    // Prepare the data for export
-    const exportData = presences.map(({ employe, presence }) => {
-      const rowData = {
-        'Nom': `${employe.first_name} ${employe.last_name}`
-      };
-
-      // Add a column for each day
-      daysInMonth.forEach(day => {
-        rowData[`${day}`] = getStatusLabel(presence.attendance_data[day]);
-      });
-
-      return rowData;
-    });
-
-    // Create worksheet
-    const ws = XLSX.utils.json_to_sheet(exportData);
-
-    // Create workbook
+    // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      // Header row
+      ['Nom', ...daysInMonth],
+      // Data rows
+      ...presences.map(({ employe, presence }) => [
+        `${employe.first_name} ${employe.last_name}`,
+        ...daysInMonth.map(day => getStatusLabel(presence.attendance_data[day]))
+      ])
+    ]);
+
+    // Set column widths
+    const wscols = [
+      {wch: 30},  // Width for Nom column
+      ...daysInMonth.map(() => ({wch: 5}))  // Width for day columns
+    ];
+    ws['!cols'] = wscols;
+
+    // Add the worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Présences');
 
     // Generate filename with restaurant name and month/year
