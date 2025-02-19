@@ -1,56 +1,58 @@
 import React, { useState, useMemo } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 
-export default function SharedCostForm({ 
+export default function SharedCostForm({
     title,
     routeName,
-    restaurant, 
-    products, 
-    currentMonth 
+    restaurant,
+    products,
+    currentMonth
 }) {
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
-
     const daysInMonth = Array.from(
         { length: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate() },
         (_, i) => i + 1
     );
+    const { processing } = usePage().props;
+    const handleMonthChange = (e) => {
+        const newDate = new Date(e.target.value);
+        setMonthDate(newDate);
 
-    // Calculate total for a specific product on a specific day
+        // Visit the same URL with new month/year parameters
+        router.get(window.location.pathname, {
+            month: newDate.getMonth() + 1,
+            year: newDate.getFullYear()
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['products', 'currentMonth']
+        });
+    };
     const calculateProductDayTotal = (product, day) => {
         const morning = parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
         return (morning + afternoon) * (product.prix || 0);
     };
-
-    // Calculate total for all products for a specific day
     const calculateDayTotal = (day) => {
         return products.reduce((sum, product) => {
             return sum + calculateProductDayTotal(product, day);
         }, 0);
     };
-
     const handleValueChange = (product, day, period, value) => {
-        // Calculate the new values for this product
         const morning = period === 'morning' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = period === 'afternoon' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'afternoon')) || 0;
         const productTotal = (morning + afternoon) * (product.prix || 0);
-
-        // Get the current daily data
-        let dailyData = {...(product.values || {})};
+        let dailyData = { ...(product.values || {}) };
         if (!dailyData[day]) {
             dailyData[day] = { morning: 0, afternoon: 0, total: 0 };
         }
-        
-        // Update the values
         dailyData[day] = {
             morning: morning,
             afternoon: afternoon,
             total: productTotal
         };
-
-        // Calculate the new day total after this update
         let newDayTotal = 0;
         products.forEach(p => {
             if (p.id === product.id) {
@@ -59,7 +61,6 @@ export default function SharedCostForm({
                 newDayTotal += calculateProductDayTotal(p, day);
             }
         });
-
         router.post(route(routeName), {
             restaurant_id: restaurant.id,
             product_id: product.id,
@@ -89,6 +90,13 @@ export default function SharedCostForm({
 
     return (
         <div className="flex flex-col h-full">
+            {processing && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-4 rounded-lg">
+                        Loading...
+                    </div>
+                </div>
+            )}
             <div className="bg-white p-4 border-b shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
                     <div>
@@ -100,7 +108,7 @@ export default function SharedCostForm({
                     <input
                         type="month"
                         value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
-                        onChange={(e) => setMonthDate(new Date(e.target.value))}
+                        onChange={handleMonthChange}
                         className="border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
                     />
                 </div>
