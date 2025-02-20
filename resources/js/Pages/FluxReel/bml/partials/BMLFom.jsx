@@ -327,7 +327,7 @@ export default function BMLForm({
                                         </td>
                                         <td className="px-4 py-2">
                                             <div className="text-sm text-gray-900">
-                                                {row.total_ttc}€
+                                                {row.total_ttc}MAD
                                             </div>
                                         </td>
                                         <td className="px-4 py-2">
@@ -346,7 +346,7 @@ export default function BMLForm({
                                         Total TTC
                                     </td>
                                     <td className="px-4 py-2 text-gray-900">
-                                        {calculateGrandTotal()}€
+                                        {calculateGrandTotal()}MAD
                                     </td>
                                     <td></td>
                                 </tr>
