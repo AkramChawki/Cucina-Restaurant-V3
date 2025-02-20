@@ -4,10 +4,10 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import { useToast, ToastContainer } from '@/Components/Toast';
 
 const DEFAULT_TYPES = {
-    'Achat': 'achat',
-    'Livraison': 'livraison',
-    'Stock': 'stock',
-    'Autre': 'autre'
+    'Gastro': 'gastro',
+    'Giada': 'giada',
+    'Legume': 'legume',
+    'Boisson': 'boisson'
 };
 export default function BMLForm({
     restaurant,

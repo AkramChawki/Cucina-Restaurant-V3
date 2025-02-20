@@ -8,13 +8,13 @@ class BML extends Model
 {
 
     public const TYPES = [
-        'Achat' => 'achat',
-        'Livraison' => 'livraison',
-        'Stock' => 'stock',
-        'Autre' => 'autre'
+        'Gastro' => 'gastro',
+        'Giada' => 'giada',
+        'Legume' => 'legume',
+        'Boisson' => 'boisson'
     ];
     protected $table = 'b_m_l_s';
-    
+
     protected $fillable = [
         'restaurant_id',
         'fournisseur',
@@ -28,7 +28,7 @@ class BML extends Model
         'month',
         'year'
     ];
-    
+
     protected $casts = [
         'date' => 'date',
         'quantity' => 'decimal:2',
