@@ -110,7 +110,7 @@ class LaboJanuaryDataSeeder extends Seeder
 
     public function run()
     {
-        $inputFileName = storage_path('app/seeds/LABO ZIRAOUI 012025.xlsx');
+        $inputFileName = storage_path('app/seeds/LABO ZIRAOUI 022025.xlsx');
         $spreadsheet = IOFactory::load($inputFileName);
 
         // Process Pizza Sheet
@@ -124,7 +124,7 @@ class LaboJanuaryDataSeeder extends Seeder
     private function processPizzaData($sheet)
     {
         $restaurantId = 5;
-        $month = 1;
+        $month = 2;
         $year = 2025;
 
         // First, let's get all day totals from row 1
@@ -197,7 +197,7 @@ class LaboJanuaryDataSeeder extends Seeder
     private function processCuisineData($sheet)
     {
         $restaurantId = 5;
-        $month = 1;
+        $month = 2;
         $year = 2025;
 
         // First, let's get all day totals from row 1

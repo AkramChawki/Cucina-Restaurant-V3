@@ -9,6 +9,13 @@ const DEFAULT_TYPES = {
     'Legume': 'legume',
     'Boisson': 'boisson'
 };
+
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+};
+
 export default function BMLForm({
     restaurant,
     currentMonth,
@@ -29,7 +36,7 @@ export default function BMLForm({
         quantity: '',
         price: '',
         unite: '',
-        date: new Date().toISOString().split('T')[0],
+        date: formatDate(new Date()),
         type: selectedType,
         total_ttc: 0
     });
@@ -39,13 +46,13 @@ export default function BMLForm({
     useEffect(() => {
         if (existingEntries && existingEntries.length > 0) {
             const formattedRows = existingEntries.map((entry, index) => ({
-                id: Date.now() + index, // Ensure unique IDs
+                id: Date.now() + index,
                 fournisseur: entry.fournisseur || '',
                 designation: entry.designation || '',
                 quantity: entry.quantity || '',
                 price: entry.price || '',
                 unite: entry.unite || '',
-                date: entry.date || new Date().toISOString().split('T')[0],
+                date: formatDate(entry.date),
                 type: entry.type || selectedType,
                 total_ttc: entry.total_ttc || 0
             }));
@@ -166,6 +173,7 @@ export default function BMLForm({
             restaurant_id: restaurant.id,
             rows: rows.map(row => ({
                 ...row,
+                date: formatDate(row.date), // Ensure date is in correct format
                 type: selectedType || row.type,
                 total_ttc: calculateTotal(row.quantity, row.price)
             })),

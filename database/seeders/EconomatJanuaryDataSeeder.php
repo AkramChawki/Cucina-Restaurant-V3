@@ -87,7 +87,7 @@ class EconomatJanuaryDataSeeder extends Seeder
 
     public function run()
     {
-        $inputFileName = storage_path('app/seeds/ECONOMAT ZIRAOUI 012025.xlsx');
+        $inputFileName = storage_path('app/seeds/ECONOMAT ZIRAOUI 022025.xlsx');
         $spreadsheet = IOFactory::load($inputFileName);
 
         $pizzaSheet = $spreadsheet->getSheetByName('ECONOMAT');
@@ -99,7 +99,7 @@ class EconomatJanuaryDataSeeder extends Seeder
     private function processPizzaData($sheet)
     {
         $restaurantId = 5;
-        $month = 1;
+        $month = 2;
         $year = 2025;
 
         for ($day = 1; $day <= 31; $day++) {
@@ -166,7 +166,7 @@ class EconomatJanuaryDataSeeder extends Seeder
     private function processCuisineData($sheet)
     {
         $restaurantId = 5;
-        $month = 1;
+        $month = 2;
         $year = 2025;
 
         for ($day = 1; $day <= 31; $day++) {
