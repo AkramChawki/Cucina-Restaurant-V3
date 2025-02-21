@@ -13,9 +13,12 @@ const DEFAULT_TYPES = {
 const formatDate = (dateString) => {
     if (!dateString) return '';
     try {
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
+        const date = dateString instanceof Date ? dateString : new Date(dateString);
+        const timezoneOffset = date.getTimezoneOffset() * 60000; // Convert to milliseconds
+        const localDate = new Date(date.getTime() - timezoneOffset);
+        return localDate.toISOString().split('T')[0];
     } catch (e) {
+        console.error('Error formatting date:', e);
         return '';
     }
 };
@@ -120,7 +123,7 @@ export default function BMLForm({
                         quantity: entry.quantity || '',
                         price: entry.price || '',
                         unite: entry.unite || '',
-                        date: entry.date || new Date().toISOString().split('T')[0],
+                        date: formatDate(entry.date || new Date()),
                         type: entry.type || newType,
                         total_ttc: entry.total_ttc || 0
                     }));
@@ -152,7 +155,7 @@ export default function BMLForm({
                         quantity: entry.quantity || '',
                         price: entry.price || '',
                         unite: entry.unite || '',
-                        date: entry.date || new Date().toISOString().split('T')[0],
+                        date: formatDate(entry.date || new Date()),
                         type: entry.type || selectedType,
                         total_ttc: entry.total_ttc || 0
                     }));
@@ -171,9 +174,9 @@ export default function BMLForm({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         const dayTotal = calculateGrandTotal();
-    
+
         const submissionData = {
             restaurant_id: restaurant.id,
             rows: rows.map(row => ({
@@ -187,7 +190,7 @@ export default function BMLForm({
             type: selectedType,
             day_total: dayTotal
         };
-    
+
         router.post(route('bml.update-value'), submissionData, {
             preserveScroll: true,
             onSuccess: () => {
