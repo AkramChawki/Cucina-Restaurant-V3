@@ -23,6 +23,23 @@ const formatDate = (dateString) => {
     }
 };
 
+const calculateDayTotals = (rows) => {
+    const groupedByDate = rows.reduce((acc, row) => {
+        const date = row.date;
+        if (!acc[date]) {
+            acc[date] = {
+                rows: [],
+                total: 0
+            };
+        }
+        acc[date].rows.push(row);
+        acc[date].total += parseFloat(row.total_ttc) || 0;
+        return acc;
+    }, {});
+
+    return groupedByDate;
+};
+
 export default function BMLForm({
     restaurant,
     currentMonth,
@@ -166,34 +183,46 @@ export default function BMLForm({
     };
 
     const calculateGrandTotal = () => {
-        return rows.reduce((total, row) => {
-            return total + (parseFloat(row.total_ttc) || 0);
-        }, 0).toFixed(2);
+        const groupedTotals = calculateDayTotals(rows);
+        const totalsDisplay = Object.entries(groupedTotals)
+            .map(([date, data]) => ({
+                date: date,
+                total: data.total.toFixed(2)
+            }))
+            .sort((a, b) => a.date.localeCompare(b.date));
+
+        return totalsDisplay;
     };
 
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const dayTotal = calculateGrandTotal();
+        const groupedTotals = calculateDayTotals(rows);
 
-        const submissionData = {
-            restaurant_id: restaurant.id,
-            rows: rows.map(row => ({
-                ...row,
-                date: formatDate(row.date), // Ensure date is properly formatted
-                type: selectedType || row.type,
-                total_ttc: calculateTotal(row.quantity, row.price)
-            })),
-            month: monthDate.getMonth() + 1,
-            year: monthDate.getFullYear(),
-            type: selectedType,
-            day_total: dayTotal
-        };
+        const submissions = Object.entries(groupedTotals).map(([date, data]) => {
+            const dateRows = data.rows;
+            const dayTotal = data.total.toFixed(2);
 
-        router.post(route('bml.update-value'), submissionData, {
-            preserveScroll: true,
-            onSuccess: () => {
+            const submissionData = {
+                restaurant_id: restaurant.id,
+                rows: dateRows.map(row => ({
+                    ...row,
+                    date: formatDate(row.date),
+                    type: selectedType || row.type,
+                    total_ttc: calculateTotal(row.quantity, row.price)
+                })),
+                month: monthDate.getMonth() + 1,
+                year: monthDate.getFullYear(),
+                type: selectedType,
+                day_total: dayTotal
+            };
+
+            return router.post(route('bml.update-value'), submissionData);
+        });
+
+        Promise.all(submissions)
+            .then(() => {
                 addToast('Les données ont été enregistrées avec succès.', 'success');
                 router.get(route('bml.show', [restaurant.slug]), {
                     month: monthDate.getMonth() + 1,
@@ -203,12 +232,11 @@ export default function BMLForm({
                     preserveScroll: true,
                     preserveState: true
                 });
-            },
-            onError: (errors) => {
+            })
+            .catch((error) => {
                 addToast('Une erreur est survenue lors de l\'enregistrement.', 'error');
-                console.error('Submission errors:', errors);
-            }
-        });
+                console.error('Submission errors:', error);
+            });
     };
 
     return (
@@ -359,10 +387,14 @@ export default function BMLForm({
                                 ))}
                                 <tr className="bg-gray-50 font-semibold">
                                     <td colSpan="6" className="px-4 py-2 text-right">
-                                        Total TTC
+                                        Totaux par jour
                                     </td>
                                     <td className="px-4 py-2 text-gray-900">
-                                        {calculateGrandTotal()}MAD
+                                        {calculateGrandTotal().map((dayTotal, index) => (
+                                            <div key={dayTotal.date}>
+                                                {new Date(dayTotal.date).toLocaleDateString('fr-FR')}: {dayTotal.total}MAD
+                                            </div>
+                                        ))}
                                     </td>
                                     <td></td>
                                 </tr>
