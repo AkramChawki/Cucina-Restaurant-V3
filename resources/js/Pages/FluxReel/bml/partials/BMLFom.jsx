@@ -14,7 +14,6 @@ const formatDate = (dateString) => {
     if (!dateString) return '';
     try {
         const date = new Date(dateString);
-        if (isNaN(date.getTime())) return ''; // Return empty if invalid date
         return date.toISOString().split('T')[0];
     } catch (e) {
         return '';
@@ -57,7 +56,8 @@ export default function BMLForm({
                 quantity: entry.quantity || '',
                 price: entry.price || '',
                 unite: entry.unite || '',
-                date: entry.date || formatDate(new Date()), // Ensure date is properly formatted
+                // Properly format the date from server response
+                date: formatDate(entry.date),
                 type: entry.type || selectedType,
                 total_ttc: entry.total_ttc || 0
             }));
@@ -171,14 +171,14 @@ export default function BMLForm({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+        
         const dayTotal = calculateGrandTotal();
-
+    
         const submissionData = {
             restaurant_id: restaurant.id,
             rows: rows.map(row => ({
                 ...row,
-                date: formatDate(row.date), // Ensure date is in correct format
+                date: formatDate(row.date), // Ensure date is properly formatted
                 type: selectedType || row.type,
                 total_ttc: calculateTotal(row.quantity, row.price)
             })),
@@ -187,7 +187,7 @@ export default function BMLForm({
             type: selectedType,
             day_total: dayTotal
         };
-
+    
         router.post(route('bml.update-value'), submissionData, {
             preserveScroll: true,
             onSuccess: () => {
