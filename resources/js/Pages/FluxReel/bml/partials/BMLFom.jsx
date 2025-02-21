@@ -12,8 +12,13 @@ const DEFAULT_TYPES = {
 
 const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return ''; // Return empty if invalid date
+        return date.toISOString().split('T')[0];
+    } catch (e) {
+        return '';
+    }
 };
 
 export default function BMLForm({
@@ -52,13 +57,13 @@ export default function BMLForm({
                 quantity: entry.quantity || '',
                 price: entry.price || '',
                 unite: entry.unite || '',
-                date: formatDate(entry.date),
+                date: entry.date || formatDate(new Date()), // Ensure date is properly formatted
                 type: entry.type || selectedType,
                 total_ttc: entry.total_ttc || 0
             }));
             setRows(formattedRows);
         }
-    }, [existingEntries]);
+    }, [existingEntries, selectedType]);
 
     const calculateTotal = (quantity, price) => {
         const qty = parseFloat(quantity) || 0;
@@ -162,7 +167,7 @@ export default function BMLForm({
             return total + (parseFloat(row.total_ttc) || 0);
         }, 0).toFixed(2);
     };
-    
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -278,7 +283,7 @@ export default function BMLForm({
                                         <td className="px-4 py-2">
                                             <input
                                                 type="date"
-                                                value={row.date}
+                                                value={row.date || ''} // Add fallback empty string
                                                 onChange={(e) => handleInputChange(row.id, 'date', e.target.value)}
                                                 className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
                                                 required

@@ -1,1 +1,0 @@
-import{j as r,F as m}from"./app-8ba1813f.js";import e from"./Form-0c773067.js";import"./Footer-b4365553.js";function n({employe:o,restaurants:t}){return r(m,{children:r(e,{employe:o,restaurants:t})})}export{n as default};
