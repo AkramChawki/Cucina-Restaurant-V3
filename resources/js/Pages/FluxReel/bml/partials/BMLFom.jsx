@@ -276,47 +276,47 @@ export default function BMLForm({
             </div>
 
             {/* Table Section */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <form onSubmit={handleSubmit}>
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Date
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Fournisseur
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Designation
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Quantité
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Unité
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Prix
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Total TTC
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Action
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {rows.map((row) => (
-                                    <tr key={row.id}>
+                                    <tr key={row.id} className='hover:bg-gray-50 transition-colors duration-150'>
                                         <td className="px-4 py-2">
                                             <input
                                                 type="date"
                                                 value={row.date || ''} // Add fallback empty string
                                                 onChange={(e) => handleInputChange(row.id, 'date', e.target.value)}
-                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 required
                                             />
                                         </td>
@@ -325,7 +325,7 @@ export default function BMLForm({
                                                 type="text"
                                                 value={row.fournisseur}
                                                 onChange={(e) => handleInputChange(row.id, 'fournisseur', e.target.value)}
-                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 required
                                             />
                                         </td>
@@ -334,7 +334,7 @@ export default function BMLForm({
                                                 type="text"
                                                 value={row.designation}
                                                 onChange={(e) => handleInputChange(row.id, 'designation', e.target.value)}
-                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 required
                                             />
                                         </td>
@@ -343,7 +343,7 @@ export default function BMLForm({
                                                 type="number"
                                                 value={row.quantity}
                                                 onChange={(e) => handleInputChange(row.id, 'quantity', e.target.value)}
-                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 min="0"
                                                 step="0.01"
                                                 required
@@ -354,7 +354,7 @@ export default function BMLForm({
                                                 type="text"
                                                 value={row.unite}
                                                 onChange={(e) => handleInputChange(row.id, 'unite', e.target.value)}
-                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 required
                                             />
                                         </td>
@@ -363,7 +363,7 @@ export default function BMLForm({
                                                 type="number"
                                                 value={row.price}
                                                 onChange={(e) => handleInputChange(row.id, 'price', e.target.value)}
-                                                className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm"
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 min="0"
                                                 step="0.01"
                                                 required
@@ -385,18 +385,43 @@ export default function BMLForm({
                                         </td>
                                     </tr>
                                 ))}
-                                <tr className="bg-gray-50 font-semibold">
-                                    <td colSpan="6" className="px-4 py-2 text-right">
-                                        Totaux par jour
+                                <tr className="bg-gray-50">
+                                    <td colSpan="8" className="px-4 py-3">
+                                        <div className="font-semibold text-gray-900 mb-2">Totaux par jour</div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                            {calculateGrandTotal().map((dayTotal, index) => (
+                                                <div
+                                                    key={dayTotal.date}
+                                                    className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm"
+                                                >
+                                                    <span className="text-sm text-gray-600">
+                                                        {new Date(dayTotal.date).toLocaleDateString('fr-FR', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
+                                                    <span className="font-medium text-gray-900">
+                                                        {parseFloat(dayTotal.total).toLocaleString('fr-FR', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                        })} MAD
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3 flex justify-end items-center border-t pt-2">
+                                            <span className="text-sm font-medium text-gray-600 mr-2">Total du mois:</span>
+                                            <span className="text-lg font-bold text-gray-900">
+                                                {calculateGrandTotal()
+                                                    .reduce((acc, curr) => acc + parseFloat(curr.total), 0)
+                                                    .toLocaleString('fr-FR', {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    })} MAD
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="px-4 py-2 text-gray-900">
-                                        {calculateGrandTotal().map((dayTotal, index) => (
-                                            <div key={dayTotal.date}>
-                                                {new Date(dayTotal.date).toLocaleDateString('fr-FR')}: {dayTotal.total}MAD
-                                            </div>
-                                        ))}
-                                    </td>
-                                    <td></td>
                                 </tr>
                             </tbody>
                         </table>
