@@ -161,7 +161,9 @@ class EmployeController extends Controller
         $restaurant = Restaurant::where('slug', $restau)->first();
 
         // Get employees with presence records
-        $employes = Employe::where('restau', $restau)->get();
+        $employes = Employe::where('restau', $restau)
+                    ->whereNull('depart')
+                    ->get();
 
         $presences = collect($employes)->map(function ($employe) use ($month, $year) {
             $presence = Presence::firstOrCreate(

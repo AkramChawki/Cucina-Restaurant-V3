@@ -13,6 +13,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
 use App\Http\Controllers\BLController;
 use App\Http\Controllers\BMLController;
+use App\Http\Controllers\CostAnalyticsController;
 use App\Http\Controllers\CostConsomableController;
 use App\Http\Controllers\CostCuisineController;
 use App\Http\Controllers\CostEconomatController;
@@ -170,6 +171,9 @@ Route::middleware(['auth', 'time.auth','password.change'])->group(function () {
 
     Route::get('/infractions/report', [InfractionController::class, 'report'])
         ->name('infractions.report');
+
+        Route::get('/cost-analytics', [CostAnalyticsController::class, 'index'])->name('cost-analytics.index');
+    Route::post('/cost-analytics/generate-daily', [CostAnalyticsController::class, 'generateDaily'])->name('cost-analytics.generate-daily');
 
 });
 
