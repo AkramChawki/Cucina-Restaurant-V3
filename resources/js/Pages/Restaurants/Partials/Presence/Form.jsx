@@ -140,7 +140,15 @@ export default function Form({ restaurant, presences, currentMonth }) {
 
   // Handle restaurant change
   const handleRestaurantChange = (e) => {
-    setSelectedRestau(e.target.value);
+    const newRestau = e.target.value;
+    setSelectedRestau(newRestau);
+    
+    // Directly navigate to the new restaurant with current month/year
+    if (newRestau) {
+      const month = monthDate.getMonth() + 1;
+      const year = monthDate.getFullYear();
+      window.location.href = `${route('employes.manageAttendance')}?restau=${newRestau}&month=${month}&year=${year}`;
+    }
   };
 
   return (
