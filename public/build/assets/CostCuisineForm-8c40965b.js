@@ -1,0 +1,1 @@
+import{j as t}from"./app-67aa6753.js";import e from"./SharedCostForm-55d16248.js";function s(o){return t(e,{title:"Cost Cuisine Food",routeName:"cost-cuisine.update-value",...o})}export{s as default};

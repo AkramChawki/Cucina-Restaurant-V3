@@ -23,6 +23,20 @@ export default function Form({ restaurant, presences, currentMonth }) {
     (_, i) => i + 1
   );
 
+  // Effect to navigate when restaurant or month changes
+  useEffect(() => {
+    if (selectedRestau) {
+      router.get(route('employes.manageAttendance'), {
+        restau: selectedRestau,
+        month: monthDate.getMonth() + 1,
+        year: monthDate.getFullYear()
+      }, {
+        preserveState: false,
+        replace: true
+      });
+    }
+  }, [selectedRestau, monthDate]);
+
   const handleStatusChange = (employeId, day, status) => {
     router.post(route('employes.updateAttendance'), {
       employe_id: employeId,
@@ -92,6 +106,16 @@ export default function Form({ restaurant, presences, currentMonth }) {
     XLSX.writeFile(wb, filename);
   };
 
+  // Avoid immediate navigation on initial render
+  const handleMonthChange = (e) => {
+    setMonthDate(new Date(e.target.value));
+  };
+
+  // Handle restaurant change
+  const handleRestaurantChange = (e) => {
+    setSelectedRestau(e.target.value);
+  };
+
   return (
     <div className="p-4 sm:p-6">
       {/* Header Section */}
@@ -106,7 +130,7 @@ export default function Form({ restaurant, presences, currentMonth }) {
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <select
               value={selectedRestau}
-              onChange={(e) => setSelectedRestau(e.target.value)}
+              onChange={handleRestaurantChange}
               className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
             >
               <option value={restaurant?.slug || ''}>{restaurant?.name || 'Select Restaurant'}</option>
@@ -115,7 +139,7 @@ export default function Form({ restaurant, presences, currentMonth }) {
             <input
               type="month"
               value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
-              onChange={(e) => setMonthDate(new Date(e.target.value))}
+              onChange={handleMonthChange}
               className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
             />
 
