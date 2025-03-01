@@ -28,7 +28,8 @@ class AggregateLivraisons extends Command
         'BL Charcuterie et frommage',
         'BL Legume et jus',
         'BL Pate a pizza',
-        'BL Conserve et pates'
+        'BL Conserve et pates',
+        "BL Ramadan"
     ];
 
     private $summaryData = [];
@@ -56,7 +57,7 @@ class AggregateLivraisons extends Command
         foreach ($restaurants as $restaurant) {
             $aggregatedData[$restaurant] = array_fill_keys($this->validTypes, []);
         }
-        
+
         // Special handling for Labo (no restaurant)
         $aggregatedData['Labo'] = array_fill_keys($this->validTypes, []);
 
@@ -92,16 +93,16 @@ class AggregateLivraisons extends Command
         foreach ($order->detail as $item) {
             $productId = $item['product_id'];
             $qty = (int)$item['qty'];
-            
+
             $product = CuisinierProduct::find($productId);
-        
+
             if ($product && in_array($product->type, $this->validTypes)) {
                 $type = $product->type;
 
                 if ($isLaboOrder) {
                     $type = 'BL Labo';
                 }
-        
+
                 if (!isset($aggregatedData[$type][$productId])) {
                     $aggregatedData[$type][$productId] = [
                         'designation' => $product->designation,
@@ -110,7 +111,7 @@ class AggregateLivraisons extends Command
                         'unite' => $product->unite
                     ];
                 }
-        
+
                 $aggregatedData[$type][$productId]['qty'] += $qty;
             }
         }
@@ -132,7 +133,7 @@ class AggregateLivraisons extends Command
                         'unite' => $data['unite']
                     ];
                 }
-                
+
                 $formattedData[] = [
                     'restau' => $restaurant,
                     'products' => $productList

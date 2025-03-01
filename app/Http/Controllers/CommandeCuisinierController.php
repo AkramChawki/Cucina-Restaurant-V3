@@ -71,6 +71,7 @@ class CommandeCuisinierController extends Controller
             $ficheToRestaurantType = [
                 1 => ['Cucina Napoli', 'To Go'],
                 5 => ['Cucina Napoli', 'To Go'],
+                35 => ['Cucina Napoli', 'To Go'],
                 19 => ['Cucina Napoli', 'To Go'],
                 20 => ['Cucina Napoli', 'To Go']
             ];
