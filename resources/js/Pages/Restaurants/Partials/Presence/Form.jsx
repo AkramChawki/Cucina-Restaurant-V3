@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 export default function Form({ restaurant, presences, currentMonth }) {
+  // Access Inertia page properties
+  const { url } = usePage();
   const today = new Date();
   const defaultMonth = {
     month: today.getMonth() + 1,
@@ -23,17 +25,35 @@ export default function Form({ restaurant, presences, currentMonth }) {
     (_, i) => i + 1
   );
 
+  // Using ref to prevent the initial render from triggering navigation
+  const initialRender = React.useRef(true);
+  
   // Effect to navigate when restaurant or month changes
   useEffect(() => {
+    // Skip the initial render
+    if (initialRender.current) {
+      initialRender.current = false;
+      return;
+    }
+    
+    // Only navigate if we have a restaurant selected
     if (selectedRestau) {
-      router.get(route('employes.manageAttendance'), {
-        restau: selectedRestau,
-        month: monthDate.getMonth() + 1,
-        year: monthDate.getFullYear()
-      }, {
-        preserveState: false,
-        replace: true
-      });
+      const month = monthDate.getMonth() + 1;
+      const year = monthDate.getFullYear();
+      
+      // Check if the current data already matches what we're requesting
+      if (currentMonth?.month !== month || currentMonth?.year !== year) {
+        router.visit(route('employes.manageAttendance', {}, {
+          data: {
+            restau: selectedRestau,
+            month: month,
+            year: year
+          },
+          preserveState: true,
+          replace: true,
+          only: ['presences', 'currentMonth']
+        }));
+      }
     }
   }, [selectedRestau, monthDate]);
 
@@ -106,9 +126,16 @@ export default function Form({ restaurant, presences, currentMonth }) {
     XLSX.writeFile(wb, filename);
   };
 
-  // Avoid immediate navigation on initial render
+  // Handle month change with debounce to prevent UI glitches
   const handleMonthChange = (e) => {
-    setMonthDate(new Date(e.target.value));
+    try {
+      const newDate = new Date(e.target.value);
+      if (!isNaN(newDate.getTime())) {
+        setMonthDate(newDate);
+      }
+    } catch (error) {
+      console.error("Invalid date input:", error);
+    }
   };
 
   // Handle restaurant change
