@@ -43,16 +43,11 @@ export default function Form({ restaurant, presences, currentMonth }) {
       
       // Check if the current data already matches what we're requesting
       if (currentMonth?.month !== month || currentMonth?.year !== year) {
-        router.visit(route('employes.manageAttendance', {}, {
-          data: {
-            restau: selectedRestau,
-            month: month,
-            year: year
-          },
-          preserveState: true,
-          replace: true,
-          only: ['presences', 'currentMonth']
-        }));
+        // Explicitly construct URL with query parameters
+        const url = `${route('employes.manageAttendance')}?restau=${selectedRestau}&month=${month}&year=${year}`;
+        
+        // Use window.location for a full page navigation to preserve all parameters
+        window.location.href = url;
       }
     }
   }, [selectedRestau, monthDate]);
@@ -168,7 +163,12 @@ export default function Form({ restaurant, presences, currentMonth }) {
               onChange={handleRestaurantChange}
               className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
             >
-              <option value={restaurant?.slug || ''}>{restaurant?.name || 'Select Restaurant'}</option>
+              {/* Ensure we have a select option */}
+              <option value="">Select Restaurant</option>
+              {/* Add the current restaurant if available */}
+              {restaurant?.slug && (
+                <option value={restaurant.slug}>{restaurant.name}</option>
+              )}
             </select>
 
             <input
