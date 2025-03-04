@@ -90,23 +90,44 @@ export default function Form({ restaurant, presences, currentMonth }) {
     return labels[status] || '-';
   };
 
+  // Calculate the presence value based on the attendance status
+  const getPresenceValue = (status) => {
+    const values = {
+      'present': 1,
+      'continue': 1.5,
+      'conge-paye': 1,
+      'absent': 0,
+      'conge-non-paye': 0,
+      'repos': 0,
+      '': 0
+    };
+    return values[status] || 0;
+  };
+  
+  // Calculate the total presence for an employee
+  const calculateTotalPresence = (attendanceData) => {
+    return Object.values(attendanceData).reduce((sum, status) => sum + getPresenceValue(status), 0);
+  };
+
   const handleExport = () => {
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
       // Header row
-      ['Nom', ...daysInMonth],
+      ['Nom', ...daysInMonth, 'Total Présences'],
       // Data rows
       ...presences.map(({ employe, presence }) => [
         `${employe.first_name} ${employe.last_name}`,
-        ...daysInMonth.map(day => getStatusLabel(presence.attendance_data[day]))
+        ...daysInMonth.map(day => getStatusLabel(presence.attendance_data[day])),
+        calculateTotalPresence(presence.attendance_data).toFixed(1) // Add total presence
       ])
     ]);
 
     // Set column widths
     const wscols = [
       {wch: 30},  // Width for Nom column
-      ...daysInMonth.map(() => ({wch: 5}))  // Width for day columns
+      ...daysInMonth.map(() => ({wch: 5})),  // Width for day columns
+      {wch: 15}   // Width for Total Présences column
     ];
     ws['!cols'] = wscols;
 
@@ -218,6 +239,7 @@ export default function Form({ restaurant, presences, currentMonth }) {
                 {daysInMonth.map(day => (
                   <th key={day} scope="col" className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">{day}</th>
                 ))}
+                <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100">Total</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -242,6 +264,9 @@ export default function Form({ restaurant, presences, currentMonth }) {
                       </select>
                     </td>
                   ))}
+                  <td className="px-4 py-2 text-sm font-medium text-right bg-gray-50">
+                    {calculateTotalPresence(presence.attendance_data).toFixed(1)}
+                  </td>
                 </tr>
               ))}
             </tbody>
