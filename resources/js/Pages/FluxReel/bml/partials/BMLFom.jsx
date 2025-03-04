@@ -3,7 +3,6 @@ import { router } from "@inertiajs/react";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useToast, ToastContainer } from "@/Components/Toast";
 
-// Common designations by type to help with frequently used items
 const COMMON_DESIGNATIONS = {
     gastro: [
         "Mozzarella Milka",
@@ -38,7 +37,6 @@ const COMMON_DESIGNATIONS = {
     ],
 };
 
-// Common units to standardize input
 const COMMON_UNITS = [
     "Kg",
     "KG",
@@ -56,7 +54,7 @@ const formatDate = (dateString) => {
     try {
         const date =
             dateString instanceof Date ? dateString : new Date(dateString);
-        const timezoneOffset = date.getTimezoneOffset() * 60000; // Convert to milliseconds
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
         const localDate = new Date(date.getTime() - timezoneOffset);
         return localDate.toISOString().split("T")[0];
     } catch (e) {
@@ -83,8 +81,6 @@ const calculateDayTotals = (rows) => {
 
     return groupedByDate;
 };
-
-// Get the appropriate fournisseur based on type
 const getFournisseurByType = (type) => {
     switch (type) {
         case "gastro":
@@ -100,8 +96,6 @@ const getFournisseurByType = (type) => {
     }
 };
 
-const normalizeText = (text) => text.toLowerCase().trim();
-
 export default function BMLForm({
     restaurant,
     currentMonth,
@@ -115,12 +109,12 @@ export default function BMLForm({
     );
     const [selectedType, setSelectedType] = useState(currentType);
     const [isLoading, setIsLoading] = useState(false);
-    // Use ref to track if this is the initial render
     const initialRender = useRef(true);
     const prevExistingEntries = useRef(existingEntries);
+    const [activeDropdown, setActiveDropdown] = useState(null);
 
     const getDefaultRow = () => ({
-        id: Date.now() + Math.floor(Math.random() * 1000), // Ensure uniqueness
+        id: Date.now() + Math.floor(Math.random() * 1000),
         fournisseur: getFournisseurByType(selectedType),
         designation: "",
         quantity: "",
@@ -133,15 +127,12 @@ export default function BMLForm({
 
     const [rows, setRows] = useState([getDefaultRow()]);
 
-    // Only update rows when existingEntries change, not on every render
     useEffect(() => {
-        // Skip the first render to avoid the infinite loop
         if (initialRender.current) {
             initialRender.current = false;
             return;
         }
 
-        // Check if existingEntries has actually changed
         const entriesChanged =
             JSON.stringify(prevExistingEntries.current) !==
             JSON.stringify(existingEntries);
@@ -166,10 +157,8 @@ export default function BMLForm({
             }));
             setRows(formattedRows);
         } else {
-            // If no entries, initialize with default row
             setRows([getDefaultRow()]);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingEntries]);
 
     const calculateTotal = (quantity, price) => {
@@ -205,12 +194,10 @@ export default function BMLForm({
                 if (row.id === id) {
                     const updatedRow = { ...row, [field]: value };
 
-                    // Auto-update fournisseur when type changes
                     if (field === "type") {
                         updatedRow.fournisseur = getFournisseurByType(value);
                     }
 
-                    // Recalculate total when quantity or price changes
                     if (field === "quantity" || field === "price") {
                         updatedRow.total_ttc = calculateTotal(
                             field === "quantity" ? value : row.quantity,
@@ -232,10 +219,8 @@ export default function BMLForm({
             setSelectedType(newType);
             setIsLoading(true);
 
-            // For "all types" selection, we send an empty string
             const typeParam = newType === "" ? null : newType;
 
-            // Make sure we're using the proper URL
             const url = route("bml.show", [restaurant.slug]);
             console.log("Navigating to:", url, "with type:", typeParam);
 
@@ -309,17 +294,14 @@ export default function BMLForm({
             .sort((a, b) => a.date.localeCompare(b.date));
     };
 
-    // Replace the handleSubmit function with this enhanced version
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Skip submission if no rows or all rows are empty
         if (rows.length === 0 || rows.every((row) => !row.designation)) {
             addToast("Aucune donnée à enregistrer.", "warning");
             return;
         }
 
-        // Validate that all required fields are filled in non-empty rows
         const nonEmptyRows = rows.filter(
             (row) => row.designation || row.quantity || row.price
         );
@@ -338,7 +320,6 @@ export default function BMLForm({
             return;
         }
 
-        // Check if any dates are outside the selected month
         const rowsWithDifferentMonth = nonEmptyRows.filter((row) => {
             const rowDate = new Date(row.date);
             return (
@@ -348,7 +329,6 @@ export default function BMLForm({
         });
 
         if (rowsWithDifferentMonth.length > 0) {
-            // Show warning with details of out-of-range dates
             const formattedDates = rowsWithDifferentMonth
                 .map((row) => {
                     const date = new Date(row.date);
@@ -363,13 +343,12 @@ export default function BMLForm({
                     `Attention: Certaines dates sont en dehors du mois sélectionné (${formattedDates}). Ces entrées seront automatiquement placées dans le mois correspondant à leur date. Voulez-vous continuer?`
                 )
             ) {
-                return; // User canceled
+                return; 
             }
         }
 
         setIsLoading(true);
 
-        // Only process rows that have data
         const rowsToSubmit = nonEmptyRows.filter(
             (row) =>
                 row.date &&
@@ -380,7 +359,6 @@ export default function BMLForm({
                 row.unite
         );
 
-        // Group rows by actual month and year from their dates
         const rowsByMonthYear = {};
 
         rowsToSubmit.forEach((row) => {
@@ -403,7 +381,6 @@ export default function BMLForm({
             rowsByMonthYear[key].push(processedRow);
         });
 
-        // Prepare submissions for each month/year
         const submissions = Object.entries(rowsByMonthYear).map(
             ([key, monthRows]) => {
                 const [year, month] = key.split("-").map(Number);
@@ -424,7 +401,6 @@ export default function BMLForm({
             }
         );
 
-        // Track completion of all submissions
         let completedSubmissions = 0;
         let successfulSubmissions = 0;
 
@@ -445,7 +421,6 @@ export default function BMLForm({
                     );
                 }
 
-                // Refresh current view
                 const typeParam = selectedType === "" ? null : selectedType;
                 router.get(
                     route("bml.show", [restaurant.slug]),
@@ -462,7 +437,6 @@ export default function BMLForm({
             }
         };
 
-        // Submit each month's data separately
         if (submissions.length > 0) {
             submissions.forEach((submissionData) => {
                 const monthName = new Date(
@@ -503,48 +477,8 @@ export default function BMLForm({
         }
     };
 
-    // Get suggestions for designations based on selected type
-    const getDesignationSuggestions = (query, type) => {
-        if (!type) return [];
-
-        const suggestions = COMMON_DESIGNATIONS[type] || [];
-        if (!query) return suggestions;
-
-        const normalizedQuery = normalizeText(query);
-
-        // Sort suggestions by relevance - exact matches first, then starts with, then contains
-        return suggestions
-            .filter((item) => normalizeText(item).includes(normalizedQuery))
-            .sort((a, b) => {
-                const aLower = normalizeText(a);
-                const bLower = normalizeText(b);
-
-                // Exact match gets highest priority
-                if (aLower === normalizedQuery && bLower !== normalizedQuery)
-                    return -1;
-                if (bLower === normalizedQuery && aLower !== normalizedQuery)
-                    return 1;
-
-                // Starts with gets next priority
-                if (
-                    aLower.startsWith(normalizedQuery) &&
-                    !bLower.startsWith(normalizedQuery)
-                )
-                    return -1;
-                if (
-                    bLower.startsWith(normalizedQuery) &&
-                    !aLower.startsWith(normalizedQuery)
-                )
-                    return 1;
-
-                // Alphabetical sorting for equal relevance
-                return a.localeCompare(b);
-            });
-    };
-
     return (
         <div className="p-4 sm:p-6">
-            {/* Header Section */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div className="flex-1 flex items-center gap-4">
@@ -590,7 +524,6 @@ export default function BMLForm({
                 </div>
             </div>
 
-            {/* Table Section */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <form onSubmit={handleSubmit}>
                     {isLoading && (
@@ -709,86 +642,81 @@ export default function BMLForm({
                                                 }
                                                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 required
-                                                disabled={true} // Auto-set based on type
+                                                disabled={true}
                                             />
                                         </td>
-                                        <td className="px-4 py-2">
-                                            <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    list={`designations-${row.id}`}
-                                                    value={row.designation}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            row.id,
-                                                            "designation",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
-                                                    required
-                                                    disabled={isLoading}
-                                                    autoComplete="off"
-                                                />
-                                                <datalist
-                                                    id={`designations-${row.id}`}
-                                                >
-                                                    {getDesignationSuggestions(
-                                                        row.designation,
-                                                        selectedType
-                                                    ).map(
-                                                        (
-                                                            designation,
-                                                            index
-                                                        ) => (
-                                                            <option
-                                                                key={index}
-                                                                value={
-                                                                    designation
-                                                                }
-                                                            />
-                                                        )
-                                                    )}
-                                                </datalist>
-                                                {row.designation &&
-                                                    selectedType &&
-                                                    getDesignationSuggestions(
-                                                        "",
-                                                        selectedType
-                                                    ).length > 0 && (
-                                                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-sm mt-1 z-10 max-h-40 overflow-y-auto">
-                                                            {getDesignationSuggestions(
-                                                                row.designation,
-                                                                selectedType
+                                        <td className="px-4 py-2 relative">
+                                            <input
+                                                id={`designation-${row.id}`}
+                                                type="text"
+                                                value={row.designation}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        row.id,
+                                                        "designation",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
+                                                required
+                                                disabled={isLoading}
+                                                autoComplete="off"
+                                                onFocus={() =>
+                                                    setActiveDropdown(row.id)
+                                                }
+                                                onBlur={() => {
+                                                    setTimeout(
+                                                        () =>
+                                                            setActiveDropdown(
+                                                                null
+                                                            ),
+                                                        200
+                                                    );
+                                                }}
+                                            />
+
+                                            {!isLoading &&
+                                                activeDropdown === row.id && (
+                                                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-md shadow-md z-50 max-h-40 overflow-y-auto">
+                                                        {COMMON_DESIGNATIONS[
+                                                            selectedType
+                                                        ]?.map(
+                                                            (
+                                                                suggestion,
+                                                                index
+                                                            ) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                                                    onMouseDown={(
+                                                                        e
+                                                                    ) => {
+                                                                        e.preventDefault();
+                                                                        handleInputChange(
+                                                                            row.id,
+                                                                            "designation",
+                                                                            suggestion
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    {suggestion}
+                                                                </div>
                                                             )
-                                                                .slice(0, 5)
-                                                                .map(
-                                                                    (
-                                                                        suggestion,
-                                                                        index
-                                                                    ) => (
-                                                                        <div
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                                                                            onClick={() =>
-                                                                                handleInputChange(
-                                                                                    row.id,
-                                                                                    "designation",
-                                                                                    suggestion
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                suggestion
-                                                                            }
-                                                                        </div>
-                                                                    )
-                                                                )}
-                                                        </div>
-                                                    )}
-                                            </div>
+                                                        )}
+
+                                                        {(!COMMON_DESIGNATIONS[
+                                                            selectedType
+                                                        ] ||
+                                                            COMMON_DESIGNATIONS[
+                                                                selectedType
+                                                            ].length === 0) && (
+                                                            <div className="px-3 py-2 text-sm text-gray-500">
+                                                                Aucune
+                                                                suggestion
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                         </td>
                                         <td className="px-4 py-2">
                                             <input
