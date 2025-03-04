@@ -107,6 +107,12 @@ function Home({ rubriques }) {
                                 link="/cost-consomable"
                             />
                         )}
+                        {auth.user.role.includes("Cost Ramadan") && (
+                            <CardOverlay
+                                title="Cost Ramadan"
+                                link="/cost-ramadan"
+                            />
+                        )}
 
                         {auth.user.role.includes("BML") && (
                             <CardOverlay

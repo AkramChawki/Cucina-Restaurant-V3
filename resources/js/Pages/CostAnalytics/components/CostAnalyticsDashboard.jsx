@@ -54,22 +54,14 @@ const CostAnalyticsDashboard = ({
     const handleGenerateDaily = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(route('cost-analytics.generate-daily'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+            router.post(route('cost-analytics.generate-daily'), {}, {
+                onSuccess: () => {
+                    router.reload();    
+                },
+                onFinish: () => setIsLoading(false)
             });
-            const data = await response.json();
-            
-            if (data.success) {
-                // Refresh the page to show updated data
-                router.reload();
-            }
         } catch (error) {
             console.error('Error generating daily data:', error);
-        } finally {
             setIsLoading(false);
         }
     };

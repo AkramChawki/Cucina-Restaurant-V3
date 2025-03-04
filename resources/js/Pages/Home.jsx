@@ -87,6 +87,12 @@ function Home({ rubriques }) {
             <div id="access" className="bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        {auth.user.role.includes("Analytics") && (
+                            <CardOverlay
+                                title="Cost Analytics"
+                                link="/cost-analytics"
+                            />
+                        )}
                         {auth.user.role.includes("Restaurant") && (
                             <CardOverlay
                                 title="Gestion Restaurant"

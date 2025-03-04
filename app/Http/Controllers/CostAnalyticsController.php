@@ -108,7 +108,7 @@ class CostAnalyticsController extends Controller
     public function generateDaily()
     {
         $today = Carbon::today();
-        $day = $today->day;
+        $day = $today->day - 1;
         $month = $today->month;
         $year = $today->year;
         
@@ -129,7 +129,7 @@ class CostAnalyticsController extends Controller
             $restaurantId = $restaurant->id;
             
             // Check if there are any entries for this restaurant today
-            $hasEntries = DB::table('day_total')
+            $hasEntries = DB::table('day_totals')
                 ->where('restaurant_id', $restaurantId)
                 ->where('day', $day)
                 ->where('month', $month)
@@ -141,7 +141,7 @@ class CostAnalyticsController extends Controller
             }
             
             // Calculate FC (Food Cost)
-            $fcAmount = DB::table('day_total')
+            $fcAmount = DB::table('day_totals')
                 ->where('restaurant_id', $restaurantId)
                 ->where('day', $day)
                 ->where('month', $month)
@@ -150,7 +150,7 @@ class CostAnalyticsController extends Controller
                 ->sum('total');
                 
             // Calculate CC (Consumable Cost)
-            $ccAmount = DB::table('day_total')
+            $ccAmount = DB::table('day_totals')
                 ->where('restaurant_id', $restaurantId)
                 ->where('day', $day)
                 ->where('month', $month)
@@ -159,7 +159,7 @@ class CostAnalyticsController extends Controller
                 ->sum('total');
                 
             // Calculate FC cumulative total for the month
-            $fcCumul = DB::table('day_total')
+            $fcCumul = DB::table('day_totals')
                 ->where('restaurant_id', $restaurantId)
                 ->where('month', $month)
                 ->where('year', $year)
@@ -168,7 +168,7 @@ class CostAnalyticsController extends Controller
                 ->sum('total');
                 
             // Calculate CC cumulative total for the month
-            $ccCumul = DB::table('day_total')
+            $ccCumul = DB::table('day_totals')
                 ->where('restaurant_id', $restaurantId)
                 ->where('month', $month)
                 ->where('year', $year)
@@ -235,9 +235,6 @@ class CostAnalyticsController extends Controller
             $generatedCount++;
         }
         
-        return response()->json([
-            'success' => true,
-            'message' => "Generated FC and CC data for {$generatedCount} restaurants"
-        ]);
+        return redirect()->back();
     }
 }

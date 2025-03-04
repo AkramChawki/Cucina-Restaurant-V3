@@ -21,4 +21,5 @@ class DayTotal extends Model
     const TYPE_CUISINE = 'cuisine';
     const TYPE_ECONOMAT = 'economat';
     const TYPE_PIZZA = 'pizza';
+    const TYPE_RAMADAN = 'ramadan';
 }

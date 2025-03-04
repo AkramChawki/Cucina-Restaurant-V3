@@ -18,12 +18,13 @@ use App\Http\Controllers\CostConsomableController;
 use App\Http\Controllers\CostCuisineController;
 use App\Http\Controllers\CostEconomatController;
 use App\Http\Controllers\CostPizzaController;
+use App\Http\Controllers\CostRamadanController;
 use App\Http\Controllers\FicheControleController;
 use App\Http\Controllers\InfractionController;
 use App\Http\Controllers\ProduitNonConformeController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'time.auth','password.change'])->group(function () {
+Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraison.index');
 
@@ -74,7 +75,7 @@ Route::middleware(['auth', 'time.auth','password.change'])->group(function () {
     Route::get('/attendance', [EmployeController::class, 'attendance'])->name('employes.attendance');
     Route::get('/manage-attendance', [EmployeController::class, 'manageAttendance'])->name('employes.manageAttendance');
     Route::post('/employes/update-attendance', [EmployeController::class, 'updateAttendance'])
-    ->name('employes.updateAttendance');
+        ->name('employes.updateAttendance');
 
 
     Route::prefix('BL')->group(function () {
@@ -172,9 +173,19 @@ Route::middleware(['auth', 'time.auth','password.change'])->group(function () {
     Route::get('/infractions/report', [InfractionController::class, 'report'])
         ->name('infractions.report');
 
-        Route::get('/cost-analytics', [CostAnalyticsController::class, 'index'])->name('cost-analytics.index');
+    Route::get('/cost-analytics', [CostAnalyticsController::class, 'index'])->name('cost-analytics.index');
     Route::post('/cost-analytics/generate-daily', [CostAnalyticsController::class, 'generateDaily'])->name('cost-analytics.generate-daily');
 
+    Route::get('/cost-ramadan', [CostRamadanController::class, 'index'])
+        ->name('cost-ramadan.index');
+
+    // Show the form for a specific restaurant
+    Route::get('/cost-ramadan/{restaurant:slug}', [CostRamadanController::class, 'show'])
+        ->name('cost-ramadan.show');
+
+    // Update value endpoint
+    Route::post('/cost-ramadan/update-value', [CostRamadanController::class, 'updateValue'])
+        ->name('cost-ramadan.update-value');
 });
 
 require __DIR__ . '/auth.php';

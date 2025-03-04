@@ -25,6 +25,7 @@ trait CostControllerTrait
             'CostCuisine' => DayTotal::TYPE_CUISINE,
             'CostEconomat' => DayTotal::TYPE_ECONOMAT,
             'CostPizza' => DayTotal::TYPE_PIZZA,
+            'CostRamadan' => DayTotal::TYPE_RAMADAN,
             default => throw new \Exception('Invalid cost type')
         };
     }
