@@ -1,29 +1,67 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { router } from '@inertiajs/react';
-import { PlusCircle, Trash2 } from 'lucide-react';
-import { useToast, ToastContainer } from '@/Components/Toast';
+import React, { useState, useEffect, useRef } from "react";
+import { router } from "@inertiajs/react";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { useToast, ToastContainer } from "@/Components/Toast";
 
 // Common designations by type to help with frequently used items
 const COMMON_DESIGNATIONS = {
-    'gastro': ['Mozzarella Milka', 'Creme Fraîche', 'PERLA CERISE', 'Mozzarella cerise'],
-    'giada': ['Mozzarella', 'Stracciatella', 'Buratta', 'Ricotta'],
-    'legume': ['Roquette', 'EPINARD', 'Tomate cerise', 'Poivron Rouge', 'Poivron vert', 'CHAMPIGNON', 'CITRON', 'ORANGUE', 'CONCOMBRE', 'AIL', 'Basilic', 'Courgette', 'OIGNON'],
-    'boisson': ['Coca', 'Coca Zero', 'Hawaei', 'Sprite', 'POMS', 'Citron', 'Tonic']
+    gastro: [
+        "Mozzarella Milka",
+        "Creme Fraîche",
+        "PERLA CERISE",
+        "Mozzarella cerise",
+    ],
+    giada: ["Mozzarella", "Stracciatella", "Buratta", "Ricotta"],
+    legume: [
+        "Roquette",
+        "EPINARD",
+        "Tomate cerise",
+        "Poivron Rouge",
+        "Poivron vert",
+        "CHAMPIGNON",
+        "CITRON",
+        "ORANGUE",
+        "CONCOMBRE",
+        "AIL",
+        "Basilic",
+        "Courgette",
+        "OIGNON",
+    ],
+    boisson: [
+        "Coca",
+        "Coca Zero",
+        "Hawaei",
+        "Sprite",
+        "POMS",
+        "Citron",
+        "Tonic",
+    ],
 };
 
 // Common units to standardize input
-const COMMON_UNITS = ['Kg', 'KG', '250G', 'unite', 'L', 'Botte', 'BROT', 'paquet de 24 U', 'Pot de 1 kg'];
+const COMMON_UNITS = [
+    "Kg",
+    "KG",
+    "250G",
+    "unite",
+    "L",
+    "Botte",
+    "BROT",
+    "paquet de 24 U",
+    "Pot de 1 kg",
+];
 
 const formatDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     try {
-        const date = dateString instanceof Date ? dateString : new Date(dateString);
+        const date =
+            dateString instanceof Date ? dateString : new Date(dateString);
         const timezoneOffset = date.getTimezoneOffset() * 60000; // Convert to milliseconds
         const localDate = new Date(date.getTime() - timezoneOffset);
-        return localDate.toISOString().split('T')[0];
+        return localDate.toISOString().split("T")[0];
     } catch (e) {
-        console.error('Error formatting date:', e);
-        return '';
+        console.error("Error formatting date:", e);
+        return "";
     }
 };
 
@@ -31,11 +69,11 @@ const calculateDayTotals = (rows) => {
     const groupedByDate = rows.reduce((acc, row) => {
         const date = row.date;
         if (!date) return acc;
-        
+
         if (!acc[date]) {
             acc[date] = {
                 rows: [],
-                total: 0
+                total: 0,
             };
         }
         acc[date].rows.push(row);
@@ -49,20 +87,27 @@ const calculateDayTotals = (rows) => {
 // Get the appropriate fournisseur based on type
 const getFournisseurByType = (type) => {
     switch (type) {
-        case 'gastro': return 'GASTRO';
-        case 'giada': return 'GIADA';
-        case 'legume': return 'Legume';
-        case 'boisson': return 'COCA COLA';
-        default: return '';
+        case "gastro":
+            return "GASTRO";
+        case "giada":
+            return "GIADA";
+        case "legume":
+            return "Legume";
+        case "boisson":
+            return "COCA COLA";
+        default:
+            return "";
     }
 };
+
+const normalizeText = (text) => text.toLowerCase().trim();
 
 export default function BMLForm({
     restaurant,
     currentMonth,
     existingEntries = [],
     types = {},
-    currentType = ''
+    currentType = "",
 }) {
     const { toasts, addToast, removeToast } = useToast();
     const [monthDate, setMonthDate] = useState(
@@ -77,13 +122,13 @@ export default function BMLForm({
     const getDefaultRow = () => ({
         id: Date.now() + Math.floor(Math.random() * 1000), // Ensure uniqueness
         fournisseur: getFournisseurByType(selectedType),
-        designation: '',
-        quantity: '',
-        price: '',
-        unite: '',
+        designation: "",
+        quantity: "",
+        price: "",
+        unite: "",
         date: formatDate(new Date()),
         type: selectedType,
-        total_ttc: 0
+        total_ttc: 0,
     });
 
     const [rows, setRows] = useState([getDefaultRow()]);
@@ -97,31 +142,34 @@ export default function BMLForm({
         }
 
         // Check if existingEntries has actually changed
-        const entriesChanged = JSON.stringify(prevExistingEntries.current) !== JSON.stringify(existingEntries);
+        const entriesChanged =
+            JSON.stringify(prevExistingEntries.current) !==
+            JSON.stringify(existingEntries);
         prevExistingEntries.current = existingEntries;
-        
+
         if (!entriesChanged) {
             return;
         }
-        
+
         if (existingEntries && existingEntries.length > 0) {
             const formattedRows = existingEntries.map((entry, index) => ({
                 id: Date.now() + index,
-                fournisseur: entry.fournisseur || getFournisseurByType(entry.type),
-                designation: entry.designation || '',
-                quantity: entry.quantity || '',
-                price: entry.price || '',
-                unite: entry.unite || '',
+                fournisseur:
+                    entry.fournisseur || getFournisseurByType(entry.type),
+                designation: entry.designation || "",
+                quantity: entry.quantity || "",
+                price: entry.price || "",
+                unite: entry.unite || "",
                 date: formatDate(entry.date),
                 type: entry.type || selectedType,
-                total_ttc: parseFloat(entry.total_ttc) || 0
+                total_ttc: parseFloat(entry.total_ttc) || 0,
             }));
             setRows(formattedRows);
         } else {
             // If no entries, initialize with default row
             setRows([getDefaultRow()]);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [existingEntries]);
 
     const calculateTotal = (quantity, price) => {
@@ -130,36 +178,46 @@ export default function BMLForm({
         return (qty * prc).toFixed(2);
     };
 
+    const isDateOutOfSelectedMonth = (dateString) => {
+        if (!dateString) return false;
+
+        const date = new Date(dateString);
+        return (
+            date.getMonth() + 1 !== monthDate.getMonth() + 1 ||
+            date.getFullYear() !== monthDate.getFullYear()
+        );
+    };
+
     const addRow = () => {
-        setRows(currentRows => [...currentRows, getDefaultRow()]);
+        setRows((currentRows) => [...currentRows, getDefaultRow()]);
     };
 
     const removeRow = (id) => {
-        setRows(currentRows => {
+        setRows((currentRows) => {
             if (currentRows.length <= 1) return currentRows;
-            return currentRows.filter(row => row.id !== id);
+            return currentRows.filter((row) => row.id !== id);
         });
     };
 
     const handleInputChange = (id, field, value) => {
-        setRows(currentRows =>
-            currentRows.map(row => {
+        setRows((currentRows) =>
+            currentRows.map((row) => {
                 if (row.id === id) {
                     const updatedRow = { ...row, [field]: value };
-                    
+
                     // Auto-update fournisseur when type changes
-                    if (field === 'type') {
+                    if (field === "type") {
                         updatedRow.fournisseur = getFournisseurByType(value);
                     }
-                    
+
                     // Recalculate total when quantity or price changes
-                    if (field === 'quantity' || field === 'price') {
+                    if (field === "quantity" || field === "price") {
                         updatedRow.total_ttc = calculateTotal(
-                            field === 'quantity' ? value : row.quantity,
-                            field === 'price' ? value : row.price
+                            field === "quantity" ? value : row.quantity,
+                            field === "price" ? value : row.price
                         );
                     }
-                    
+
                     return updatedRow;
                 }
                 return row;
@@ -170,38 +228,48 @@ export default function BMLForm({
     const handleTypeChange = (e) => {
         try {
             const newType = e.target.value;
-            console.log('Type changed to:', newType);
+            console.log("Type changed to:", newType);
             setSelectedType(newType);
             setIsLoading(true);
-            
+
             // For "all types" selection, we send an empty string
             const typeParam = newType === "" ? null : newType;
-            
+
             // Make sure we're using the proper URL
-            const url = route('bml.show', [restaurant.slug]);
-            console.log('Navigating to:', url, 'with type:', typeParam);
-            
-            router.get(url, {
-                month: monthDate.getMonth() + 1,
-                year: monthDate.getFullYear(),
-                type: typeParam
-            }, {
-                preserveScroll: true,
-                preserveState: true,
-                onSuccess: (page) => {
-                    console.log('Navigation successful', page);
-                    setIsLoading(false);
+            const url = route("bml.show", [restaurant.slug]);
+            console.log("Navigating to:", url, "with type:", typeParam);
+
+            router.get(
+                url,
+                {
+                    month: monthDate.getMonth() + 1,
+                    year: monthDate.getFullYear(),
+                    type: typeParam,
                 },
-                onError: (errors) => {
-                    console.error('Navigation error:', errors);
-                    setIsLoading(false);
-                    addToast('Erreur lors du chargement des données.', 'error');
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: (page) => {
+                        console.log("Navigation successful", page);
+                        setIsLoading(false);
+                    },
+                    onError: (errors) => {
+                        console.error("Navigation error:", errors);
+                        setIsLoading(false);
+                        addToast(
+                            "Erreur lors du chargement des données.",
+                            "error"
+                        );
+                    },
                 }
-            });
+            );
         } catch (error) {
-            console.error('Error in handleTypeChange:', error);
+            console.error("Error in handleTypeChange:", error);
             setIsLoading(false);
-            addToast('Une erreur est survenue lors du changement de type.', 'error');
+            addToast(
+                "Une erreur est survenue lors du changement de type.",
+                "error"
+            );
         }
     };
 
@@ -210,21 +278,25 @@ export default function BMLForm({
         setMonthDate(newDate);
         setIsLoading(true);
 
-        router.get(route('bml.show', [restaurant.slug]), {
-            month: newDate.getMonth() + 1,
-            year: newDate.getFullYear(),
-            type: selectedType
-        }, {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                setIsLoading(false);
+        router.get(
+            route("bml.show", [restaurant.slug]),
+            {
+                month: newDate.getMonth() + 1,
+                year: newDate.getFullYear(),
+                type: selectedType,
             },
-            onError: () => {
-                setIsLoading(false);
-                addToast('Erreur lors du chargement des données.', 'error');
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    setIsLoading(false);
+                },
+                onError: () => {
+                    setIsLoading(false);
+                    addToast("Erreur lors du chargement des données.", "error");
+                },
             }
-        });
+        );
     };
 
     const calculateGrandTotal = () => {
@@ -232,92 +304,242 @@ export default function BMLForm({
         return Object.entries(groupedTotals)
             .map(([date, data]) => ({
                 date: date,
-                total: data.total.toFixed(2)
+                total: data.total.toFixed(2),
             }))
             .sort((a, b) => a.date.localeCompare(b.date));
     };
 
+    // Replace the handleSubmit function with this enhanced version
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // Skip submission if no rows or all rows are empty
-        if (rows.length === 0 || rows.every(row => !row.designation)) {
-            addToast('Aucune donnée à enregistrer.', 'warning');
+        if (rows.length === 0 || rows.every((row) => !row.designation)) {
+            addToast("Aucune donnée à enregistrer.", "warning");
             return;
         }
-        
+
         // Validate that all required fields are filled in non-empty rows
-        const nonEmptyRows = rows.filter(row => row.designation || row.quantity || row.price);
-        const hasEmptyFields = nonEmptyRows.some(row => 
-            !row.date || !row.fournisseur || !row.designation || 
-            !row.quantity || !row.price || !row.unite
+        const nonEmptyRows = rows.filter(
+            (row) => row.designation || row.quantity || row.price
         );
-        
+        const hasEmptyFields = nonEmptyRows.some(
+            (row) =>
+                !row.date ||
+                !row.fournisseur ||
+                !row.designation ||
+                !row.quantity ||
+                !row.price ||
+                !row.unite
+        );
+
         if (hasEmptyFields) {
-            addToast('Veuillez remplir tous les champs obligatoires.', 'error');
+            addToast("Veuillez remplir tous les champs obligatoires.", "error");
             return;
         }
-        
+
+        // Check if any dates are outside the selected month
+        const rowsWithDifferentMonth = nonEmptyRows.filter((row) => {
+            const rowDate = new Date(row.date);
+            return (
+                rowDate.getMonth() + 1 !== monthDate.getMonth() + 1 ||
+                rowDate.getFullYear() !== monthDate.getFullYear()
+            );
+        });
+
+        if (rowsWithDifferentMonth.length > 0) {
+            // Show warning with details of out-of-range dates
+            const formattedDates = rowsWithDifferentMonth
+                .map((row) => {
+                    const date = new Date(row.date);
+                    return `${row.designation}: ${date.toLocaleDateString(
+                        "fr-FR"
+                    )}`;
+                })
+                .join(", ");
+
+            if (
+                !confirm(
+                    `Attention: Certaines dates sont en dehors du mois sélectionné (${formattedDates}). Ces entrées seront automatiquement placées dans le mois correspondant à leur date. Voulez-vous continuer?`
+                )
+            ) {
+                return; // User canceled
+            }
+        }
+
         setIsLoading(true);
-        
+
         // Only process rows that have data
-        const rowsToSubmit = rows.filter(row => 
-            row.date && row.fournisseur && row.designation && 
-            row.quantity && row.price && row.unite
+        const rowsToSubmit = nonEmptyRows.filter(
+            (row) =>
+                row.date &&
+                row.fournisseur &&
+                row.designation &&
+                row.quantity &&
+                row.price &&
+                row.unite
         );
-        
-        // Ensure each row has the proper type
-        const processedRows = rowsToSubmit.map(row => ({
-            ...row,
-            date: formatDate(row.date),
-            type: selectedType || row.type || 'gastro', // Default to 'gastro' if no type
-            total_ttc: calculateTotal(row.quantity, row.price)
-        }));
-        
-        // Create a single submission for all data
-        const submissionData = {
-            restaurant_id: restaurant.id,
-            rows: processedRows,
-            month: monthDate.getMonth() + 1,
-            year: monthDate.getFullYear(),
-            type: selectedType || 'gastro', // Make sure we provide a default
-            day_total: processedRows.reduce((sum, row) => sum + parseFloat(row.total_ttc), 0).toFixed(2)
-        };
-        
-        // Only submit if we have rows to submit
-        if (processedRows.length > 0) {
-            router.post(route('bml.update-value'), submissionData, {
-                onSuccess: () => {
-                    addToast('Les données ont été enregistrées avec succès.', 'success');
-                    setIsLoading(false);
-                    
-                    // Refresh data with proper type parameter
-                    const typeParam = selectedType === "" ? null : selectedType;
-                    router.get(route('bml.show', [restaurant.slug]), {
+
+        // Group rows by actual month and year from their dates
+        const rowsByMonthYear = {};
+
+        rowsToSubmit.forEach((row) => {
+            const rowDate = new Date(row.date);
+            const month = rowDate.getMonth() + 1;
+            const year = rowDate.getFullYear();
+            const key = `${year}-${month}`;
+
+            if (!rowsByMonthYear[key]) {
+                rowsByMonthYear[key] = [];
+            }
+
+            const processedRow = {
+                ...row,
+                date: formatDate(rowDate),
+                type: selectedType || row.type || "gastro",
+                total_ttc: calculateTotal(row.quantity, row.price),
+            };
+
+            rowsByMonthYear[key].push(processedRow);
+        });
+
+        // Prepare submissions for each month/year
+        const submissions = Object.entries(rowsByMonthYear).map(
+            ([key, monthRows]) => {
+                const [year, month] = key.split("-").map(Number);
+
+                return {
+                    restaurant_id: restaurant.id,
+                    rows: monthRows,
+                    month: month,
+                    year: year,
+                    type: selectedType || "gastro",
+                    day_total: monthRows
+                        .reduce(
+                            (sum, row) => sum + parseFloat(row.total_ttc),
+                            0
+                        )
+                        .toFixed(2),
+                };
+            }
+        );
+
+        // Track completion of all submissions
+        let completedSubmissions = 0;
+        let successfulSubmissions = 0;
+
+        const checkCompletion = () => {
+            completedSubmissions++;
+            if (completedSubmissions === submissions.length) {
+                setIsLoading(false);
+
+                if (successfulSubmissions === submissions.length) {
+                    addToast(
+                        "Toutes les données ont été enregistrées avec succès.",
+                        "success"
+                    );
+                } else {
+                    addToast(
+                        `${successfulSubmissions} sur ${submissions.length} mois ont été enregistrés avec succès.`,
+                        "warning"
+                    );
+                }
+
+                // Refresh current view
+                const typeParam = selectedType === "" ? null : selectedType;
+                router.get(
+                    route("bml.show", [restaurant.slug]),
+                    {
                         month: monthDate.getMonth() + 1,
                         year: monthDate.getFullYear(),
-                        type: typeParam
-                    }, {
+                        type: typeParam,
+                    },
+                    {
                         preserveScroll: true,
-                        preserveState: true
-                    });
-                },
-                onError: (errors) => {
-                    setIsLoading(false);
-                    addToast('Une erreur est survenue lors de l\'enregistrement.', 'error');
-                    console.error('Submission errors:', errors);
-                }
+                        preserveState: true,
+                    }
+                );
+            }
+        };
+
+        // Submit each month's data separately
+        if (submissions.length > 0) {
+            submissions.forEach((submissionData) => {
+                const monthName = new Date(
+                    submissionData.year,
+                    submissionData.month - 1
+                ).toLocaleDateString("fr-FR", {
+                    month: "long",
+                    year: "numeric",
+                });
+
+                router.post(route("bml.update-value"), submissionData, {
+                    onSuccess: () => {
+                        successfulSubmissions++;
+                        if (
+                            submissionData.month !== monthDate.getMonth() + 1 ||
+                            submissionData.year !== monthDate.getFullYear()
+                        ) {
+                            addToast(
+                                `Données pour ${monthName} enregistrées avec succès.`,
+                                "info"
+                            );
+                        }
+                        checkCompletion();
+                    },
+                    onError: (errors) => {
+                        addToast(
+                            `Erreur lors de l'enregistrement pour ${monthName}.`,
+                            "error"
+                        );
+                        console.error("Submission errors:", errors);
+                        checkCompletion();
+                    },
+                });
             });
         } else {
             setIsLoading(false);
-            addToast('Aucune donnée valide à enregistrer.', 'warning');
+            addToast("Aucune donnée valide à enregistrer.", "warning");
         }
     };
-    
+
     // Get suggestions for designations based on selected type
-    const getDesignationSuggestions = () => {
-        if (!selectedType) return [];
-        return COMMON_DESIGNATIONS[selectedType] || [];
+    const getDesignationSuggestions = (query, type) => {
+        if (!type) return [];
+
+        const suggestions = COMMON_DESIGNATIONS[type] || [];
+        if (!query) return suggestions;
+
+        const normalizedQuery = normalizeText(query);
+
+        // Sort suggestions by relevance - exact matches first, then starts with, then contains
+        return suggestions
+            .filter((item) => normalizeText(item).includes(normalizedQuery))
+            .sort((a, b) => {
+                const aLower = normalizeText(a);
+                const bLower = normalizeText(b);
+
+                // Exact match gets highest priority
+                if (aLower === normalizedQuery && bLower !== normalizedQuery)
+                    return -1;
+                if (bLower === normalizedQuery && aLower !== normalizedQuery)
+                    return 1;
+
+                // Starts with gets next priority
+                if (
+                    aLower.startsWith(normalizedQuery) &&
+                    !bLower.startsWith(normalizedQuery)
+                )
+                    return -1;
+                if (
+                    bLower.startsWith(normalizedQuery) &&
+                    !aLower.startsWith(normalizedQuery)
+                )
+                    return 1;
+
+                // Alphabetical sorting for equal relevance
+                return a.localeCompare(b);
+            });
     };
 
     return (
@@ -327,9 +549,15 @@ export default function BMLForm({
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div className="flex-1 flex items-center gap-4">
                         <div>
-                            <h2 className="text-lg font-semibold text-gray-900">BML</h2>
+                            <h2 className="text-lg font-semibold text-gray-900">
+                                BML
+                            </h2>
                             <p className="mt-1 text-sm text-gray-600">
-                                {restaurant.name} - {monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                                {restaurant.name} -{" "}
+                                {monthDate.toLocaleDateString("fr-FR", {
+                                    month: "long",
+                                    year: "numeric",
+                                })}
                             </p>
                         </div>
                         <div className="relative">
@@ -351,7 +579,9 @@ export default function BMLForm({
                     <div className="flex-shrink-0">
                         <input
                             type="month"
-                            value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
+                            value={`${monthDate.getFullYear()}-${String(
+                                monthDate.getMonth() + 1
+                            ).padStart(2, "0")}`}
                             onChange={handleMonthChange}
                             className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
                             disabled={isLoading}
@@ -366,10 +596,12 @@ export default function BMLForm({
                     {isLoading && (
                         <div className="p-4 text-center">
                             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                            <p className="mt-2 text-gray-600">Chargement en cours...</p>
+                            <p className="mt-2 text-gray-600">
+                                Chargement en cours...
+                            </p>
                         </div>
                     )}
-                    
+
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
@@ -402,22 +634,79 @@ export default function BMLForm({
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {rows.map((row) => (
-                                    <tr key={row.id} className='hover:bg-gray-50 transition-colors duration-150'>
-                                        <td className="px-4 py-2">
-                                            <input
-                                                type="date"
-                                                value={row.date || ''}
-                                                onChange={(e) => handleInputChange(row.id, 'date', e.target.value)}
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
-                                                required
-                                                disabled={isLoading}
-                                            />
+                                    <tr
+                                        key={row.id}
+                                        className="hover:bg-gray-50 transition-colors duration-150"
+                                    >
+                                        <td
+                                            className={`px-4 py-2 ${
+                                                isDateOutOfSelectedMonth(
+                                                    row.date
+                                                )
+                                                    ? "bg-yellow-50"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <div className="relative">
+                                                <input
+                                                    type="date"
+                                                    value={row.date || ""}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            row.id,
+                                                            "date",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
+                                                        isDateOutOfSelectedMonth(
+                                                            row.date
+                                                        )
+                                                            ? "border-yellow-400 bg-yellow-50"
+                                                            : ""
+                                                    }`}
+                                                    required
+                                                    disabled={isLoading}
+                                                    max={formatDate(new Date())}
+                                                />
+                                                {isDateOutOfSelectedMonth(
+                                                    row.date
+                                                ) && (
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                                        <svg
+                                                            className="h-5 w-5 text-yellow-500"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {isDateOutOfSelectedMonth(
+                                                row.date
+                                            ) && (
+                                                <div className="text-xs text-yellow-600 mt-1">
+                                                    Date hors du mois
+                                                    sélectionné
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-4 py-2">
                                             <input
                                                 type="text"
                                                 value={row.fournisseur}
-                                                onChange={(e) => handleInputChange(row.id, 'fournisseur', e.target.value)}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        row.id,
+                                                        "fournisseur",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 required
                                                 disabled={true} // Auto-set based on type
@@ -429,23 +718,89 @@ export default function BMLForm({
                                                     type="text"
                                                     list={`designations-${row.id}`}
                                                     value={row.designation}
-                                                    onChange={(e) => handleInputChange(row.id, 'designation', e.target.value)}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            row.id,
+                                                            "designation",
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                     required
                                                     disabled={isLoading}
+                                                    autoComplete="off"
                                                 />
-                                                <datalist id={`designations-${row.id}`}>
-                                                    {getDesignationSuggestions().map((designation, index) => (
-                                                        <option key={index} value={designation} />
-                                                    ))}
+                                                <datalist
+                                                    id={`designations-${row.id}`}
+                                                >
+                                                    {getDesignationSuggestions(
+                                                        row.designation,
+                                                        selectedType
+                                                    ).map(
+                                                        (
+                                                            designation,
+                                                            index
+                                                        ) => (
+                                                            <option
+                                                                key={index}
+                                                                value={
+                                                                    designation
+                                                                }
+                                                            />
+                                                        )
+                                                    )}
                                                 </datalist>
+                                                {row.designation &&
+                                                    selectedType &&
+                                                    getDesignationSuggestions(
+                                                        "",
+                                                        selectedType
+                                                    ).length > 0 && (
+                                                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-sm mt-1 z-10 max-h-40 overflow-y-auto">
+                                                            {getDesignationSuggestions(
+                                                                row.designation,
+                                                                selectedType
+                                                            )
+                                                                .slice(0, 5)
+                                                                .map(
+                                                                    (
+                                                                        suggestion,
+                                                                        index
+                                                                    ) => (
+                                                                        <div
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                                                            onClick={() =>
+                                                                                handleInputChange(
+                                                                                    row.id,
+                                                                                    "designation",
+                                                                                    suggestion
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                suggestion
+                                                                            }
+                                                                        </div>
+                                                                    )
+                                                                )}
+                                                        </div>
+                                                    )}
                                             </div>
                                         </td>
                                         <td className="px-4 py-2">
                                             <input
                                                 type="number"
                                                 value={row.quantity}
-                                                onChange={(e) => handleInputChange(row.id, 'quantity', e.target.value)}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        row.id,
+                                                        "quantity",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 min="0"
                                                 step="0.01"
@@ -459,15 +814,26 @@ export default function BMLForm({
                                                     type="text"
                                                     list="unite-options"
                                                     value={row.unite}
-                                                    onChange={(e) => handleInputChange(row.id, 'unite', e.target.value)}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            row.id,
+                                                            "unite",
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                     required
                                                     disabled={isLoading}
                                                 />
                                                 <datalist id="unite-options">
-                                                    {COMMON_UNITS.map((unit, index) => (
-                                                        <option key={index} value={unit} />
-                                                    ))}
+                                                    {COMMON_UNITS.map(
+                                                        (unit, index) => (
+                                                            <option
+                                                                key={index}
+                                                                value={unit}
+                                                            />
+                                                        )
+                                                    )}
                                                 </datalist>
                                             </div>
                                         </td>
@@ -475,7 +841,13 @@ export default function BMLForm({
                                             <input
                                                 type="number"
                                                 value={row.price}
-                                                onChange={(e) => handleInputChange(row.id, 'price', e.target.value)}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        row.id,
+                                                        "price",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
                                                 min="0"
                                                 step="0.01"
@@ -485,15 +857,23 @@ export default function BMLForm({
                                         </td>
                                         <td className="px-4 py-2">
                                             <div className="text-sm text-gray-900 font-medium">
-                                                {parseFloat(row.total_ttc).toFixed(2)} MAD
+                                                {parseFloat(
+                                                    row.total_ttc
+                                                ).toFixed(2)}{" "}
+                                                MAD
                                             </div>
                                         </td>
                                         <td className="px-4 py-2">
                                             <button
                                                 type="button"
-                                                onClick={() => removeRow(row.id)}
+                                                onClick={() =>
+                                                    removeRow(row.id)
+                                                }
                                                 className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                                                disabled={isLoading || rows.length <= 1}
+                                                disabled={
+                                                    isLoading ||
+                                                    rows.length <= 1
+                                                }
                                             >
                                                 <Trash2 className="h-5 w-5" />
                                             </button>
@@ -502,38 +882,63 @@ export default function BMLForm({
                                 ))}
                                 <tr className="bg-gray-50">
                                     <td colSpan="8" className="px-4 py-3">
-                                        <div className="font-semibold text-gray-900 mb-2">Totaux par jour</div>
+                                        <div className="font-semibold text-gray-900 mb-2">
+                                            Totaux par jour
+                                        </div>
                                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                            {calculateGrandTotal().map((dayTotal) => (
-                                                <div
-                                                    key={dayTotal.date}
-                                                    className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm"
-                                                >
-                                                    <span className="text-sm text-gray-600">
-                                                        {new Date(dayTotal.date).toLocaleDateString('fr-FR', {
-                                                            day: '2-digit',
-                                                            month: '2-digit',
-                                                            year: 'numeric'
-                                                        })}
-                                                    </span>
-                                                    <span className="font-medium text-gray-900">
-                                                        {parseFloat(dayTotal.total).toLocaleString('fr-FR', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                        })} MAD
-                                                    </span>
-                                                </div>
-                                            ))}
+                                            {calculateGrandTotal().map(
+                                                (dayTotal) => (
+                                                    <div
+                                                        key={dayTotal.date}
+                                                        className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm"
+                                                    >
+                                                        <span className="text-sm text-gray-600">
+                                                            {new Date(
+                                                                dayTotal.date
+                                                            ).toLocaleDateString(
+                                                                "fr-FR",
+                                                                {
+                                                                    day: "2-digit",
+                                                                    month: "2-digit",
+                                                                    year: "numeric",
+                                                                }
+                                                            )}
+                                                        </span>
+                                                        <span className="font-medium text-gray-900">
+                                                            {parseFloat(
+                                                                dayTotal.total
+                                                            ).toLocaleString(
+                                                                "fr-FR",
+                                                                {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                }
+                                                            )}{" "}
+                                                            MAD
+                                                        </span>
+                                                    </div>
+                                                )
+                                            )}
                                         </div>
                                         <div className="mt-3 flex justify-end items-center border-t pt-2">
-                                            <span className="text-sm font-medium text-gray-600 mr-2">Total du mois:</span>
+                                            <span className="text-sm font-medium text-gray-600 mr-2">
+                                                Total du mois:
+                                            </span>
                                             <span className="text-lg font-bold text-gray-900">
                                                 {calculateGrandTotal()
-                                                    .reduce((acc, curr) => acc + parseFloat(curr.total), 0)
-                                                    .toLocaleString('fr-FR', {
+                                                    .reduce(
+                                                        (acc, curr) =>
+                                                            acc +
+                                                            parseFloat(
+                                                                curr.total
+                                                            ),
+                                                        0
+                                                    )
+                                                    .toLocaleString("fr-FR", {
                                                         minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2
-                                                    })} MAD
+                                                        maximumFractionDigits: 2,
+                                                    })}{" "}
+                                                MAD
                                             </span>
                                         </div>
                                     </td>
@@ -558,7 +963,7 @@ export default function BMLForm({
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                             disabled={isLoading}
                         >
-                            {isLoading ? 'Enregistrement...' : 'Enregistrer'}
+                            {isLoading ? "Enregistrement..." : "Enregistrer"}
                         </button>
                     </div>
                 </form>

@@ -69,7 +69,7 @@ class BMLController extends Controller
         $query->orderBy('date', 'asc');
 
         $entries = $query->get();
-        
+
         Log::info('BML Entries Found', [
             'count' => $entries->count(),
             'first_entry' => $entries->first() ? $entries->first()->toArray() : null,
@@ -136,11 +136,13 @@ class BMLController extends Controller
 
         // Start a database transaction to ensure data integrity
         DB::beginTransaction();
-        
+
         try {
             // Group rows by date and type
-            $rowsByDateAndType = collect($request->rows)->groupBy(function($row) {
-                $date = Carbon::parse($row['date'])->format('Y-m-d');
+            $rowsByDateAndType = collect($request->rows)->groupBy(function ($row) {
+                // Extract month and year from the actual date
+                $dateCarbon = Carbon::parse($row['date']);
+                $date = $dateCarbon->format('Y-m-d');
                 $type = $row['type'];
                 return "{$date}|{$type}";
             });
@@ -150,19 +152,22 @@ class BMLController extends Controller
                 list($date, $type) = explode('|', $dateTypeKey);
                 $dateCarbon = Carbon::parse($date);
                 $day = $dateCarbon->day;
-                
+                // Use the actual month and year from the date, not the request parameters
+                $month = $dateCarbon->month;
+                $year = $dateCarbon->year;
+
                 // Calculate day total for this date and type
                 $dayTotal = 0;
                 foreach ($rows as $row) {
                     $dayTotal += (float)$row['total_ttc'];
                 }
-                
+
                 // First, delete existing entries for this date/type
                 $deletedCount = BML::where('restaurant_id', $request->restaurant_id)
                     ->whereDate('date', $date)
                     ->where('type', $type)
                     ->delete();
-                    
+
                 // Log deletion
                 Log::info('Deleted existing BML entries', [
                     'restaurant_id' => $request->restaurant_id,
@@ -170,7 +175,7 @@ class BMLController extends Controller
                     'type' => $type,
                     'deleted_count' => $deletedCount
                 ]);
-                
+
                 // Create new entries
                 $createdRows = [];
                 foreach ($rows as $row) {
@@ -184,46 +189,47 @@ class BMLController extends Controller
                         'date' => $row['date'],
                         'type' => $row['type'],
                         'total_ttc' => $row['total_ttc'],
-                        'month' => $request->month,
-                        'year' => $request->year,
+                        'month' => $month,  // Use actual month from date
+                        'year' => $year,    // Use actual year from date
                     ]);
                     $createdRows[] = $newEntry->id;
                 }
-                
+
                 Log::info('Created new BML entries', [
                     'count' => count($createdRows),
-                    'ids' => $createdRows
+                    'ids' => $createdRows,
+                    'actual_month' => $month,
+                    'actual_year' => $year
                 ]);
-                
+
                 // Update the daily total for this specific day and type
                 $this->updateDayTotal(
                     $request->restaurant_id,
                     $day,
-                    $request->month,
-                    $request->year,
+                    $month,  // Use actual month
+                    $year,   // Use actual year
                     $type,
                     $dayTotal
                 );
             }
-            
+
             // Commit transaction if everything succeeded
             DB::commit();
-            
+
             return redirect()->back()->with('success', 'BML enregistré avec succès');
-            
         } catch (\Exception $e) {
             // If anything fails, rollback the transaction
             DB::rollBack();
-            
+
             Log::error('Error storing BML data', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement');
         }
     }
-    
+
     /**
      * Update or create a day total record
      */
@@ -231,7 +237,7 @@ class BMLController extends Controller
     {
         // Format the type for day_totals table
         $dayTotalType = 'bml_' . $type;
-        
+
         // Get current day total if it exists
         $dayTotalRecord = DayTotal::updateOrCreate(
             [
@@ -243,7 +249,7 @@ class BMLController extends Controller
             ],
             ['total' => $total]
         );
-        
+
         // Log day total update
         Log::info('Updated day total', [
             'id' => $dayTotalRecord->id,
@@ -254,7 +260,7 @@ class BMLController extends Controller
             'type' => $dayTotalType,
             'total' => $total
         ]);
-        
+
         return $dayTotalRecord;
     }
 }
