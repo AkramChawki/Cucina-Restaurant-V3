@@ -72,7 +72,7 @@ export default function Restau({ restaurants, auth }) {
                     >
                         <option value="">Selectionner le restaurant ...</option>
                         {userRestaurants.map((rest) => (
-                            <option key={rest.id} value={rest.name}>
+                            <option key={rest.id} value={rest.slug}>
                                 {rest.name}
                             </option>
                         ))}
