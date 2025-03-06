@@ -16,7 +16,7 @@ class CostRamadanController extends Controller
 
     protected function getProducts()
     {
-        $includedProductIds = [313, 314, 461, 466, 320, 462, 463, 464, 465, 467, 352, 468];
+        $includedProductIds = [313, 314, 461, 466, 320, 462, 463, 464, 465, 467, 352, 468,470,472];
 
         // Get specific products from Fiche 6
         $fiche6Products = Fiche::find(6)->cuisinier_products()
