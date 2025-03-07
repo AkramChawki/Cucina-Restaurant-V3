@@ -115,7 +115,7 @@ class CostAnalyticsController extends Controller
         // Define the food cost types
         $fcTypes = [
             'cuisine', 'pizza', 'economat', 'bml_giada', 
-            'bml_gastro', 'bml_legume', 'bml_boisson'
+            'bml_gastro', 'bml_legume', 'bml_boisson', 'ramadan'
         ];
         
         // Define the consumable cost type
