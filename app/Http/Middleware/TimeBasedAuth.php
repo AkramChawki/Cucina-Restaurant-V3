@@ -22,7 +22,7 @@ class TimeBasedAuth
                 $tz = 'Africa/Casablanca';
                 $now = Carbon::now($tz);
 
-                $morningStart = $now->copy()->setTime(11, 0, 0);
+                $morningStart = $now->copy()->setTime(10, 0, 0);
                 $morningEnd = $now->copy()->setTime(16, 30, 0);
                 $nightStart = $now->copy()->setTime(22, 0, 0);
                 $nightEnd = $now->copy()->setTime(3, 0, 0);
