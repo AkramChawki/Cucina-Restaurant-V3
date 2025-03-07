@@ -14,7 +14,7 @@ class TimeBasedAuth
         if (Auth::check()) {
             $user = Auth::user();
 
-            $restrictedRoles = ['Cuisine', 'Pizzeria','Boissons'];
+            $restrictedRoles = ['Cuisine', 'Pizzeria'];
 
             $userRoles = json_decode($user->role, true);
 
