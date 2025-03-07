@@ -119,7 +119,7 @@ class CostAnalyticsController extends Controller
         ];
         
         // Define the consumable cost type
-        $ccTypes = ['consomable'];
+        $ccTypes = ['consommable'];
         
         // Get all restaurants
         $restaurants = Restaurant::all();

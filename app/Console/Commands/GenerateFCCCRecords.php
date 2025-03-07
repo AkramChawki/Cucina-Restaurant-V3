@@ -28,7 +28,7 @@ class GenerateFCCCRecords extends Command
         ];
         
         // Define the consumable cost type
-        $ccTypes = ['consomable'];
+        $ccTypes = ['consommable'];
 
         // Get all restaurants
         $restaurants = DB::table('day_totals')
