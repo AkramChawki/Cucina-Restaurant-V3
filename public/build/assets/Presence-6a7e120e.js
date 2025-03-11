@@ -1,1 +1,0 @@
-import{q as o,j as r,F as s}from"./app-693a7c8d.js";import a from"./Restau-c9a445b6.js";function p({restaurants:t}){const{auth:e}=o().props;return r(s,{children:r(a,{restaurants:t,auth:e})})}export{p as default};
