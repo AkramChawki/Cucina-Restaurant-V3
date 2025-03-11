@@ -119,19 +119,19 @@ export default function SharedCostForm({
                 Swipe horizontally to see more days →
             </div>
 
-            {/* Main Content Area - Modified for mobile */}
-            <div className="relative flex-1 overflow-hidden">
-                {/* Table container with adjusted overflow settings */}
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-hidden">
                 <div className="h-full overflow-y-auto">
                     <div className="overflow-x-auto pb-4 min-w-full">
                         <table className="w-full border-collapse min-w-max">
                             <thead className="bg-gray-50 sticky top-0 z-20">
                                 <tr>
-                                    <th className="sticky left-0 z-30 bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[240px]">
+                                    {/* Product header - Reduced width for mobile */}
+                                    <th className="sticky left-0 z-30 bg-gray-50 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider max-w-[130px] sm:max-w-none px-2 sm:px-6">
                                         Produit
                                     </th>
                                     {daysInMonth.map(day => (
-                                        <th key={day} className="px-3 py-3 text-center border-x">
+                                        <th key={day} className="px-3 py-3 text-center border-x min-w-[90px]">
                                             <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
                                             <div className="text-sm font-semibold text-green-600">
                                                 {calculateDayTotal(day).toFixed(2)}DH
@@ -147,15 +147,16 @@ export default function SharedCostForm({
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {products.map((product) => (
                                     <tr key={product.id} className="hover:bg-gray-50">
-                                        <td className="sticky left-0 bg-white border-r px-6 py-4 whitespace-nowrap z-20 hover:bg-gray-50">
-                                            <div className="flex items-center gap-3">
+                                        {/* Product column - Reduced width and content for mobile */}
+                                        <td className="sticky left-0 bg-white border-r whitespace-nowrap z-20 hover:bg-gray-50 max-w-[130px] sm:max-w-none px-2 sm:px-6 py-2 sm:py-4">
+                                            <div className="flex items-center gap-2 sm:gap-3">
                                                 <img
                                                     src={`https://admin.cucinanapoli.com/storage/${product.image}`}
                                                     alt={product.designation}
-                                                    className="h-12 w-12 object-cover rounded-md"
+                                                    className="h-8 w-8 sm:h-12 sm:w-12 object-cover rounded-md flex-shrink-0"
                                                 />
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-gray-900">
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-medium text-gray-900 truncate">
                                                         {product.designation}
                                                     </span>
                                                     <span className="text-xs text-gray-500">
@@ -165,7 +166,7 @@ export default function SharedCostForm({
                                             </div>
                                         </td>
                                         {daysInMonth.map(day => (
-                                            <td key={day} className="px-1 py-2 border-x">
+                                            <td key={day} className="px-1 py-2 border-x min-w-[90px]">
                                                 <div className="flex flex-col gap-1">
                                                     <div className="grid grid-cols-2 gap-1">
                                                         <input
