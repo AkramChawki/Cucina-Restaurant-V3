@@ -148,8 +148,8 @@ export default function SharedCostForm({
                                 {products.map((product) => (
                                     <tr key={product.id} className="hover:bg-gray-50">
                                         {/* Product column - Reduced width and content for mobile */}
-                                        <td className="sticky left-0 bg-white border-r whitespace-nowrap z-20 hover:bg-gray-50 max-w-[130px] sm:max-w-none px-2 sm:px-6 py-2 sm:py-4">
-                                            <div className="flex items-center gap-2 sm:gap-3">
+                                        <td className="sticky left-0 bg-white border-r whitespace-nowrap z-20 hover:bg-gray-50 max-w-[120px] sm:max-w-none px-2 sm:px-6 py-2 sm:py-4">
+                                            <div className="flex items-center gap-1 sm:gap-3">
                                                 <img
                                                     src={`https://admin.cucinanapoli.com/storage/${product.image}`}
                                                     alt={product.designation}
@@ -159,7 +159,7 @@ export default function SharedCostForm({
                                                     <span className="text-sm font-medium text-gray-900 truncate">
                                                         {product.designation}
                                                     </span>
-                                                    <span className="text-xs text-gray-500">
+                                                    <span className="text-xs text-gray-500 truncate">
                                                         {product.prix}DH/{product.unite}
                                                     </span>
                                                 </div>
