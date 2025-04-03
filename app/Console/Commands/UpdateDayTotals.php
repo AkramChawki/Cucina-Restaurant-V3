@@ -62,8 +62,12 @@ class UpdateDayTotals extends Command
                     continue;
                 }
 
-                $dailyData = json_decode($record->daily_data, true);
-                if (!$dailyData) {
+                // Handle daily_data which is already an array due to Laravel's casting
+                $dailyData = is_array($record->daily_data) 
+                    ? $record->daily_data 
+                    : json_decode($record->daily_data, true);
+                
+                if (empty($dailyData)) {
                     $bar->advance();
                     continue;
                 }
@@ -81,8 +85,8 @@ class UpdateDayTotals extends Command
                     $this->updateDayTotal($record->restaurant_id, $day, $record->month, $record->year, $type);
                 }
 
-                // Save the updated daily_data
-                $record->daily_data = json_encode($dailyData);
+                // Save the updated daily_data (handle both array and string cases)
+                $record->daily_data = $dailyData;
                 $record->save();
                 
                 $bar->advance();
@@ -111,7 +115,11 @@ class UpdateDayTotals extends Command
         $total = 0;
 
         foreach ($records as $record) {
-            $dailyData = json_decode($record->daily_data, true);
+            // Handle daily_data which may already be an array
+            $dailyData = is_array($record->daily_data)
+                ? $record->daily_data
+                : json_decode($record->daily_data, true);
+                
             if (isset($dailyData[$day])) {
                 $product = CuisinierProduct::find($record->product_id);
                 $morning = $dailyData[$day]['morning'] ?? 0;
