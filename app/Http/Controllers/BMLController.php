@@ -108,6 +108,7 @@ class BMLController extends Controller
         ]);
     }
 
+
     public function store(Request $request)
     {
         $request->validate([
@@ -146,6 +147,9 @@ class BMLController extends Controller
                 $type = $row['type'];
                 return "{$date}|{$type}";
             });
+
+            // Track updated day totals
+            $updatedDayTotals = [];
 
             // Process each date and type combination separately
             foreach ($rowsByDateAndType as $dateTypeKey => $rows) {
@@ -203,7 +207,7 @@ class BMLController extends Controller
                 ]);
 
                 // Update the daily total for this specific day and type
-                $this->updateDayTotal(
+                $dayTotalRecord = $this->updateDayTotal(
                     $request->restaurant_id,
                     $day,
                     $month,  // Use actual month
@@ -211,12 +215,27 @@ class BMLController extends Controller
                     $type,
                     $dayTotal
                 );
+
+                // Add to updated day totals
+                $updatedDayTotals[] = [
+                    'day' => $day,
+                    'month' => $month,
+                    'year' => $year,
+                    'type' => $type,
+                    'total' => $dayTotal,
+                    'date' => $date
+                ];
             }
 
             // Commit transaction if everything succeeded
             DB::commit();
 
-            return redirect()->back()->with('success', 'BML enregistré avec succès');
+            // Return success with updated day totals
+            return response()->json([
+                'success' => true,
+                'message' => 'BML enregistré avec succès',
+                'day_totals' => $updatedDayTotals
+            ]);
         } catch (\Exception $e) {
             // If anything fails, rollback the transaction
             DB::rollBack();
@@ -226,7 +245,10 @@ class BMLController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement');
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de l\'enregistrement: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -262,5 +284,79 @@ class BMLController extends Controller
         ]);
 
         return $dayTotalRecord;
+    }
+    public function delete(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:b_m_l_s,id',
+            'restaurant_id' => 'required|exists:restaurants,id'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Get the BML entry
+            $entry = BML::findOrFail($request->id);
+
+            // Extract date info
+            $date = Carbon::parse($entry->date);
+            $day = $date->day;
+            $month = $date->month;
+            $year = $date->year;
+            $type = $entry->type;
+
+            // Get the total before deleting
+            $oldTotal = (float)$entry->total_ttc;
+
+            // Delete the entry
+            $entry->delete();
+
+            // Get any other entries for the same day/type to recalculate total
+            $remainingEntries = BML::where('restaurant_id', $request->restaurant_id)
+                ->whereDate('date', $date->format('Y-m-d'))
+                ->where('type', $type)
+                ->get();
+
+            // Calculate new day total
+            $newDayTotal = $remainingEntries->sum('total_ttc');
+
+            // Update day total
+            $dayTotal = $this->updateDayTotal(
+                $request->restaurant_id,
+                $day,
+                $month,
+                $year,
+                $type,
+                $newDayTotal
+            );
+
+            DB::commit();
+
+            // Return the updated day total information
+            return response()->json([
+                'success' => true,
+                'message' => 'Entry deleted successfully',
+                'day_total' => [
+                    'day' => $day,
+                    'month' => $month,
+                    'year' => $year,
+                    'type' => $type,
+                    'total' => $newDayTotal,
+                    'date' => $date->format('Y-m-d')
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error deleting BML entry', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete entry: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

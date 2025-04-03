@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { router } from "@inertiajs/react";
-import { PlusCircle, Trash2 } from "lucide-react";
+import {
+    PlusCircle,
+    Trash2,
+    Save,
+    Calendar,
+    ChevronsUpDown,
+} from "lucide-react";
 import { useToast, ToastContainer } from "@/Components/Toast";
 
 const COMMON_DESIGNATIONS = {
@@ -63,24 +69,6 @@ const formatDate = (dateString) => {
     }
 };
 
-const calculateDayTotals = (rows) => {
-    const groupedByDate = rows.reduce((acc, row) => {
-        const date = row.date;
-        if (!date) return acc;
-
-        if (!acc[date]) {
-            acc[date] = {
-                rows: [],
-                total: 0,
-            };
-        }
-        acc[date].rows.push(row);
-        acc[date].total += parseFloat(row.total_ttc) || 0;
-        return acc;
-    }, {});
-
-    return groupedByDate;
-};
 const getFournisseurByType = (type) => {
     switch (type) {
         case "gastro":
@@ -96,6 +84,132 @@ const getFournisseurByType = (type) => {
     }
 };
 
+// Custom Month Picker Component
+const MonthYearPicker = ({ value, onChange, disabled }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef(null);
+    const selectedDate = new Date(value);
+
+    // Handle clicking outside the picker
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                wrapperRef.current &&
+                !wrapperRef.current.contains(event.target)
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [wrapperRef]);
+
+    // Generate years (current year, previous 5 years)
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
+
+    // Month names
+    const months = [
+        "Janvier",
+        "Février",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Décembre",
+    ];
+
+    const handleMonthSelect = (monthIndex) => {
+        const newDate = new Date(selectedDate.getFullYear(), monthIndex);
+        onChange(newDate);
+        setIsOpen(false);
+    };
+
+    const handleYearSelect = (year) => {
+        const newDate = new Date(year, selectedDate.getMonth());
+        onChange(newDate);
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative" ref={wrapperRef}>
+            <button
+                type="button"
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                className={`flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm ${
+                    disabled
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-50"
+                }`}
+                disabled={disabled}
+            >
+                <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                <span>
+                    {months[selectedDate.getMonth()]}{" "}
+                    {selectedDate.getFullYear()}
+                </span>
+                <ChevronsUpDown className="w-4 h-4 ml-2 text-gray-500" />
+            </button>
+
+            {isOpen && (
+                <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 w-64">
+                    <div className="mb-2">
+                        <div className="font-medium text-gray-700 mb-1">
+                            Mois
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                            {months.map((month, index) => (
+                                <button
+                                    key={month}
+                                    type="button"
+                                    className={`text-sm p-1 rounded ${
+                                        selectedDate.getMonth() === index
+                                            ? "bg-green-500 text-white"
+                                            : "hover:bg-gray-100"
+                                    }`}
+                                    onClick={() => handleMonthSelect(index)}
+                                >
+                                    {month.substring(0, 3)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="font-medium text-gray-700 mb-1">
+                            Année
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                            {years.map((year) => (
+                                <button
+                                    key={year}
+                                    type="button"
+                                    className={`text-sm p-1 rounded ${
+                                        selectedDate.getFullYear() === year
+                                            ? "bg-green-500 text-white"
+                                            : "hover:bg-gray-100"
+                                    }`}
+                                    onClick={() => handleYearSelect(year)}
+                                >
+                                    {year}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function BMLForm({
     restaurant,
     currentMonth,
@@ -109,9 +223,14 @@ export default function BMLForm({
     );
     const [selectedType, setSelectedType] = useState(currentType);
     const [isLoading, setIsLoading] = useState(false);
+    const [rowSavingStates, setRowSavingStates] = useState({});
     const initialRender = useRef(true);
     const prevExistingEntries = useRef(existingEntries);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [sortConfig, setSortConfig] = useState({
+        key: "date",
+        direction: "ascending",
+    });
 
     const getDefaultRow = () => ({
         id: Date.now() + Math.floor(Math.random() * 1000),
@@ -123,9 +242,52 @@ export default function BMLForm({
         date: formatDate(new Date()),
         type: selectedType,
         total_ttc: 0,
+        isNew: true,
+        isSaving: false,
+        hasChanges: false,
     });
 
     const [rows, setRows] = useState([getDefaultRow()]);
+
+    // Used to track if any row has unsaved changes
+    const hasUnsavedChanges = rows.some((row) => row.hasChanges);
+
+    // Update day totals on the UI after operations
+    const updateDayTotalsUI = (date, type, newTotal) => {
+        if (!date) return;
+
+        // If newTotal is 0, remove all rows for this date/type
+        if (newTotal === 0) {
+            setRows((currentRows) =>
+                currentRows.filter(
+                    (row) => !(row.date === date && row.type === type)
+                )
+            );
+            return;
+        }
+
+        // Otherwise, just ensure day totals are recalculated
+        setRows((currentRows) => [...currentRows]); // Trigger re-render
+    };
+
+    const calculateDayTotals = (rowsToCalculate) => {
+        const groupedByDate = rowsToCalculate.reduce((acc, row) => {
+            const date = row.date;
+            if (!date) return acc;
+
+            if (!acc[date]) {
+                acc[date] = {
+                    rows: [],
+                    total: 0,
+                };
+            }
+            acc[date].rows.push(row);
+            acc[date].total += parseFloat(row.total_ttc) || 0;
+            return acc;
+        }, {});
+
+        return groupedByDate;
+    };
 
     useEffect(() => {
         if (initialRender.current) {
@@ -154,12 +316,58 @@ export default function BMLForm({
                 date: formatDate(entry.date),
                 type: entry.type || selectedType,
                 total_ttc: parseFloat(entry.total_ttc) || 0,
+                isNew: false,
+                isSaving: false,
+                hasChanges: false,
+                originalId: entry.id,
             }));
             setRows(formattedRows);
         } else {
             setRows([getDefaultRow()]);
         }
     }, [existingEntries]);
+
+    // Apply sorting to rows
+    const sortedRows = [...rows].sort((a, b) => {
+        if (!a[sortConfig.key] || !b[sortConfig.key]) return 0;
+
+        if (sortConfig.key === "date") {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return sortConfig.direction === "ascending"
+                ? dateA - dateB
+                : dateB - dateA;
+        }
+
+        const valueA = a[sortConfig.key].toString().toLowerCase();
+        const valueB = b[sortConfig.key].toString().toLowerCase();
+
+        if (valueA < valueB) {
+            return sortConfig.direction === "ascending" ? -1 : 1;
+        }
+        if (valueA > valueB) {
+            return sortConfig.direction === "ascending" ? 1 : -1;
+        }
+        return 0;
+    });
+
+    const requestSort = (key) => {
+        let direction = "ascending";
+        if (sortConfig.key === key && sortConfig.direction === "ascending") {
+            direction = "descending";
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIndicator = (columnName) => {
+        if (sortConfig.key !== columnName) return null;
+
+        return (
+            <span className="ml-1">
+                {sortConfig.direction === "ascending" ? "▲" : "▼"}
+            </span>
+        );
+    };
 
     const calculateTotal = (quantity, price) => {
         const qty = parseFloat(quantity) || 0;
@@ -181,18 +389,99 @@ export default function BMLForm({
         setRows((currentRows) => [...currentRows, getDefaultRow()]);
     };
 
-    const removeRow = (id) => {
-        setRows((currentRows) => {
-            if (currentRows.length <= 1) return currentRows;
-            return currentRows.filter((row) => row.id !== id);
-        });
+    const removeRow = async (id) => {
+        // Check if this is an existing row (not newly created)
+        const rowToRemove = rows.find((row) => row.id === id);
+
+        if (!rowToRemove) return;
+
+        // If it's the only row, don't allow deletion
+        if (rows.length <= 1) {
+            addToast("Impossible de supprimer la seule ligne", "warning");
+            return;
+        }
+
+        // If it's not a new row and has an originalId, send delete request to server
+        if (!rowToRemove.isNew && rowToRemove.originalId) {
+            if (!confirm("Êtes-vous sûr de vouloir supprimer cette ligne?")) {
+                return;
+            }
+
+            setRowSavingStates((prev) => ({ ...prev, [id]: true }));
+
+            try {
+                // Send delete request to the server
+                await router.post(
+                    route("bml.delete"),
+                    {
+                        id: rowToRemove.originalId,
+                        restaurant_id: restaurant.id,
+                    },
+                    {
+                        onSuccess: (response) => {
+                            addToast("Ligne supprimée avec succès", "success");
+
+                            // Remove row from state
+                            setRows((currentRows) =>
+                                currentRows.filter((row) => row.id !== id)
+                            );
+
+                            // Remove from saving states
+                            setRowSavingStates((prev) => {
+                                const newState = { ...prev };
+                                delete newState[id];
+                                return newState;
+                            });
+
+                            // Update day totals in UI
+                            if (response.day_total) {
+                                updateDayTotalsUI(
+                                    response.day_total.date,
+                                    response.day_total.type,
+                                    response.day_total.total
+                                );
+                            }
+                        },
+                        onError: (errors) => {
+                            console.error("Delete error:", errors);
+                            addToast("Erreur lors de la suppression", "error");
+                            setRowSavingStates((prev) => ({
+                                ...prev,
+                                [id]: false,
+                            }));
+                        },
+                    }
+                );
+            } catch (error) {
+                addToast("Erreur lors de la suppression", "error");
+                console.error("Error deleting row:", error);
+                setRowSavingStates((prev) => ({ ...prev, [id]: false }));
+            }
+        } else {
+            // For new rows just remove from the UI without server request
+            // Remove row from state
+            setRows((currentRows) =>
+                currentRows.filter((row) => row.id !== id)
+            );
+
+            // Remove from saving states
+            setRowSavingStates((prev) => {
+                const newState = { ...prev };
+                delete newState[id];
+                return newState;
+            });
+        }
     };
 
     const handleInputChange = (id, field, value) => {
         setRows((currentRows) =>
             currentRows.map((row) => {
                 if (row.id === id) {
-                    const updatedRow = { ...row, [field]: value };
+                    const updatedRow = {
+                        ...row,
+                        [field]: value,
+                        hasChanges: true,
+                    };
 
                     if (field === "type") {
                         updatedRow.fournisseur = getFournisseurByType(value);
@@ -216,6 +505,18 @@ export default function BMLForm({
         try {
             const newType = e.target.value;
             console.log("Type changed to:", newType);
+
+            // Check for unsaved changes
+            if (hasUnsavedChanges) {
+                if (
+                    !confirm(
+                        "Vous avez des modifications non enregistrées. Voulez-vous continuer sans enregistrer?"
+                    )
+                ) {
+                    return;
+                }
+            }
+
             setSelectedType(newType);
             setIsLoading(true);
 
@@ -258,8 +559,18 @@ export default function BMLForm({
         }
     };
 
-    const handleMonthChange = (e) => {
-        const newDate = new Date(e.target.value);
+    const handleMonthChange = (newDate) => {
+        // Check for unsaved changes
+        if (hasUnsavedChanges) {
+            if (
+                !confirm(
+                    "Vous avez des modifications non enregistrées. Voulez-vous continuer sans enregistrer?"
+                )
+            ) {
+                return;
+            }
+        }
+
         setMonthDate(newDate);
         setIsLoading(true);
 
@@ -294,83 +605,50 @@ export default function BMLForm({
             .sort((a, b) => a.date.localeCompare(b.date));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    // Save a single row
+    // Save a single row
+    const saveRow = async (rowId) => {
+        const row = rows.find((r) => r.id === rowId);
+        if (!row) return;
 
-        if (rows.length === 0 || rows.every((row) => !row.designation)) {
-            addToast("Aucune donnée à enregistrer.", "warning");
-            return;
-        }
-
-        const nonEmptyRows = rows.filter(
-            (row) => row.designation || row.quantity || row.price
-        );
-        const hasEmptyFields = nonEmptyRows.some(
-            (row) =>
-                !row.date ||
-                !row.fournisseur ||
-                !row.designation ||
-                !row.quantity ||
-                !row.price ||
-                !row.unite
-        );
-
-        if (hasEmptyFields) {
+        // Validate row
+        if (
+            !row.date ||
+            !row.fournisseur ||
+            !row.designation ||
+            !row.quantity ||
+            !row.price ||
+            !row.unite
+        ) {
             addToast("Veuillez remplir tous les champs obligatoires.", "error");
             return;
         }
 
-        const rowsWithDifferentMonth = nonEmptyRows.filter((row) => {
+        // Check if date is outside selected month and warn
+        if (isDateOutOfSelectedMonth(row.date)) {
             const rowDate = new Date(row.date);
-            return (
-                rowDate.getMonth() + 1 !== monthDate.getMonth() + 1 ||
-                rowDate.getFullYear() !== monthDate.getFullYear()
-            );
-        });
-
-        if (rowsWithDifferentMonth.length > 0) {
-            const formattedDates = rowsWithDifferentMonth
-                .map((row) => {
-                    const date = new Date(row.date);
-                    return `${row.designation}: ${date.toLocaleDateString(
-                        "fr-FR"
-                    )}`;
-                })
-                .join(", ");
+            const formattedDate = rowDate.toLocaleDateString("fr-FR");
 
             if (
                 !confirm(
-                    `Attention: Certaines dates sont en dehors du mois sélectionné (${formattedDates}). Ces entrées seront automatiquement placées dans le mois correspondant à leur date. Voulez-vous continuer?`
+                    `Attention: La date sélectionnée (${formattedDate}) est en dehors du mois actuel. Cette entrée sera automatiquement placée dans le mois correspondant à sa date. Voulez-vous continuer?`
                 )
             ) {
-                return; 
+                return;
             }
         }
 
-        setIsLoading(true);
-
-        const rowsToSubmit = nonEmptyRows.filter(
-            (row) =>
-                row.date &&
-                row.fournisseur &&
-                row.designation &&
-                row.quantity &&
-                row.price &&
-                row.unite
+        // Set row as saving
+        setRows((currentRows) =>
+            currentRows.map((r) =>
+                r.id === rowId ? { ...r, isSaving: true } : r
+            )
         );
+        setRowSavingStates((prev) => ({ ...prev, [rowId]: true }));
 
-        const rowsByMonthYear = {};
-
-        rowsToSubmit.forEach((row) => {
+        try {
+            // Prepare row data
             const rowDate = new Date(row.date);
-            const month = rowDate.getMonth() + 1;
-            const year = rowDate.getFullYear();
-            const key = `${year}-${month}`;
-
-            if (!rowsByMonthYear[key]) {
-                rowsByMonthYear[key] = [];
-            }
-
             const processedRow = {
                 ...row,
                 date: formatDate(rowDate),
@@ -378,102 +656,161 @@ export default function BMLForm({
                 total_ttc: calculateTotal(row.quantity, row.price),
             };
 
-            rowsByMonthYear[key].push(processedRow);
-        });
+            // Prepare submission data
+            const submissionData = {
+                restaurant_id: restaurant.id,
+                rows: [processedRow],
+                month: rowDate.getMonth() + 1,
+                year: rowDate.getFullYear(),
+                type: selectedType || "gastro",
+                day_total: parseFloat(processedRow.total_ttc).toFixed(2),
+            };
 
-        const submissions = Object.entries(rowsByMonthYear).map(
-            ([key, monthRows]) => {
-                const [year, month] = key.split("-").map(Number);
+            // Send to server
+            await router.post(route("bml.update-value"), submissionData, {
+                preserveState: true,
+                onSuccess: (response) => {
+                    addToast("Ligne enregistrée avec succès", "success");
 
-                return {
-                    restaurant_id: restaurant.id,
-                    rows: monthRows,
-                    month: month,
-                    year: year,
-                    type: selectedType || "gastro",
-                    day_total: monthRows
-                        .reduce(
-                            (sum, row) => sum + parseFloat(row.total_ttc),
-                            0
+                    // Update row state to indicate it's saved
+                    setRows((currentRows) =>
+                        currentRows.map((r) =>
+                            r.id === rowId
+                                ? {
+                                      ...r,
+                                      isSaving: false,
+                                      hasChanges: false,
+                                      isNew: false,
+                                      // If this is a new row and the backend returned an ID, store it
+                                      originalId:
+                                          r.isNew && response.created_id
+                                              ? response.created_id
+                                              : r.originalId,
+                                  }
+                                : r
                         )
-                        .toFixed(2),
-                };
-            }
-        );
-
-        let completedSubmissions = 0;
-        let successfulSubmissions = 0;
-
-        const checkCompletion = () => {
-            completedSubmissions++;
-            if (completedSubmissions === submissions.length) {
-                setIsLoading(false);
-
-                if (successfulSubmissions === submissions.length) {
-                    addToast(
-                        "Toutes les données ont été enregistrées avec succès.",
-                        "success"
                     );
-                } else {
-                    addToast(
-                        `${successfulSubmissions} sur ${submissions.length} mois ont été enregistrés avec succès.`,
-                        "warning"
+                    setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
+
+                    // Update day totals in UI if available in response
+                    if (response.day_totals && response.day_totals.length > 0) {
+                        response.day_totals.forEach((dayTotal) => {
+                            updateDayTotalsUI(
+                                dayTotal.date,
+                                dayTotal.type,
+                                dayTotal.total
+                            );
+                        });
+                    }
+
+                    // If the date is in a different month than currently selected,
+                    // refresh to get updated data
+                    if (isDateOutOfSelectedMonth(row.date)) {
+                        router.get(
+                            route("bml.show", [restaurant.slug]),
+                            {
+                                month: monthDate.getMonth() + 1,
+                                year: monthDate.getFullYear(),
+                                type: selectedType === "" ? null : selectedType,
+                            },
+                            {
+                                preserveScroll: true,
+                                preserveState: true,
+                            }
+                        );
+                    }
+                },
+                onError: (errors) => {
+                    console.error("Save error:", errors);
+                    addToast("Erreur lors de l'enregistrement", "error");
+
+                    setRows((currentRows) =>
+                        currentRows.map((r) =>
+                            r.id === rowId ? { ...r, isSaving: false } : r
+                        )
                     );
+                    setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
+                },
+            });
+        } catch (error) {
+            console.error("Error saving row:", error);
+            addToast("Erreur lors de l'enregistrement", "error");
+
+            setRows((currentRows) =>
+                currentRows.map((r) =>
+                    r.id === rowId ? { ...r, isSaving: false } : r
+                )
+            );
+            setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        // Check if there are any rows with changes
+        const rowsWithChanges = rows.filter((row) => row.hasChanges);
+        if (rowsWithChanges.length === 0) {
+            addToast("Aucune modification à enregistrer.", "info");
+            return;
+        }
+
+        // Ask for confirmation
+        if (
+            !confirm(
+                `Voulez-vous enregistrer ${rowsWithChanges.length} ligne(s) modifiée(s)?`
+            )
+        ) {
+            return;
+        }
+
+        // Save each modified row
+        for (const row of rowsWithChanges) {
+            saveRow(row.id);
+        }
+    };
+
+    const handleKeyPress = (e, rowId, fieldName, currentIndex) => {
+        // If Enter is pressed, save the row
+        if (e.key === "Enter") {
+            e.preventDefault();
+            saveRow(rowId);
+            return;
+        }
+
+        // Handle tab to move to next field or next row
+        if (e.key === "Tab" && !e.shiftKey) {
+            const fieldOrder = [
+                "date",
+                "fournisseur",
+                "designation",
+                "quantity",
+                "unite",
+                "price",
+            ];
+            const currentFieldIndex = fieldOrder.indexOf(fieldName);
+            const isLastField = currentFieldIndex === fieldOrder.length - 1;
+
+            if (isLastField) {
+                e.preventDefault();
+
+                // If it's the last field in the last row, add a new row
+                if (currentIndex === rows.length - 1) {
+                    addRow();
                 }
 
-                const typeParam = selectedType === "" ? null : selectedType;
-                router.get(
-                    route("bml.show", [restaurant.slug]),
-                    {
-                        month: monthDate.getMonth() + 1,
-                        year: monthDate.getFullYear(),
-                        type: typeParam,
-                    },
-                    {
-                        preserveScroll: true,
-                        preserveState: true,
-                    }
-                );
-            }
-        };
-
-        if (submissions.length > 0) {
-            submissions.forEach((submissionData) => {
-                const monthName = new Date(
-                    submissionData.year,
-                    submissionData.month - 1
-                ).toLocaleDateString("fr-FR", {
-                    month: "long",
-                    year: "numeric",
-                });
-
-                router.post(route("bml.update-value"), submissionData, {
-                    onSuccess: () => {
-                        successfulSubmissions++;
-                        if (
-                            submissionData.month !== monthDate.getMonth() + 1 ||
-                            submissionData.year !== monthDate.getFullYear()
-                        ) {
-                            addToast(
-                                `Données pour ${monthName} enregistrées avec succès.`,
-                                "info"
-                            );
-                        }
-                        checkCompletion();
-                    },
-                    onError: (errors) => {
-                        addToast(
-                            `Erreur lors de l'enregistrement pour ${monthName}.`,
-                            "error"
+                // Focus on the first field of the next row
+                setTimeout(() => {
+                    const nextRowIndex = currentIndex + 1;
+                    if (nextRowIndex < rows.length) {
+                        const nextRowId = rows[nextRowIndex].id;
+                        const dateInput = document.querySelector(
+                            `input[name="date-${nextRowId}"]`
                         );
-                        console.error("Submission errors:", errors);
-                        checkCompletion();
-                    },
-                });
-            });
-        } else {
-            setIsLoading(false);
-            addToast("Aucune donnée valide à enregistrer.", "warning");
+                        if (dateInput) dateInput.focus();
+                    }
+                }, 0);
+            }
         }
     };
 
@@ -511,13 +848,9 @@ export default function BMLForm({
                         </div>
                     </div>
                     <div className="flex-shrink-0">
-                        <input
-                            type="month"
-                            value={`${monthDate.getFullYear()}-${String(
-                                monthDate.getMonth() + 1
-                            ).padStart(2, "0")}`}
+                        <MonthYearPicker
+                            value={monthDate}
                             onChange={handleMonthChange}
-                            className="block w-full sm:w-auto border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
                             disabled={isLoading}
                         />
                     </div>
@@ -527,11 +860,13 @@ export default function BMLForm({
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <form onSubmit={handleSubmit}>
                     {isLoading && (
-                        <div className="p-4 text-center">
-                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                            <p className="mt-2 text-gray-600">
-                                Chargement en cours...
-                            </p>
+                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+                            <div className="text-center">
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                                <p className="mt-2 text-gray-600">
+                                    Chargement en cours...
+                                </p>
+                            </div>
                         </div>
                     )}
 
@@ -539,14 +874,27 @@ export default function BMLForm({
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
-                                        Date
+                                    <th
+                                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0 cursor-pointer"
+                                        onClick={() => requestSort("date")}
+                                    >
+                                        <div className="flex items-center">
+                                            Date {getSortIndicator("date")}
+                                        </div>
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Fournisseur
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
-                                        Designation
+                                    <th
+                                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0 cursor-pointer"
+                                        onClick={() =>
+                                            requestSort("designation")
+                                        }
+                                    >
+                                        <div className="flex items-center">
+                                            Designation{" "}
+                                            {getSortIndicator("designation")}
+                                        </div>
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
                                         Quantité
@@ -561,15 +909,17 @@ export default function BMLForm({
                                         Total TTC
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0">
-                                        Action
+                                        Actions
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {rows.map((row) => (
+                                {sortedRows.map((row, index) => (
                                     <tr
                                         key={row.id}
-                                        className="hover:bg-gray-50 transition-colors duration-150"
+                                        className={`hover:bg-gray-50 transition-colors duration-150 ${
+                                            row.hasChanges ? "bg-blue-50" : ""
+                                        }`}
                                     >
                                         <td
                                             className={`px-4 py-2 ${
@@ -582,6 +932,7 @@ export default function BMLForm({
                                         >
                                             <div className="relative">
                                                 <input
+                                                    name={`date-${row.id}`}
                                                     type="date"
                                                     value={row.date || ""}
                                                     onChange={(e) =>
@@ -591,15 +942,30 @@ export default function BMLForm({
                                                             e.target.value
                                                         )
                                                     }
+                                                    onKeyDown={(e) =>
+                                                        handleKeyPress(
+                                                            e,
+                                                            row.id,
+                                                            "date",
+                                                            index
+                                                        )
+                                                    }
                                                     className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
                                                         isDateOutOfSelectedMonth(
                                                             row.date
                                                         )
                                                             ? "border-yellow-400 bg-yellow-50"
                                                             : ""
+                                                    } ${
+                                                        row.hasChanges
+                                                            ? "border-blue-300"
+                                                            : ""
                                                     }`}
                                                     required
-                                                    disabled={isLoading}
+                                                    disabled={
+                                                        isLoading ||
+                                                        rowSavingStates[row.id]
+                                                    }
                                                     max={formatDate(new Date())}
                                                 />
                                                 {isDateOutOfSelectedMonth(
@@ -640,7 +1006,19 @@ export default function BMLForm({
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
+                                                onKeyDown={(e) =>
+                                                    handleKeyPress(
+                                                        e,
+                                                        row.id,
+                                                        "fournisseur",
+                                                        index
+                                                    )
+                                                }
+                                                className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
+                                                    row.hasChanges
+                                                        ? "border-blue-300"
+                                                        : ""
+                                                }`}
                                                 required
                                                 disabled={true}
                                             />
@@ -657,9 +1035,24 @@ export default function BMLForm({
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
+                                                onKeyDown={(e) =>
+                                                    handleKeyPress(
+                                                        e,
+                                                        row.id,
+                                                        "designation",
+                                                        index
+                                                    )
+                                                }
+                                                className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
+                                                    row.hasChanges
+                                                        ? "border-blue-300"
+                                                        : ""
+                                                }`}
                                                 required
-                                                disabled={isLoading}
+                                                disabled={
+                                                    isLoading ||
+                                                    rowSavingStates[row.id]
+                                                }
                                                 autoComplete="off"
                                                 onFocus={() =>
                                                     setActiveDropdown(row.id)
@@ -729,11 +1122,26 @@ export default function BMLForm({
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
+                                                onKeyDown={(e) =>
+                                                    handleKeyPress(
+                                                        e,
+                                                        row.id,
+                                                        "quantity",
+                                                        index
+                                                    )
+                                                }
+                                                className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
+                                                    row.hasChanges
+                                                        ? "border-blue-300"
+                                                        : ""
+                                                }`}
                                                 min="0"
                                                 step="0.01"
                                                 required
-                                                disabled={isLoading}
+                                                disabled={
+                                                    isLoading ||
+                                                    rowSavingStates[row.id]
+                                                }
                                             />
                                         </td>
                                         <td className="px-4 py-2">
@@ -749,9 +1157,24 @@ export default function BMLForm({
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
+                                                    onKeyDown={(e) =>
+                                                        handleKeyPress(
+                                                            e,
+                                                            row.id,
+                                                            "unite",
+                                                            index
+                                                        )
+                                                    }
+                                                    className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
+                                                        row.hasChanges
+                                                            ? "border-blue-300"
+                                                            : ""
+                                                    }`}
                                                     required
-                                                    disabled={isLoading}
+                                                    disabled={
+                                                        isLoading ||
+                                                        rowSavingStates[row.id]
+                                                    }
                                                 />
                                                 <datalist id="unite-options">
                                                     {COMMON_UNITS.map(
@@ -776,11 +1199,26 @@ export default function BMLForm({
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150"
+                                                onKeyDown={(e) =>
+                                                    handleKeyPress(
+                                                        e,
+                                                        row.id,
+                                                        "price",
+                                                        index
+                                                    )
+                                                }
+                                                className={`w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm transition-colors duration-150 ${
+                                                    row.hasChanges
+                                                        ? "border-blue-300"
+                                                        : ""
+                                                }`}
                                                 min="0"
                                                 step="0.01"
                                                 required
-                                                disabled={isLoading}
+                                                disabled={
+                                                    isLoading ||
+                                                    rowSavingStates[row.id]
+                                                }
                                             />
                                         </td>
                                         <td className="px-4 py-2">
@@ -792,19 +1230,46 @@ export default function BMLForm({
                                             </div>
                                         </td>
                                         <td className="px-4 py-2">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    removeRow(row.id)
-                                                }
-                                                className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                                                disabled={
-                                                    isLoading ||
-                                                    rows.length <= 1
-                                                }
-                                            >
-                                                <Trash2 className="h-5 w-5" />
-                                            </button>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        saveRow(row.id)
+                                                    }
+                                                    className={`text-blue-600 hover:text-blue-800 ${
+                                                        !row.hasChanges
+                                                            ? "opacity-50 cursor-not-allowed"
+                                                            : ""
+                                                    }`}
+                                                    disabled={
+                                                        isLoading ||
+                                                        !row.hasChanges ||
+                                                        rowSavingStates[row.id]
+                                                    }
+                                                    title="Enregistrer cette ligne"
+                                                >
+                                                    {rowSavingStates[row.id] ? (
+                                                        <div className="h-5 w-5 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <Save className="h-5 w-5" />
+                                                    )}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeRow(row.id)
+                                                    }
+                                                    className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                                                    disabled={
+                                                        isLoading ||
+                                                        rows.length <= 1 ||
+                                                        rowSavingStates[row.id]
+                                                    }
+                                                    title="Supprimer cette ligne"
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -888,10 +1353,16 @@ export default function BMLForm({
 
                         <button
                             type="submit"
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                            disabled={isLoading}
+                            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 ${
+                                !hasUnsavedChanges
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                            }`}
+                            disabled={isLoading || !hasUnsavedChanges}
                         >
-                            {isLoading ? "Enregistrement..." : "Enregistrer"}
+                            {isLoading
+                                ? "Enregistrement..."
+                                : "Enregistrer tout"}
                         </button>
                     </div>
                 </form>
