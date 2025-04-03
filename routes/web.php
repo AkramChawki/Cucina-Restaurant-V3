@@ -164,6 +164,9 @@ Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
     Route::post('/bml/update-value', [BMLController::class, 'store'])
         ->name('bml.update-value');
 
+    Route::post('/bml/delete', [BMLController::class, 'delete'])
+        ->name('bml.delete');
+
     Route::get('/infraction', [InfractionController::class, 'index']);
 
     // Update value endpoint
