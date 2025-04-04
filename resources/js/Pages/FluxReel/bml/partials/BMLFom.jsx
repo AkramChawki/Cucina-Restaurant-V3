@@ -602,10 +602,6 @@ export default function BMLForm({
     };
 
     const handleTypeChange = (e) => {
-        if (isGuest) {
-            addToast("Mode consultation uniquement. Vous ne pouvez pas changer le type.", "warning");
-            return;
-        }
         
         try {
             const newType = e.target.value;
@@ -665,9 +661,6 @@ export default function BMLForm({
     };
 
     const handleMonthChange = (newDate) => {
-        if (isGuest) {
-            addToast("Mode consultation uniquement. Vous pouvez consulter d'autres mois.", "info");
-        }
         
         // Check for unsaved changes
         if (hasUnsavedChanges) {
@@ -856,10 +849,9 @@ export default function BMLForm({
                             <select
                                 value={selectedType}
                                 onChange={handleTypeChange}
-                                className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 pl-3 pr-10 text-base ${
-                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 pl-3 pr-10 text-base bg-gray-100 cursor-not-allowed" : ""
                                 }`}
-                                disabled={isLoading || isGuest}
+                                disabled={isLoading}
                             >
                                 <option value="">Tous les types</option>
                                 {Object.entries(types).map(([label, value]) => (
