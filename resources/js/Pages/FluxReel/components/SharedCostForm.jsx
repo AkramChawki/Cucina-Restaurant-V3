@@ -193,7 +193,7 @@ export default function SharedCostForm({
                                                     {/* Product Total Quantity */}
                                                     <div className="mt-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md inline-flex items-center">
                                                         <span className="font-semibold">Total: </span>
-                                                        <span className="ml-1">{calculateProductTotalQty(product).toFixed(2)} {product.unite}</span>
+                                                        <span className="ml-1">{calculateProductTotalQty(product).toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             </div>
