@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "@inertiajs/react";
+import React, { useMemo, useState } from "react";
+import { Link, usePage } from "@inertiajs/react";
 
 export default function CostPizzaRestauSelect({ restaurants }) {
     const { auth } = usePage().props;
