@@ -24,6 +24,7 @@ class User extends Authenticatable
         'role',
         'restau',
         'employe_id',
+        'guest',
     ];
 
     /**
@@ -44,6 +45,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'guest' => 'boolean',
     ];
 
     public function employe()
