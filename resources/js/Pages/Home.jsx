@@ -102,7 +102,7 @@ function Home({ rubriques }) {
 
                         {rubriques.map(
                             (rubrique, id) =>
-                                auth.user.role.includes(rubrique.title) && (
+                                auth.user.role.some(role => role === rubrique.title) && (
                                     <CardOverlay
                                         key={id}
                                         title={formatRubriqueTitle(rubrique.title)}
