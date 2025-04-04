@@ -80,34 +80,34 @@ function Home({ rubriques }) {
             <div id="access" className="bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {auth.user.role.includes("Cost Cuisine") && (
+                        {auth.user.role.includes("Cost-Cuisine") && (
                             <CardOverlay
                                 title="Cost Cuisine"
                                 link="/cost-cuisine"
                             />
                         )}
 
-                        {auth.user.role.includes("Cost Pizza") && (
+                        {auth.user.role.includes("Cost-Pizza") && (
                             <CardOverlay
                                 title="Cost Pizza"
                                 link="/cost-pizza"
                             />
                         )}
 
-                        {auth.user.role.includes("Cost Economat") && (
+                        {auth.user.role.includes("Cost-Economat") && (
                             <CardOverlay
                                 title="Cost Economat"
                                 link="/cost-economat"
                             />
                         )}
 
-                        {auth.user.role.includes("Cost Consomable") && (
+                        {auth.user.role.includes("Cost-Consomable") && (
                             <CardOverlay
                                 title="Cost Consomable"
                                 link="/cost-consomable"
                             />
                         )}
-                        {auth.user.role.includes("Cost Ramadan") && (
+                        {auth.user.role.includes("Cost-Ramadan") && (
                             <CardOverlay
                                 title="Cost Ramadan"
                                 link="/cost-ramadan"
