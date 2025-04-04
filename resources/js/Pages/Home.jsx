@@ -3,6 +3,34 @@ import { Head, Link, usePage } from "@inertiajs/react";
 function Home({ rubriques }) {
     const { auth } = usePage().props;
 
+    // Helper function to check if the user has a specific role
+    const hasRole = (roleName) => {
+        // If role is null or undefined, return false
+        if (!auth.user.role) return false;
+
+        // If role is an array, check for exact match in the array
+        if (Array.isArray(auth.user.role)) {
+            return auth.user.role.some((role) => role === roleName);
+        }
+
+        // If role is a string, do direct comparison or split by comma
+        if (typeof auth.user.role === "string") {
+            // If it contains commas, it might be a comma-separated list
+            if (auth.user.role.includes(",")) {
+                const roleArray = auth.user.role
+                    .split(",")
+                    .map((r) => r.trim());
+                return roleArray.some((role) => role === roleName);
+            }
+
+            // Otherwise, do exact match
+            return auth.user.role === roleName;
+        }
+
+        // If we don't know what format role is, return false
+        return false;
+    };
+
     const formatRubriqueTitle = (title) => {
         if (title === "Restaurant") {
             return "Gestion Restaurant";
@@ -50,7 +78,9 @@ function Home({ rubriques }) {
                             />
                             <h1 className="text-4xl tracking-tight font-extrabold text-dark-gray sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl">
                                 <span className="block">Pizza Au Feu</span>
-                                <span className="block text-[#73ac70]">De Bois</span>
+                                <span className="block text-[#73ac70]">
+                                    De Bois
+                                </span>
                             </h1>
                             <p className="mt-3 text-lg text-gray-500 sm:text-xl md:mt-5">
                                 Livraison Jusqu'à chez vous !!
@@ -87,13 +117,13 @@ function Home({ rubriques }) {
             <div id="access" className="bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {auth.user.role.includes("Analytics") && (
+                        {hasRole("Analytics") && (
                             <CardOverlay
                                 title="Cost Analytics"
                                 link="/cost-analytics"
                             />
                         )}
-                        {auth.user.role.includes("Restaurant") && (
+                        {hasRole("Restaurant") && (
                             <CardOverlay
                                 title="Gestion Restaurant"
                                 link="/restaurants-rubriques"
@@ -102,84 +132,80 @@ function Home({ rubriques }) {
 
                         {rubriques.map(
                             (rubrique, id) =>
-                                auth.user.role.includes(rubrique.title) && (
+                                hasRole(rubrique.title) && (
                                     <CardOverlay
                                         key={id}
-                                        title={formatRubriqueTitle(rubrique.title)}
+                                        title={formatRubriqueTitle(
+                                            rubrique.title
+                                        )}
                                         link={`/rubrique/${rubrique.title}`}
                                     />
                                 )
                         )}
 
-                        {auth.user.role.includes("Flash") && (
+                        {hasRole("Flash") && (
                             <CardOverlay
                                 title="Inventaire Flash"
                                 link="/inventaire?ficheId=22"
                             />
                         )}
 
-                        {auth.user.role.includes("INV Labo") && (
+                        {hasRole("INV Labo") && (
                             <CardOverlay
                                 title="Inventaire Labo"
                                 link="/inventaire?ficheId=23"
                             />
                         )}
 
-                        {auth.user.role.includes("INV Economat") && (
+                        {hasRole("INV Economat") && (
                             <CardOverlay
                                 title="Inventaire Economat"
                                 link="/inventaire?ficheId=24"
                             />
                         )}
 
-                        {auth.user.role.includes("Inventaire Restaurant") && (
+                        {hasRole("Inventaire Restaurant") && (
                             <CardOverlay
                                 title="Inventaire Restaurant"
                                 link="/inventaire?ficheId=25"
                             />
                         )}
 
-                        {auth.user.role.includes("PNC") && (
+                        {hasRole("PNC") && (
                             <CardOverlay
                                 title="Produit Non Conformes"
                                 link="/produit-non-conforme"
                             />
                         )}
 
-                        {auth.user.role.includes("Fiche-controle") && (
+                        {hasRole("Fiche-controle") && (
                             <CardOverlay
                                 title="Fiche de Controle Hygiene"
                                 link="/fiche-controle"
                             />
                         )}
 
-                        {auth.user.role.includes("Livraison") && (
+                        {hasRole("Livraison") && (
                             <CardOverlay
                                 title="Livraison Restaurant"
                                 link="/livraisons"
                             />
                         )}
 
-                        {auth.user.role.includes("Flux Reel") && (
-                            <CardOverlay
-                                title="Flux Reel"
-                                link="/flux-reel"
-                            />
+                        {hasRole("Flux Reel") && (
+                            <CardOverlay title="Flux Reel" link="/flux-reel" />
                         )}
-                        {auth.user.role.includes("Cloture Caisse") && (
+                        {hasRole("Cloture Caisse") && (
                             <CardOverlay
                                 title="Cloture Caisse"
                                 link="/cloture-caisse"
                             />
                         )}
 
-                        {auth.user.role.includes("Numero") && (
-                            <CardOverlay
-                                title="Numero"
-                                link="/numeros"
-                            />
+                        {hasRole("Numero") && (
+                            <CardOverlay title="Numero" link="/numeros" />
                         )}
-                        {auth.user.role.includes("Infraction") && (
+                        {hasRole("Infraction") && (
                             <CardOverlay
                                 title="INFRACTIONS CONSTATEES PAR LE CENTRE DE CONTRÔLE"
                                 link="/infraction"

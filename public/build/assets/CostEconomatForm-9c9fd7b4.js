@@ -1,0 +1,1 @@
+import{j as t}from"./app-c87b7346.js";import r from"./SharedCostForm-d6121c5c.js";function m(o){return t(r,{title:"Cost Economat Food",routeName:"cost-economat.update-value",...o})}export{m as default};
