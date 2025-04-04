@@ -8,6 +8,9 @@ export default function SharedCostForm({
     products,
     currentMonth
 }) {
+    const { auth, processing } = usePage().props;
+    const isGuest = auth.user.guest === true;
+    
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
@@ -15,8 +18,10 @@ export default function SharedCostForm({
         { length: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate() },
         (_, i) => i + 1
     );
-    const { processing } = usePage().props;
+    
     const handleMonthChange = (e) => {
+        if (isGuest) return; // Prevent changes if user is a guest
+        
         const newDate = new Date(e.target.value);
         setMonthDate(newDate);
 
@@ -30,11 +35,13 @@ export default function SharedCostForm({
             only: ['products', 'currentMonth']
         });
     };
+    
     const calculateProductDayTotal = (product, day) => {
         const morning = parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
         return (morning + afternoon) * (product.prix || 0);
     };
+    
     const calculateDayTotal = (day) => {
         return products.reduce((sum, product) => {
             return sum + calculateProductDayTotal(product, day);
@@ -58,6 +65,8 @@ export default function SharedCostForm({
     };
 
     const handleValueChange = (product, day, period, value) => {
+        if (isGuest) return; // Prevent changes if user is a guest
+        
         const morning = period === 'morning' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = period === 'afternoon' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'afternoon')) || 0;
         const productTotal = (morning + afternoon) * (product.prix || 0);
@@ -114,6 +123,19 @@ export default function SharedCostForm({
                     </div>
                 </div>
             )}
+            
+            {/* Guest mode banner */}
+            {isGuest && (
+                <div className="bg-yellow-50 border-b border-yellow-200 p-3">
+                    <div className="flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium text-yellow-800">Mode consultation uniquement. Vous ne pouvez pas modifier les données.</span>
+                    </div>
+                </div>
+            )}
+            
             <div className="bg-white p-4 border-b shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
                     <div>
@@ -126,7 +148,8 @@ export default function SharedCostForm({
                         type="month"
                         value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
                         onChange={handleMonthChange}
-                        className="border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                        className={`border-gray-300 rounded-md shadow-sm ${isGuest ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'}`}
+                        disabled={isGuest}
                     />
                 </div>
                 
@@ -204,23 +227,27 @@ export default function SharedCostForm({
                                                     <div className="grid grid-cols-2 gap-1">
                                                         <input
                                                             type="number"
-                                                            className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
+                                                            className={`w-full border-gray-300 rounded-sm ${isGuest ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'} text-sm p-1`}
                                                             value={getValue(product, day, 'morning')}
                                                             onChange={(e) => handleValueChange(product, day, 'morning', e.target.value)}
                                                             onWheel={handleWheel}
                                                             step="0.01"
                                                             min="0"
                                                             placeholder="0"
+                                                            disabled={isGuest}
+                                                            readOnly={isGuest}
                                                         />
                                                         <input
                                                             type="number"
-                                                            className="w-full border-gray-300 rounded-sm focus:ring-green-500 focus:border-green-500 text-sm p-1"
+                                                            className={`w-full border-gray-300 rounded-sm ${isGuest ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'} text-sm p-1`}
                                                             value={getValue(product, day, 'afternoon')}
                                                             onChange={(e) => handleValueChange(product, day, 'afternoon', e.target.value)}
                                                             onWheel={handleWheel}
                                                             step="0.01"
                                                             min="0"
                                                             placeholder="0"
+                                                            disabled={isGuest}
+                                                            readOnly={isGuest}
                                                         />
                                                     </div>
                                                     <div className="text-xs text-right text-gray-600 pr-1">
