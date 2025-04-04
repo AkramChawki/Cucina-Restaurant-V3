@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('cumul', 10, 2)->default(0);
             $table->decimal('revenue', 10, 2)->default(0);
             $table->decimal('cumul_revenue', 10, 2)->default(0);
-            $table->decimal('percentage', 10, 2)->default(0);
+            $table->decimal('percentage', 10, 2)->default(0)->nullable();
             $table->timestamps();
 
             // Add a unique constraint to prevent duplicates

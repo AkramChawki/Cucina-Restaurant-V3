@@ -136,33 +136,75 @@ const CostAnalyticsDashboard = ({
     };
 
     // Custom tooltip for charts
+    // Replace the current CustomTooltip implementation with this more robust version
     const CustomTooltip = ({ active, payload, label }) => {
-        if (active && payload && payload.length) {
+        if (
+            !active ||
+            !payload ||
+            !Array.isArray(payload) ||
+            payload.length === 0
+        ) {
+            return null;
+        }
+
+        // Safely extract values with proper checks
+        const safeGetValue = (item, defaultValue = 0) => {
+            return item && item.value !== undefined ? item.value : defaultValue;
+        };
+
+        try {
+            // Get values with fallbacks
+            const fcAmount = safeGetValue(
+                payload.find((p) => p.dataKey === "fc_amount")
+            );
+            const ccAmount = safeGetValue(
+                payload.find((p) => p.dataKey === "cc_amount")
+            );
+            const fcPercentage =
+                payload.find((p) => p.dataKey === "fc_percentage")?.value ??
+                null;
+            const ccPercentage =
+                payload.find((p) => p.dataKey === "cc_percentage")?.value ??
+                null;
+            const revenue = safeGetValue(
+                payload.find((p) => p.dataKey === "revenue")
+            );
+
             return (
                 <div className="bg-white p-4 border rounded shadow-lg">
                     <p className="font-bold">{formatDate(label)}</p>
                     <p className="text-sm">
                         <span className="text-blue-600">FC: </span>
-                        {formatCurrency(payload[0].value)}
-                        {payload[2].value !== null
-                            ? `(${formatPercentage(payload[2].value)})`
+                        {formatCurrency(fcAmount)}
+                        {fcPercentage !== null
+                            ? `(${formatPercentage(fcPercentage)})`
                             : "(N/A)"}
                     </p>
                     <p className="text-sm">
                         <span className="text-green-600">CC: </span>
-                        {formatCurrency(payload[1].value)}
-                        {payload[3].value !== null
-                            ? `(${formatPercentage(payload[3].value)})`
+                        {formatCurrency(ccAmount)}
+                        {ccPercentage !== null
+                            ? `(${formatPercentage(ccPercentage)})`
                             : "(N/A)"}
                     </p>
                     <p className="text-sm">
                         <span className="text-gray-600">CA: </span>
-                        {formatCurrency(payload[4].value)}
+                        {formatCurrency(revenue)}
+                    </p>
+                </div>
+            );
+        } catch (error) {
+            console.error("Error in CustomTooltip:", error);
+            // Fallback simple tooltip
+            return (
+                <div className="bg-white p-4 border rounded shadow-lg">
+                    <p className="font-bold">{formatDate(label)}</p>
+                    <p className="text-sm">
+                        There was an error displaying detailed data.
                     </p>
                 </div>
             );
         }
-        return null;
     };
 
     return (
@@ -483,6 +525,8 @@ const CostAnalyticsDashboard = ({
                                                 name="FC %"
                                                 stroke="#1d4ed8"
                                                 strokeDasharray="5 5"
+                                                connectNulls={false} // Don't connect through null values
+                                                isAnimationActive={false} // Disable animation for better stability with null values
                                             />
                                             <Line
                                                 yAxisId="right"
@@ -491,6 +535,8 @@ const CostAnalyticsDashboard = ({
                                                 name="CC %"
                                                 stroke="#047857"
                                                 strokeDasharray="5 5"
+                                                connectNulls={false} // Don't connect through null values
+                                                isAnimationActive={false} // Disable animation for better stability with null values
                                             />
                                             <Line
                                                 yAxisId="left"
