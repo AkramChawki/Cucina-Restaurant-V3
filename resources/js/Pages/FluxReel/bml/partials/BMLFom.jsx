@@ -702,10 +702,45 @@ export default function BMLForm({
             return;
         }
 
-        // Save each modified row
-        for (const row of rowsWithChanges) {
-            saveRow(row.id);
-        }
+        // Process all rows with changes
+        const processedRows = rowsWithChanges.map((row) => {
+            const rowDate = new Date(row.date);
+            return {
+                ...row,
+                date: formatDate(rowDate),
+                type: selectedType || row.type || "gastro",
+                total_ttc: calculateTotal(row.quantity, row.price),
+            };
+        });
+
+        // Prepare submission data for all rows
+        const submissionData = {
+            restaurant_id: restaurant.id,
+            rows: processedRows,
+            month: monthDate.getMonth() + 1,
+            year: monthDate.getFullYear(),
+            type: selectedType || "gastro",
+            day_total: processedRows
+                .reduce((total, row) => total + parseFloat(row.total_ttc), 0)
+                .toFixed(2),
+        };
+
+        // Set loading state
+        setIsLoading(true);
+
+        // Send all rows together to the store endpoint
+        router.post(route("bml.store"), submissionData, {
+            preserveScroll: true,
+            preserveState: false,
+            onSuccess: () => {
+                // The redirect will handle success state
+            },
+            onError: (errors) => {
+                console.error("Save error:", errors);
+                addToast("Erreur lors de l'enregistrement", "error");
+                setIsLoading(false);
+            },
+        });
     };
 
     const handleKeyPress = (e, rowId, fieldName, currentIndex) => {

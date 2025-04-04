@@ -251,7 +251,7 @@ class BMLController extends Controller
 
             // Return a proper Inertia redirect
             return redirect()->route('bml.show', [
-                'restaurantSlug' => $restaurant->slug,
+                'restaurant' => $restaurant->slug,
             ])->with([
                 'message' => 'BML enregistré avec succès',
                 'created_id' => count($createdIds) == 1 ? $createdIds[0] : null,
@@ -273,7 +273,7 @@ class BMLController extends Controller
 
             // Return a proper Inertia redirect with error
             return redirect()->route('bml.show', [
-                'restaurantSlug' => $restaurant->slug,
+                'restaurant' => $restaurant->slug,
             ])->with('error', 'Une erreur est survenue lors de l\'enregistrement: ' . $e->getMessage());
         }
     }
@@ -404,7 +404,7 @@ class BMLController extends Controller
 
             // Redirect back with success
             return redirect()->route('bml.show', [
-                'restaurantSlug' => $restaurant->slug,
+                'restaurant' => $restaurant->slug,
             ])->with([
                 'message' => 'Ligne enregistrée avec succès',
                 'created_id' => $createdId,
@@ -426,7 +426,7 @@ class BMLController extends Controller
 
             // Redirect back with error
             return redirect()->route('bml.show', [
-                'restaurantSlug' => $restaurant->slug,
+                'restaurant' => $restaurant->slug,
             ])->with('error', 'Erreur lors de l\'enregistrement: ' . $e->getMessage());
         }
     }
