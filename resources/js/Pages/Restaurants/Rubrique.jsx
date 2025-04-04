@@ -1,8 +1,8 @@
-import { Head, Link, usePage } from '@inertiajs/react'
-import React from 'react'
+import { Head, Link, usePage } from "@inertiajs/react";
+import React from "react";
 
 export default function Rubrique() {
-    const { auth } = usePage().props
+    const { auth } = usePage().props;
     return (
         <>
             <Head title="Accueil" />
@@ -51,69 +51,76 @@ export default function Rubrique() {
             >
                 {auth.user.role.includes("Restaurant") && (
                     <>
-                        <div className="relative flex">
-                            <img
-                                src="/images/restau/white.jpeg"
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-center object-cover"
-                            />
-                            <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                                <a
-                                    href="#"
-                                    className="my-2 text-5xl font-bold text-black"
-                                >
-                                    Menu En Ligne
-                                </a>
-                                <Link
-                                    href="/restaurants"
-                                    className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                                >
-                                    Accéder
-                                </Link>
+                        {auth.user.role.includes("Menu") && (
+                            <div className="relative flex">
+                                <img
+                                    src="/images/restau/white.jpeg"
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-center object-cover"
+                                />
+                                <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                                    <a
+                                        href="#"
+                                        className="my-2 text-5xl font-bold text-black"
+                                    >
+                                        Menu En Ligne
+                                    </a>
+                                    <Link
+                                        href="/restaurants"
+                                        className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                                    >
+                                        Accéder
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                        <div className="relative flex">
-                            <img
-                                src="/images/restau/white.jpeg"
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-center object-cover"
-                            />
-                            <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                                <a
-                                    href="#"
-                                    className="my-2 text-5xl font-bold text-black"
-                                >
-                                    Pointage
-                                </a>
-                                <Link
-                                    href={route('employes.attendance')}
-                                    className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                                >
-                                    Accéder
-                                </Link>
+                        )}
+                        {auth.user.role.includes("Pointage") && (
+                            <div className="relative flex">
+                                <img
+                                    src="/images/restau/white.jpeg"
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-center object-cover"
+                                />
+                                <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                                    <a
+                                        href="#"
+                                        className="my-2 text-5xl font-bold text-black"
+                                    >
+                                        Pointage
+                                    </a>
+                                    <Link
+                                        href={route("employes.attendance")}
+                                        className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                                    >
+                                        Accéder
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                        <div className="relative flex">
-                            <img
-                                src="/images/restau/white.jpeg"
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-center object-cover"
-                            />
-                            <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
-                                <a
-                                    href="#"
-                                    className="my-2 text-5xl font-bold text-black"
-                                >
-                                    Creation Employe
-                                </a>
-                                <Link
-                                    href="/employes"
-                                    className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
-                                >
-                                    Accéder
-                                </Link>
+                        )}
+
+                        {auth.user.role.includes("Employe") && (
+                            <div className="relative flex">
+                                <img
+                                    src="/images/restau/white.jpeg"
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-center object-cover"
+                                />
+                                <div className="relative w-full flex flex-col items-center justify-center  text-center py-20">
+                                    <a
+                                        href="#"
+                                        className="my-2 text-5xl font-bold text-black"
+                                    >
+                                        Creation Employe
+                                    </a>
+                                    <Link
+                                        href="/employes"
+                                        className="mt-4 font-medium text-gray-900 bg-white py-2.5 px-4 rounded-md hover:bg-gray-50"
+                                    >
+                                        Accéder
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </>
                 )}
             </div>
@@ -181,5 +188,5 @@ export default function Rubrique() {
                 </footer>
             </>
         </>
-    )
+    );
 }
