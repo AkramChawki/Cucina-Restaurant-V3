@@ -236,9 +236,7 @@ class BMLController extends Controller
             }
 
             // Return a proper Inertia redirect
-            return redirect()->route('bml.show', [
-                'restaurant' => $restaurant->slug,
-            ])->with([
+            return redirect()->back()->with([
                 'message' => 'BML enregistré avec succès',
                 'created_id' => count($createdIds) == 1 ? $createdIds[0] : null,
                 'month' => $redirectMonth,
@@ -258,9 +256,7 @@ class BMLController extends Controller
             $restaurant = Restaurant::findOrFail($request->restaurant_id);
 
             // Return a proper Inertia redirect with error
-            return redirect()->route('bml.show', [
-                'restaurant' => $restaurant->slug,
-            ])->with('error', 'Une erreur est survenue lors de l\'enregistrement: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement: ' . $e->getMessage());
         }
     }
 
@@ -389,9 +385,7 @@ class BMLController extends Controller
             $restaurant = Restaurant::findOrFail($request->restaurant_id);
 
             // Redirect back with success
-            return redirect()->route('bml.show', [
-                'restaurant' => $restaurant->slug,
-            ])->with([
+            return redirect()->back()->with([
                 'message' => 'Ligne enregistrée avec succès',
                 'created_id' => $createdId,
                 'day_totals' => $updatedDayTotals,
@@ -411,9 +405,7 @@ class BMLController extends Controller
             $restaurant = Restaurant::findOrFail($request->restaurant_id);
 
             // Redirect back with error
-            return redirect()->route('bml.show', [
-                'restaurant' => $restaurant->slug,
-            ])->with('error', 'Erreur lors de l\'enregistrement: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de l\'enregistrement: ' . $e->getMessage());
         }
     }
 
@@ -468,9 +460,7 @@ class BMLController extends Controller
             $restaurant = Restaurant::findOrFail($request->restaurant_id);
 
             // Redirect back to the BML page with the current month, year, and type
-            return redirect()->route('bml.show', [
-                'restaurantSlug' => $restaurant->slug,
-            ])->with([
+            return redirect()->back()->with([
                 'month' => $month,
                 'year' => $year,
                 'type' => $type ?: null,
@@ -488,9 +478,7 @@ class BMLController extends Controller
             $restaurant = Restaurant::findOrFail($request->restaurant_id);
 
             // Redirect back with error
-            return redirect()->route('bml.show', [
-                'restaurantSlug' => $restaurant->slug,
-            ])->with('error', 'Failed to delete entry: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete entry: ' . $e->getMessage());
         }
     }
 }
