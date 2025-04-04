@@ -167,20 +167,6 @@ class BMLController extends Controller
                     $dayTotal += (float)$row['total_ttc'];
                 }
 
-                // First, delete existing entries for this date/type
-                $deletedCount = BML::where('restaurant_id', $request->restaurant_id)
-                    ->whereDate('date', $date)
-                    ->where('type', $type)
-                    ->delete();
-
-                // Log deletion
-                Log::info('Deleted existing BML entries', [
-                    'restaurant_id' => $request->restaurant_id,
-                    'date' => $date,
-                    'type' => $type,
-                    'deleted_count' => $deletedCount
-                ]);
-
                 // Create new entries
                 $createdRows = [];
                 foreach ($rows as $row) {
