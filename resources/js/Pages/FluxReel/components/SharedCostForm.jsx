@@ -9,8 +9,10 @@ export default function SharedCostForm({
     currentMonth
 }) {
     const { auth, processing } = usePage().props;
-    const isGuest = auth.user.guest === true;
-    console.log(isGuest)
+    // Fix: Use proper type conversion for MySQL tinyint(1) boolean
+    const isGuest = Boolean(auth.user.guest);
+    console.log("Guest status:", auth.user.guest, "isGuest:", isGuest);
+    
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
@@ -20,7 +22,6 @@ export default function SharedCostForm({
     );
     
     const handleMonthChange = (e) => {
-        if (isGuest) return; // Prevent changes if user is a guest
         
         const newDate = new Date(e.target.value);
         setMonthDate(newDate);
@@ -148,8 +149,7 @@ export default function SharedCostForm({
                         type="month"
                         value={`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`}
                         onChange={handleMonthChange}
-                        className={`border-gray-300 rounded-md shadow-sm ${isGuest ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'}`}
-                        disabled={isGuest}
+                        className={`border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500'}`}
                     />
                 </div>
                 
