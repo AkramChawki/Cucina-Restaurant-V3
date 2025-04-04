@@ -40,6 +40,23 @@ export default function SharedCostForm({
             return sum + calculateProductDayTotal(product, day);
         }, 0);
     };
+
+    // Calculate the monthly total (sum of all day totals)
+    const calculateMonthlyTotal = () => {
+        return daysInMonth.reduce((sum, day) => {
+            return sum + calculateDayTotal(day);
+        }, 0);
+    };
+
+    // Calculate the total quantity for a product across all days
+    const calculateProductTotalQty = (product) => {
+        return daysInMonth.reduce((sum, day) => {
+            const morning = parseFloat(getValue(product, day, 'morning')) || 0;
+            const afternoon = parseFloat(getValue(product, day, 'afternoon')) || 0;
+            return sum + morning + afternoon;
+        }, 0);
+    };
+
     const handleValueChange = (product, day, period, value) => {
         const morning = period === 'morning' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = period === 'afternoon' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'afternoon')) || 0;
@@ -112,6 +129,16 @@ export default function SharedCostForm({
                         className="border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
                     />
                 </div>
+                
+                {/* Monthly Total Section */}
+                <div className="mt-4 flex justify-center">
+                    <div className="bg-green-50 border border-green-200 rounded-lg px-6 py-3 shadow-sm">
+                        <h2 className="text-sm font-medium text-green-700 text-center">Total du Mois</h2>
+                        <p className="text-2xl font-bold text-green-800 text-center">
+                            {calculateMonthlyTotal().toFixed(2)}DH
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Mobile Scroll Hint */}
@@ -148,7 +175,7 @@ export default function SharedCostForm({
                                 {products.map((product) => (
                                     <tr key={product.id} className="hover:bg-gray-50">
                                         {/* Product column - Reduced width and content for mobile */}
-                                        <td className="sticky left-0 bg-white border-r whitespace-nowrap z-20 hover:bg-gray-50 max-w-[120px] sm:max-w-none px-2 sm:px-6 py-2 sm:py-4">
+                                        <td className="sticky left-0 bg-white border-r whitespace-nowrap z-20 hover:bg-gray-50 max-w-[140px] sm:max-w-none px-2 sm:px-6 py-2 sm:py-4">
                                             <div className="flex items-center gap-1 sm:gap-3">
                                                 <img
                                                     src={`https://admin.cucinanapoli.com/storage/${product.image}`}
@@ -162,6 +189,12 @@ export default function SharedCostForm({
                                                     <span className="text-xs text-gray-500 truncate">
                                                         {product.prix}DH/{product.unite}
                                                     </span>
+                                                    
+                                                    {/* Product Total Quantity */}
+                                                    <div className="mt-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md inline-flex items-center">
+                                                        <span className="font-semibold">Total: </span>
+                                                        <span className="ml-1">{calculateProductTotalQty(product).toFixed(2)} {product.unite}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
