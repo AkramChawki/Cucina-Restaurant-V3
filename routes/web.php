@@ -153,17 +153,22 @@ Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
     Route::post('/cost-consomable/update-value', [CostConsomableController::class, 'updateValue'])
         ->name('cost-consomable.update-value');
 
-    Route::get('/bml', [BMLController::class, 'index'])
+        Route::get('/bml', [BMLController::class, 'index'])
         ->name('bml.index');
-
+    
     // Show the form for a specific restaurant
     Route::get('/bml/{restaurant:slug}', [BMLController::class, 'show'])
         ->name('bml.show');
-
-    // Update value endpoint
-    Route::post('/bml/update-value', [BMLController::class, 'store'])
+    
+    // Store multiple entries - this should have a different URL path
+    Route::post('/bml/store', [BMLController::class, 'store'])
+        ->name('bml.store');
+    
+    // Update or create a single entry
+    Route::post('/bml/update-value', [BMLController::class, 'updateValue'])
         ->name('bml.update-value');
-
+    
+    // Delete an entry
     Route::post('/bml/delete', [BMLController::class, 'delete'])
         ->name('bml.delete');
 

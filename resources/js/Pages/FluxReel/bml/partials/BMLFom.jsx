@@ -389,6 +389,7 @@ export default function BMLForm({
         setRows((currentRows) => [...currentRows, getDefaultRow()]);
     };
 
+    // Delete a row
     const removeRow = async (id) => {
         // Check if this is an existing row (not newly created)
         const rowToRemove = rows.find((row) => row.id === id);
@@ -410,37 +411,21 @@ export default function BMLForm({
             setRowSavingStates((prev) => ({ ...prev, [id]: true }));
 
             try {
-                // Send delete request to the server
-                await router.post(
+                // Send delete request to the server with redirect option
+                router.post(
                     route("bml.delete"),
                     {
                         id: rowToRemove.originalId,
                         restaurant_id: restaurant.id,
                     },
                     {
-                        onSuccess: (response) => {
-                            addToast("Ligne supprimée avec succès", "success");
-
-                            // Remove row from state
-                            setRows((currentRows) =>
-                                currentRows.filter((row) => row.id !== id)
-                            );
-
-                            // Remove from saving states
-                            setRowSavingStates((prev) => {
-                                const newState = { ...prev };
-                                delete newState[id];
-                                return newState;
-                            });
-
-                            // Update day totals in UI
-                            if (response.day_total) {
-                                updateDayTotalsUI(
-                                    response.day_total.date,
-                                    response.day_total.type,
-                                    response.day_total.total
-                                );
-                            }
+                        // Preserve scroll position
+                        preserveScroll: true,
+                        // Preserve state where possible
+                        preserveState: false,
+                        // We want a full page reload here since we're redirecting
+                        onSuccess: () => {
+                            // The redirect will handle loading the new data
                         },
                         onError: (errors) => {
                             console.error("Delete error:", errors);
@@ -470,6 +455,99 @@ export default function BMLForm({
                 delete newState[id];
                 return newState;
             });
+        }
+    };
+
+    // Save a single row
+    const saveRow = async (rowId) => {
+        const row = rows.find((r) => r.id === rowId);
+        if (!row) return;
+
+        // Validate row
+        if (
+            !row.date ||
+            !row.fournisseur ||
+            !row.designation ||
+            !row.quantity ||
+            !row.price ||
+            !row.unite
+        ) {
+            addToast("Veuillez remplir tous les champs obligatoires.", "error");
+            return;
+        }
+
+        // Check if date is outside selected month and warn
+        if (isDateOutOfSelectedMonth(row.date)) {
+            const rowDate = new Date(row.date);
+            const formattedDate = rowDate.toLocaleDateString("fr-FR");
+
+            if (
+                !confirm(
+                    `Attention: La date sélectionnée (${formattedDate}) est en dehors du mois actuel. Cette entrée sera automatiquement placée dans le mois correspondant à sa date. Voulez-vous continuer?`
+                )
+            ) {
+                return;
+            }
+        }
+
+        // Set row as saving
+        setRows((currentRows) =>
+            currentRows.map((r) =>
+                r.id === rowId ? { ...r, isSaving: true } : r
+            )
+        );
+        setRowSavingStates((prev) => ({ ...prev, [rowId]: true }));
+
+        try {
+            // Prepare row data
+            const rowDate = new Date(row.date);
+            const processedRow = {
+                ...row,
+                date: formatDate(rowDate),
+                type: selectedType || row.type || "gastro",
+                total_ttc: calculateTotal(row.quantity, row.price),
+            };
+
+            // Prepare submission data
+            const submissionData = {
+                restaurant_id: restaurant.id,
+                rows: [processedRow],
+                month: rowDate.getMonth() + 1,
+                year: rowDate.getFullYear(),
+                type: selectedType || "gastro",
+                day_total: parseFloat(processedRow.total_ttc).toFixed(2),
+            };
+
+            // Send to server with redirect options
+            await router.post(route("bml.update-value"), submissionData, {
+                preserveScroll: true,
+                preserveState: false, // We don't want to preserve state for a redirect
+                onSuccess: () => {
+                    // The redirect will handle success state
+                    // We'll rely on the server to redirect us to the correct location
+                },
+                onError: (errors) => {
+                    console.error("Save error:", errors);
+                    addToast("Erreur lors de l'enregistrement", "error");
+
+                    setRows((currentRows) =>
+                        currentRows.map((r) =>
+                            r.id === rowId ? { ...r, isSaving: false } : r
+                        )
+                    );
+                    setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
+                },
+            });
+        } catch (error) {
+            console.error("Error saving row:", error);
+            addToast("Erreur lors de l'enregistrement", "error");
+
+            setRows((currentRows) =>
+                currentRows.map((r) =>
+                    r.id === rowId ? { ...r, isSaving: false } : r
+                )
+            );
+            setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
         }
     };
 
@@ -603,146 +681,6 @@ export default function BMLForm({
                 total: data.total.toFixed(2),
             }))
             .sort((a, b) => a.date.localeCompare(b.date));
-    };
-
-    // Save a single row
-    // Save a single row
-    const saveRow = async (rowId) => {
-        const row = rows.find((r) => r.id === rowId);
-        if (!row) return;
-
-        // Validate row
-        if (
-            !row.date ||
-            !row.fournisseur ||
-            !row.designation ||
-            !row.quantity ||
-            !row.price ||
-            !row.unite
-        ) {
-            addToast("Veuillez remplir tous les champs obligatoires.", "error");
-            return;
-        }
-
-        // Check if date is outside selected month and warn
-        if (isDateOutOfSelectedMonth(row.date)) {
-            const rowDate = new Date(row.date);
-            const formattedDate = rowDate.toLocaleDateString("fr-FR");
-
-            if (
-                !confirm(
-                    `Attention: La date sélectionnée (${formattedDate}) est en dehors du mois actuel. Cette entrée sera automatiquement placée dans le mois correspondant à sa date. Voulez-vous continuer?`
-                )
-            ) {
-                return;
-            }
-        }
-
-        // Set row as saving
-        setRows((currentRows) =>
-            currentRows.map((r) =>
-                r.id === rowId ? { ...r, isSaving: true } : r
-            )
-        );
-        setRowSavingStates((prev) => ({ ...prev, [rowId]: true }));
-
-        try {
-            // Prepare row data
-            const rowDate = new Date(row.date);
-            const processedRow = {
-                ...row,
-                date: formatDate(rowDate),
-                type: selectedType || row.type || "gastro",
-                total_ttc: calculateTotal(row.quantity, row.price),
-            };
-
-            // Prepare submission data
-            const submissionData = {
-                restaurant_id: restaurant.id,
-                rows: [processedRow],
-                month: rowDate.getMonth() + 1,
-                year: rowDate.getFullYear(),
-                type: selectedType || "gastro",
-                day_total: parseFloat(processedRow.total_ttc).toFixed(2),
-            };
-
-            // Send to server
-            await router.post(route("bml.update-value"), submissionData, {
-                preserveState: true,
-                onSuccess: (response) => {
-                    addToast("Ligne enregistrée avec succès", "success");
-
-                    // Update row state to indicate it's saved
-                    setRows((currentRows) =>
-                        currentRows.map((r) =>
-                            r.id === rowId
-                                ? {
-                                      ...r,
-                                      isSaving: false,
-                                      hasChanges: false,
-                                      isNew: false,
-                                      // If this is a new row and the backend returned an ID, store it
-                                      originalId:
-                                          r.isNew && response.created_id
-                                              ? response.created_id
-                                              : r.originalId,
-                                  }
-                                : r
-                        )
-                    );
-                    setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
-
-                    // Update day totals in UI if available in response
-                    if (response.day_totals && response.day_totals.length > 0) {
-                        response.day_totals.forEach((dayTotal) => {
-                            updateDayTotalsUI(
-                                dayTotal.date,
-                                dayTotal.type,
-                                dayTotal.total
-                            );
-                        });
-                    }
-
-                    // If the date is in a different month than currently selected,
-                    // refresh to get updated data
-                    if (isDateOutOfSelectedMonth(row.date)) {
-                        router.get(
-                            route("bml.show", [restaurant.slug]),
-                            {
-                                month: monthDate.getMonth() + 1,
-                                year: monthDate.getFullYear(),
-                                type: selectedType === "" ? null : selectedType,
-                            },
-                            {
-                                preserveScroll: true,
-                                preserveState: true,
-                            }
-                        );
-                    }
-                },
-                onError: (errors) => {
-                    console.error("Save error:", errors);
-                    addToast("Erreur lors de l'enregistrement", "error");
-
-                    setRows((currentRows) =>
-                        currentRows.map((r) =>
-                            r.id === rowId ? { ...r, isSaving: false } : r
-                        )
-                    );
-                    setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
-                },
-            });
-        } catch (error) {
-            console.error("Error saving row:", error);
-            addToast("Erreur lors de l'enregistrement", "error");
-
-            setRows((currentRows) =>
-                currentRows.map((r) =>
-                    r.id === rowId ? { ...r, isSaving: false } : r
-                )
-            );
-            setRowSavingStates((prev) => ({ ...prev, [rowId]: false }));
-        }
     };
 
     const handleSubmit = (e) => {

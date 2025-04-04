@@ -150,6 +150,7 @@ class BMLController extends Controller
 
             // Track updated day totals
             $updatedDayTotals = [];
+            $createdIds = [];
 
             // Process each date and type combination separately
             foreach ($rowsByDateAndType as $dateTypeKey => $rows) {
@@ -197,6 +198,7 @@ class BMLController extends Controller
                         'year' => $year,    // Use actual year from date
                     ]);
                     $createdRows[] = $newEntry->id;
+                    $createdIds[] = $newEntry->id;
                 }
 
                 Log::info('Created new BML entries', [
@@ -230,11 +232,32 @@ class BMLController extends Controller
             // Commit transaction if everything succeeded
             DB::commit();
 
-            // Return success with updated day totals
-            return response()->json([
-                'success' => true,
+            // Find the restaurant
+            $restaurant = Restaurant::findOrFail($request->restaurant_id);
+
+            // Get the month and year for the redirect
+            // Use the first entry's date to determine where to redirect
+            if (!empty($updatedDayTotals)) {
+                $firstTotal = $updatedDayTotals[0];
+                $redirectMonth = $firstTotal['month'];
+                $redirectYear = $firstTotal['year'];
+                $redirectType = $firstTotal['type'];
+            } else {
+                // Fallback to request values
+                $redirectMonth = $request->month;
+                $redirectYear = $request->year;
+                $redirectType = $request->type;
+            }
+
+            // Return a proper Inertia redirect
+            return redirect()->route('bml.show', [
+                'restaurantSlug' => $restaurant->slug,
+            ])->with([
                 'message' => 'BML enregistré avec succès',
-                'day_totals' => $updatedDayTotals
+                'created_id' => count($createdIds) == 1 ? $createdIds[0] : null,
+                'month' => $redirectMonth,
+                'year' => $redirectYear,
+                'type' => $redirectType
             ]);
         } catch (\Exception $e) {
             // If anything fails, rollback the transaction
@@ -245,10 +268,13 @@ class BMLController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Une erreur est survenue lors de l\'enregistrement: ' . $e->getMessage()
-            ], 500);
+            // Find the restaurant
+            $restaurant = Restaurant::findOrFail($request->restaurant_id);
+
+            // Return a proper Inertia redirect with error
+            return redirect()->route('bml.show', [
+                'restaurantSlug' => $restaurant->slug,
+            ])->with('error', 'Une erreur est survenue lors de l\'enregistrement: ' . $e->getMessage());
         }
     }
 
@@ -285,6 +311,126 @@ class BMLController extends Controller
 
         return $dayTotalRecord;
     }
+
+    public function updateValue(Request $request)
+    {
+        $request->validate([
+            'restaurant_id' => 'required|exists:restaurants,id',
+            'rows' => 'required|array',
+            'rows.*.fournisseur' => 'required|string',
+            'rows.*.designation' => 'required|string',
+            'rows.*.quantity' => 'required|numeric|min:0',
+            'rows.*.price' => 'required|numeric|min:0',
+            'rows.*.unite' => 'required|string',
+            'rows.*.date' => 'required|date',
+            'rows.*.type' => 'required|string',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer',
+            'type' => 'required|string',
+            'day_total' => 'required|numeric|min:0'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $createdId = null;
+            $updatedDayTotals = [];
+
+            // Process each row (typically just one)
+            foreach ($request->rows as $rowData) {
+                $date = Carbon::parse($rowData['date']);
+
+                // Check if there's an existing entry to update
+                if (isset($rowData['originalId']) && $rowData['originalId']) {
+                    $entry = BML::findOrFail($rowData['originalId']);
+
+                    // Update the entry
+                    $entry->update([
+                        'fournisseur' => $rowData['fournisseur'],
+                        'designation' => $rowData['designation'],
+                        'quantity' => $rowData['quantity'],
+                        'price' => $rowData['price'],
+                        'unite' => $rowData['unite'],
+                        'date' => $rowData['date'],
+                        'type' => $rowData['type'],
+                        'total_ttc' => $rowData['total_ttc'],
+                        'month' => $date->month,
+                        'year' => $date->year
+                    ]);
+                } else {
+                    // Create a new entry
+                    $entry = BML::create([
+                        'restaurant_id' => $request->restaurant_id,
+                        'fournisseur' => $rowData['fournisseur'],
+                        'designation' => $rowData['designation'],
+                        'quantity' => $rowData['quantity'],
+                        'price' => $rowData['price'],
+                        'unite' => $rowData['unite'],
+                        'date' => $rowData['date'],
+                        'type' => $rowData['type'],
+                        'total_ttc' => $rowData['total_ttc'],
+                        'month' => $date->month,
+                        'year' => $date->year
+                    ]);
+
+                    $createdId = $entry->id;
+                }
+
+                // Update the day total
+                $this->updateDayTotal(
+                    $request->restaurant_id,
+                    $date->day,
+                    $date->month,
+                    $date->year,
+                    $rowData['type'],
+                    $request->day_total
+                );
+
+                // Add to updated day totals
+                $updatedDayTotals[] = [
+                    'day' => $date->day,
+                    'month' => $date->month,
+                    'year' => $date->year,
+                    'type' => $rowData['type'],
+                    'total' => $request->day_total,
+                    'date' => $date->format('Y-m-d')
+                ];
+            }
+
+            DB::commit();
+
+            // Get the restaurant
+            $restaurant = Restaurant::findOrFail($request->restaurant_id);
+
+            // Redirect back with success
+            return redirect()->route('bml.show', [
+                'restaurantSlug' => $restaurant->slug,
+            ])->with([
+                'message' => 'Ligne enregistrée avec succès',
+                'created_id' => $createdId,
+                'day_totals' => $updatedDayTotals,
+                'month' => $request->month,
+                'year' => $request->year,
+                'type' => $request->type
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error updating BML value', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Get the restaurant
+            $restaurant = Restaurant::findOrFail($request->restaurant_id);
+
+            // Redirect back with error
+            return redirect()->route('bml.show', [
+                'restaurantSlug' => $restaurant->slug,
+            ])->with('error', 'Erreur lors de l\'enregistrement: ' . $e->getMessage());
+        }
+    }
+
     public function delete(Request $request)
     {
         $request->validate([
@@ -332,18 +478,17 @@ class BMLController extends Controller
 
             DB::commit();
 
-            // Return the updated day total information
-            return response()->json([
-                'success' => true,
-                'message' => 'Entry deleted successfully',
-                'day_total' => [
-                    'day' => $day,
-                    'month' => $month,
-                    'year' => $year,
-                    'type' => $type,
-                    'total' => $newDayTotal,
-                    'date' => $date->format('Y-m-d')
-                ]
+            // Find the restaurant
+            $restaurant = Restaurant::findOrFail($request->restaurant_id);
+
+            // Redirect back to the BML page with the current month, year, and type
+            return redirect()->route('bml.show', [
+                'restaurantSlug' => $restaurant->slug,
+            ])->with([
+                'month' => $month,
+                'year' => $year,
+                'type' => $type ?: null,
+                'message' => 'Entry deleted successfully'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -353,10 +498,13 @@ class BMLController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete entry: ' . $e->getMessage()
-            ], 500);
+            // Find the restaurant
+            $restaurant = Restaurant::findOrFail($request->restaurant_id);
+
+            // Redirect back with error
+            return redirect()->route('bml.show', [
+                'restaurantSlug' => $restaurant->slug,
+            ])->with('error', 'Failed to delete entry: ' . $e->getMessage());
         }
     }
 }
