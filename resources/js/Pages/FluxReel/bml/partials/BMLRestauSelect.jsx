@@ -1,15 +1,61 @@
-import React, { useState } from "react";
-import { Link } from "@inertiajs/react";
+import React, { useState, useMemo } from "react";
+import { Link, usePage } from "@inertiajs/react";
 
 export default function BMLRestauSelect({ restaurants }) {
+    const { auth } = usePage().props;
     const [selectedRestau, setSelectedRestau] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    const userRestaurants = useMemo(() => {
+        if (!auth.user.restau) {
+            return [];
+        }
+
+        if (!Array.isArray(auth.user.restau)) {
+            try {
+                const parsedRestau = JSON.parse(auth.user.restau);
+                if (Array.isArray(parsedRestau)) {
+                    auth.user.restau = parsedRestau;
+                }
+            } catch (e) {
+                return [];
+            }
+        }
+
+        const filtered = restaurants.filter((restaurant) => {
+            const restaurantName = restaurant.name.toLowerCase();
+            return auth.user.restau.some((location) => {
+                const locationMatch = restaurantName.includes(
+                    location.toLowerCase()
+                );
+                return locationMatch;
+            });
+        });
+
+        return filtered;
+    }, [restaurants, auth.user.restau]);
 
     const handleContinue = () => {
         if (selectedRestau) {
             setIsLoading(true);
         }
     };
+
+    if (!userRestaurants.length) {
+        return (
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex h-screen">
+                <div className="m-auto w-[90%] relative">
+                    <p className="text-red-500">Restaurant non trouvé</p>
+                    <Link
+                        href="/"
+                        className="inline-flex w-full mt-2 text-left items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#73ac70] hover:bg-[#0D3D33] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#90D88C]"
+                    >
+                        Retour
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex h-screen">
@@ -31,7 +77,7 @@ export default function BMLRestauSelect({ restaurants }) {
                             disabled={isLoading}
                         >
                             <option value="">Choisir un restaurant...</option>
-                            {restaurants.map((restaurant) => (
+                            {userRestaurants.map((restaurant) => (
                                 <option key={restaurant.id} value={restaurant.slug}>
                                     {restaurant.name}
                                 </option>
