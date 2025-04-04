@@ -3,31 +3,6 @@ import { Head, Link, usePage } from "@inertiajs/react";
 function Home({ rubriques }) {
     const { auth } = usePage().props;
 
-    // Helper function to check if the user has a specific role
-    const hasRole = (roleName) => {
-        // If role is null or undefined, return false
-        if (!auth.user.role) return false;
-        
-        // If role is an array, use includes
-        if (Array.isArray(auth.user.role)) {
-            return auth.user.role.includes(roleName);
-        }
-        
-        // If role is a string, do direct comparison or split by comma
-        if (typeof auth.user.role === 'string') {
-            // If it contains commas, it might be a comma-separated list
-            if (auth.user.role.includes(',')) {
-                return auth.user.role.split(',').map(r => r.trim()).includes(roleName);
-            }
-            
-            // Otherwise, do exact match
-            return auth.user.role === roleName;
-        }
-        
-        // If we don't know what format role is, return false
-        return false;
-    };
-
     const formatRubriqueTitle = (title) => {
         if (title === "Restaurant") {
             return "Gestion Restaurant";
@@ -112,13 +87,13 @@ function Home({ rubriques }) {
             <div id="access" className="bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {hasRole("Analytics") && (
+                        {auth.user.role.includes("Analytics") && (
                             <CardOverlay
                                 title="Cost Analytics"
                                 link="/cost-analytics"
                             />
                         )}
-                        {hasRole("Restaurant") && (
+                        {auth.user.role.includes("Restaurant") && (
                             <CardOverlay
                                 title="Gestion Restaurant"
                                 link="/restaurants-rubriques"
@@ -127,7 +102,7 @@ function Home({ rubriques }) {
 
                         {rubriques.map(
                             (rubrique, id) =>
-                                hasRole(rubrique.title) && (
+                                auth.user.role.includes(rubrique.title) && (
                                     <CardOverlay
                                         key={id}
                                         title={formatRubriqueTitle(rubrique.title)}
@@ -136,75 +111,75 @@ function Home({ rubriques }) {
                                 )
                         )}
 
-                        {hasRole("Flash") && (
+                        {auth.user.role.includes("Flash") && (
                             <CardOverlay
                                 title="Inventaire Flash"
                                 link="/inventaire?ficheId=22"
                             />
                         )}
 
-                        {hasRole("INV Labo") && (
+                        {auth.user.role.includes("INV Labo") && (
                             <CardOverlay
                                 title="Inventaire Labo"
                                 link="/inventaire?ficheId=23"
                             />
                         )}
 
-                        {hasRole("INV Economat") && (
+                        {auth.user.role.includes("INV Economat") && (
                             <CardOverlay
                                 title="Inventaire Economat"
                                 link="/inventaire?ficheId=24"
                             />
                         )}
 
-                        {hasRole("Inventaire Restaurant") && (
+                        {auth.user.role.includes("Inventaire Restaurant") && (
                             <CardOverlay
                                 title="Inventaire Restaurant"
                                 link="/inventaire?ficheId=25"
                             />
                         )}
 
-                        {hasRole("PNC") && (
+                        {auth.user.role.includes("PNC") && (
                             <CardOverlay
                                 title="Produit Non Conformes"
                                 link="/produit-non-conforme"
                             />
                         )}
 
-                        {hasRole("Fiche-controle") && (
+                        {auth.user.role.includes("Fiche-controle") && (
                             <CardOverlay
                                 title="Fiche de Controle Hygiene"
                                 link="/fiche-controle"
                             />
                         )}
 
-                        {hasRole("Livraison") && (
+                        {auth.user.role.includes("Livraison") && (
                             <CardOverlay
                                 title="Livraison Restaurant"
                                 link="/livraisons"
                             />
                         )}
 
-                        {hasRole("Flux Reel") && (
+                        {auth.user.role.includes("Flux Reel") && (
                             <CardOverlay
                                 title="Flux Reel"
                                 link="/flux-reel"
                             />
                         )}
-                        {hasRole("Cloture Caisse") && (
+                        {auth.user.role.includes("Cloture Caisse") && (
                             <CardOverlay
                                 title="Cloture Caisse"
                                 link="/cloture-caisse"
                             />
                         )}
 
-                        {hasRole("Numero") && (
+                        {auth.user.role.includes("Numero") && (
                             <CardOverlay
                                 title="Numero"
                                 link="/numeros"
                             />
                         )}
-                        {hasRole("Infraction") && (
+                        {auth.user.role.includes("Infraction") && (
                             <CardOverlay
                                 title="INFRACTIONS CONSTATEES PAR LE CENTRE DE CONTRÔLE"
                                 link="/infraction"
