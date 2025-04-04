@@ -4,15 +4,12 @@ function Home({ rubriques }) {
     const { auth } = usePage().props;
     
     // Debug log to see the actual structure of roles
-    console.log("User role data:", auth.user.role);
     
     const hasRole = (roleName) => {
         // Debug the role check
-        console.log(`Checking for role: ${roleName}`);
         
         // If role is null or undefined, return false
         if (!auth.user.role) {
-            console.log("User has no roles defined");
             return false;
         }
         
@@ -21,7 +18,6 @@ function Home({ rubriques }) {
         if (typeof userRoles === 'string' && (userRoles.startsWith('[') || userRoles.startsWith('{'))) {
             try {
                 userRoles = JSON.parse(userRoles);
-                console.log("Parsed JSON roles:", userRoles);
             } catch (e) {
                 console.log("Failed to parse roles as JSON, continuing with string value");
             }
@@ -30,34 +26,27 @@ function Home({ rubriques }) {
         // If userRoles is now an array after parsing
         if (Array.isArray(userRoles)) {
             // Log the array for debugging
-            console.log("Role array:", userRoles);
             const hasExactRole = userRoles.some(role => 
                 typeof role === 'string' && role.trim() === roleName.trim()
             );
-            console.log(`Has exact role '${roleName}'? ${hasExactRole}`);
             return hasExactRole;
         }
         
         // If userRoles is a string (comma separated or single value)
         if (typeof userRoles === 'string') {
-            console.log("Role string:", userRoles);
             if (userRoles.includes(',')) {
                 const roleArray = userRoles.split(',').map(r => r.trim());
-                console.log("Split role array:", roleArray);
                 const hasRole = roleArray.some(role => role === roleName.trim());
-                console.log(`Has role '${roleName}' in comma-separated list? ${hasRole}`);
                 return hasRole;
             }
             
             // Direct string comparison with trimming
             const isExactMatch = userRoles.trim() === roleName.trim();
-            console.log(`Direct string comparison '${userRoles}' === '${roleName}'? ${isExactMatch}`);
             return isExactMatch;
         }
         
         // If userRoles is an object, try to check properties
         if (typeof userRoles === 'object' && userRoles !== null) {
-            console.log("Role object:", userRoles);
             // Check if the role name exists as a key or a value in the object
             return Object.keys(userRoles).includes(roleName) || 
                    Object.values(userRoles).some(val => 
@@ -65,7 +54,6 @@ function Home({ rubriques }) {
                    );
         }
         
-        console.log(`Role check failed, unknown role format: ${typeof userRoles}`);
         return false;
     };
 
@@ -152,13 +140,6 @@ function Home({ rubriques }) {
             {/* Access Section */}
             <div id="access" className="bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Add a debugging element to show all user roles */}
-                    <div className="bg-white p-4 rounded shadow mb-8">
-                        <h3 className="text-lg font-semibold mb-2">Debug: User Roles</h3>
-                        <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
-                            {JSON.stringify(auth.user.role, null, 2)}
-                        </pre>
-                    </div>
                     
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                         {hasRole("Analytics") && (
@@ -177,7 +158,6 @@ function Home({ rubriques }) {
                         {rubriques.map(
                             (rubrique, id) => {
                                 const hasRoleResult = hasRole(rubrique.title);
-                                console.log(`Check for ${rubrique.title}: ${hasRoleResult}`);
                                 return hasRoleResult && (
                                     <CardOverlay
                                         key={id}
