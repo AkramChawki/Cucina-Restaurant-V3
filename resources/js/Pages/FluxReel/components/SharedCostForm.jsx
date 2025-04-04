@@ -10,7 +10,7 @@ export default function SharedCostForm({
 }) {
     const { auth, processing } = usePage().props;
     const isGuest = auth.user.guest === true;
-    
+    console.log(isGuest)
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
