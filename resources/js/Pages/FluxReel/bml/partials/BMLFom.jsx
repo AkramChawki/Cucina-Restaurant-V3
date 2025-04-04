@@ -40,17 +40,17 @@ const COMMON_DESIGNATIONS = {
         "POMS",
         "Citron",
         "Tonic",
+        "Ouelmes",
+        "EAU",
     ],
 };
 
 const COMMON_UNITS = [
-    "Kg",
     "KG",
     "250G",
     "unite",
     "L",
     "Botte",
-    "BROT",
     "paquet de 24 U",
     "Pot de 1 kg",
 ];
