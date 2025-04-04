@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import {
     PlusCircle,
     Trash2,
     Save,
     Calendar,
     ChevronsUpDown,
+    AlertCircle
 } from "lucide-react";
 import { useToast, ToastContainer } from "@/Components/Toast";
 
@@ -217,6 +218,11 @@ export default function BMLForm({
     types = {},
     currentType = "",
 }) {
+    // Get auth user and check if guest
+    const { auth, processing } = usePage().props;
+    const isGuest = Boolean(auth.user.guest);
+    console.log("Guest status:", auth.user.guest, "isGuest:", isGuest);
+    
     const { toasts, addToast, removeToast } = useToast();
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
@@ -386,11 +392,20 @@ export default function BMLForm({
     };
 
     const addRow = () => {
+        if (isGuest) {
+            addToast("Mode consultation uniquement. Vous ne pouvez pas ajouter de lignes.", "warning");
+            return;
+        }
         setRows((currentRows) => [...currentRows, getDefaultRow()]);
     };
 
     // Delete a row
     const removeRow = async (id) => {
+        if (isGuest) {
+            addToast("Mode consultation uniquement. Vous ne pouvez pas supprimer de lignes.", "warning");
+            return;
+        }
+        
         // Check if this is an existing row (not newly created)
         const rowToRemove = rows.find((row) => row.id === id);
 
@@ -460,6 +475,11 @@ export default function BMLForm({
 
     // Save a single row
     const saveRow = async (rowId) => {
+        if (isGuest) {
+            addToast("Mode consultation uniquement. Vous ne pouvez pas enregistrer de modifications.", "warning");
+            return;
+        }
+        
         const row = rows.find((r) => r.id === rowId);
         if (!row) return;
 
@@ -552,6 +572,8 @@ export default function BMLForm({
     };
 
     const handleInputChange = (id, field, value) => {
+        if (isGuest) return; // Prevent changes if user is a guest
+        
         setRows((currentRows) =>
             currentRows.map((row) => {
                 if (row.id === id) {
@@ -580,6 +602,11 @@ export default function BMLForm({
     };
 
     const handleTypeChange = (e) => {
+        if (isGuest) {
+            addToast("Mode consultation uniquement. Vous ne pouvez pas changer le type.", "warning");
+            return;
+        }
+        
         try {
             const newType = e.target.value;
             console.log("Type changed to:", newType);
@@ -638,6 +665,10 @@ export default function BMLForm({
     };
 
     const handleMonthChange = (newDate) => {
+        if (isGuest) {
+            addToast("Mode consultation uniquement. Vous pouvez consulter d'autres mois.", "info");
+        }
+        
         // Check for unsaved changes
         if (hasUnsavedChanges) {
             if (
@@ -685,6 +716,11 @@ export default function BMLForm({
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        if (isGuest) {
+            addToast("Mode consultation uniquement. Vous ne pouvez pas enregistrer de modifications.", "warning");
+            return;
+        }
 
         // Check if there are any rows with changes
         const rowsWithChanges = rows.filter((row) => row.hasChanges);
@@ -744,6 +780,8 @@ export default function BMLForm({
     };
 
     const handleKeyPress = (e, rowId, fieldName, currentIndex) => {
+        if (isGuest) return; // Prevent key actions if user is a guest
+        
         // If Enter is pressed, save the row
         if (e.key === "Enter") {
             e.preventDefault();
@@ -789,6 +827,16 @@ export default function BMLForm({
 
     return (
         <div className="p-4 sm:p-6">
+            {/* Guest mode banner */}
+            {isGuest && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg mb-4 p-3">
+                    <div className="flex items-center justify-center">
+                        <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
+                        <span className="font-medium text-yellow-800">Mode consultation uniquement. Vous ne pouvez pas modifier les données.</span>
+                    </div>
+                </div>
+            )}
+            
             <div className="bg-white rounded-lg shadow p-4 mb-6">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div className="flex-1 flex items-center gap-4">
@@ -808,8 +856,10 @@ export default function BMLForm({
                             <select
                                 value={selectedType}
                                 onChange={handleTypeChange}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 pl-3 pr-10 text-base"
-                                disabled={isLoading}
+                                className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 pl-3 pr-10 text-base ${
+                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                }`}
+                                disabled={isLoading || isGuest}
                             >
                                 <option value="">Tous les types</option>
                                 {Object.entries(types).map(([label, value]) => (
@@ -933,12 +983,16 @@ export default function BMLForm({
                                                         row.hasChanges
                                                             ? "border-blue-300"
                                                             : ""
+                                                    } ${
+                                                        isGuest ? "bg-gray-100 cursor-not-allowed" : ""
                                                     }`}
                                                     required
                                                     disabled={
                                                         isLoading ||
-                                                        rowSavingStates[row.id]
+                                                        rowSavingStates[row.id] ||
+                                                        isGuest
                                                     }
+                                                    readOnly={isGuest}
                                                     max={formatDate(new Date())}
                                                 />
                                                 {isDateOutOfSelectedMonth(
@@ -991,9 +1045,12 @@ export default function BMLForm({
                                                     row.hasChanges
                                                         ? "border-blue-300"
                                                         : ""
+                                                } ${
+                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
                                                 }`}
                                                 required
                                                 disabled={true}
+                                                readOnly={true}
                                             />
                                         </td>
                                         <td className="px-4 py-2 relative">
@@ -1020,15 +1077,19 @@ export default function BMLForm({
                                                     row.hasChanges
                                                         ? "border-blue-300"
                                                         : ""
+                                                } ${
+                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
                                                 }`}
                                                 required
                                                 disabled={
                                                     isLoading ||
-                                                    rowSavingStates[row.id]
+                                                    rowSavingStates[row.id] ||
+                                                    isGuest
                                                 }
+                                                readOnly={isGuest}
                                                 autoComplete="off"
                                                 onFocus={() =>
-                                                    setActiveDropdown(row.id)
+                                                    !isGuest && setActiveDropdown(row.id)
                                                 }
                                                 onBlur={() => {
                                                     setTimeout(
@@ -1042,6 +1103,7 @@ export default function BMLForm({
                                             />
 
                                             {!isLoading &&
+                                                !isGuest &&
                                                 activeDropdown === row.id && (
                                                     <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-md shadow-md z-50 max-h-40 overflow-y-auto">
                                                         {COMMON_DESIGNATIONS[
@@ -1107,14 +1169,18 @@ export default function BMLForm({
                                                     row.hasChanges
                                                         ? "border-blue-300"
                                                         : ""
+                                                } ${
+                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
                                                 }`}
                                                 min="0"
                                                 step="0.01"
                                                 required
                                                 disabled={
                                                     isLoading ||
-                                                    rowSavingStates[row.id]
+                                                    rowSavingStates[row.id] ||
+                                                    isGuest
                                                 }
+                                                readOnly={isGuest}
                                             />
                                         </td>
                                         <td className="px-4 py-2">
@@ -1142,12 +1208,16 @@ export default function BMLForm({
                                                         row.hasChanges
                                                             ? "border-blue-300"
                                                             : ""
+                                                    } ${
+                                                        isGuest ? "bg-gray-100 cursor-not-allowed" : ""
                                                     }`}
                                                     required
                                                     disabled={
                                                         isLoading ||
-                                                        rowSavingStates[row.id]
+                                                        rowSavingStates[row.id] ||
+                                                        isGuest
                                                     }
+                                                    readOnly={isGuest}
                                                 />
                                                 <datalist id="unite-options">
                                                     {COMMON_UNITS.map(
@@ -1184,14 +1254,18 @@ export default function BMLForm({
                                                     row.hasChanges
                                                         ? "border-blue-300"
                                                         : ""
+                                                } ${
+                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
                                                 }`}
                                                 min="0"
                                                 step="0.01"
                                                 required
                                                 disabled={
                                                     isLoading ||
-                                                    rowSavingStates[row.id]
+                                                    rowSavingStates[row.id] ||
+                                                    isGuest
                                                 }
+                                                readOnly={isGuest}
                                             />
                                         </td>
                                         <td className="px-4 py-2">
@@ -1210,16 +1284,17 @@ export default function BMLForm({
                                                         saveRow(row.id)
                                                     }
                                                     className={`text-blue-600 hover:text-blue-800 ${
-                                                        !row.hasChanges
+                                                        !row.hasChanges || isGuest
                                                             ? "opacity-50 cursor-not-allowed"
                                                             : ""
                                                     }`}
                                                     disabled={
                                                         isLoading ||
                                                         !row.hasChanges ||
-                                                        rowSavingStates[row.id]
+                                                        rowSavingStates[row.id] ||
+                                                        isGuest
                                                     }
-                                                    title="Enregistrer cette ligne"
+                                                    title={isGuest ? "Mode consultation uniquement" : "Enregistrer cette ligne"}
                                                 >
                                                     {rowSavingStates[row.id] ? (
                                                         <div className="h-5 w-5 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
@@ -1232,13 +1307,18 @@ export default function BMLForm({
                                                     onClick={() =>
                                                         removeRow(row.id)
                                                     }
-                                                    className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                                                    className={`text-red-600 hover:text-red-800 ${
+                                                        isGuest || rows.length <= 1 || rowSavingStates[row.id]
+                                                            ? "opacity-50 cursor-not-allowed"
+                                                            : ""
+                                                    }`}
                                                     disabled={
                                                         isLoading ||
                                                         rows.length <= 1 ||
-                                                        rowSavingStates[row.id]
+                                                        rowSavingStates[row.id] ||
+                                                        isGuest
                                                     }
-                                                    title="Supprimer cette ligne"
+                                                    title={isGuest ? "Mode consultation uniquement" : "Supprimer cette ligne"}
                                                 >
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>
@@ -1317,8 +1397,11 @@ export default function BMLForm({
                         <button
                             type="button"
                             onClick={addRow}
-                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                            disabled={isLoading}
+                            className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
+                                isLoading || isGuest ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
+                            disabled={isLoading || isGuest}
+                            title={isGuest ? "Mode consultation uniquement" : "Ajouter une ligne"}
                         >
                             <PlusCircle className="h-4 w-4 mr-2" />
                             Ajouter une ligne
@@ -1326,12 +1409,13 @@ export default function BMLForm({
 
                         <button
                             type="submit"
-                            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 ${
-                                !hasUnsavedChanges
+                            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                                !hasUnsavedChanges || isGuest || isLoading
                                     ? "opacity-50 cursor-not-allowed"
                                     : ""
                             }`}
-                            disabled={isLoading || !hasUnsavedChanges}
+                            disabled={isLoading || !hasUnsavedChanges || isGuest}
+                            title={isGuest ? "Mode consultation uniquement" : "Enregistrer toutes les modifications"}
                         >
                             {isLoading
                                 ? "Enregistrement..."
