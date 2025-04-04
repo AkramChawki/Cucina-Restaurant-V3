@@ -23,10 +23,16 @@ class GenerateFCCCRecords extends Command
 
         // Define the food cost types
         $fcTypes = [
-            'cuisine', 'pizza', 'economat', 'bml_giada', 
-            'bml_gastro', 'bml_legume', 'bml_boisson', 'ramadan'
+            'cuisine',
+            'pizza',
+            'economat',
+            'bml_giada',
+            'bml_gastro',
+            'bml_legume',
+            'bml_boisson',
+            'ramadan'
         ];
-        
+
         // Define the consumable cost type
         $ccTypes = ['consommable'];
 
@@ -82,7 +88,7 @@ class GenerateFCCCRecords extends Command
                         ->where('restau', $restaurantName)
                         ->whereDate('date', "{$year}-{$month}-{$day}")
                         ->sum('montant');
-                    
+
                     $monthlyRevenues[$day] = $dailyRev;
                     $totalMonthlyRevenue += $dailyRev;
                     $cumulativeRevenues[$day] = $totalMonthlyRevenue;
@@ -106,7 +112,7 @@ class GenerateFCCCRecords extends Command
                         ->where('year', $year)
                         ->whereIn('type', $fcTypes)
                         ->sum('total');
-                    
+
                     $monthlyFC[$day] = $fcAmount;
                     $totalMonthlyFC += $fcAmount;
                     $cumulativeFC[$day] = $totalMonthlyFC;
@@ -119,7 +125,7 @@ class GenerateFCCCRecords extends Command
                         ->where('year', $year)
                         ->whereIn('type', $ccTypes)
                         ->sum('total');
-                    
+
                     $monthlyCC[$day] = $ccAmount;
                     $totalMonthlyCC += $ccAmount;
                     $cumulativeCC[$day] = $totalMonthlyCC;
@@ -127,12 +133,6 @@ class GenerateFCCCRecords extends Command
 
                 // Now create records for each day based on the pre-calculated values
                 for ($day = 1; $day <= $daysInMonth; $day++) {
-                    // Skip days with no entries
-                    if (!isset($monthlyRevenues[$day]) || $monthlyRevenues[$day] <= 0) {
-                        $this->info("No revenue for {$day}/{$month}/{$year} - skipping");
-                        continue;
-                    }
-
                     // Get the daily values
                     $fcAmount = $monthlyFC[$day] ?? 0;
                     $ccAmount = $monthlyCC[$day] ?? 0;
@@ -141,10 +141,12 @@ class GenerateFCCCRecords extends Command
                     $dailyRevenue = $monthlyRevenues[$day] ?? 0;
                     $cumulRevenue = $cumulativeRevenues[$day] ?? 0;
 
-                    // Calculate percentages based on cumulative values
-                    // The percentage is calculated as (cumulative cost / cumulative revenue) * 100
-                    $fcPercentage = $cumulRevenue > 0 ? ($fcCumul / $cumulRevenue) * 100 : 0;
-                    $ccPercentage = $cumulRevenue > 0 ? ($ccCumul / $cumulRevenue) * 100 : 0;
+                    // Check if there's revenue for this day
+                    $hasRevenue = isset($monthlyRevenues[$day]) && $monthlyRevenues[$day] > 0;
+
+                    // Calculate percentages based on cumulative values only if revenue exists
+                    $fcPercentage = $hasRevenue && $cumulRevenue > 0 ? ($fcCumul / $cumulRevenue) * 100 : null;
+                    $ccPercentage = $hasRevenue && $cumulRevenue > 0 ? ($ccCumul / $cumulRevenue) * 100 : null;
 
                     // Store FC record
                     $this->storeRecord([
@@ -174,10 +176,18 @@ class GenerateFCCCRecords extends Command
                         'percentage' => $ccPercentage
                     ]);
 
-                    $this->info("Created FC/CC records for {$day}/{$month}/{$year} - Restaurant {$restaurantId}");
-                    $this->info("FC: {$fcAmount} (Cumul: {$fcCumul}) - {$fcPercentage}%");
-                    $this->info("CC: {$ccAmount} (Cumul: {$ccCumul}) - {$ccPercentage}%");
-                    $this->info("Revenue: {$dailyRevenue} (Cumul: {$cumulRevenue})");
+                    // Log message depending on whether there's revenue
+                    if ($hasRevenue) {
+                        $this->info("Created FC/CC records for {$day}/{$month}/{$year} - Restaurant {$restaurantId}");
+                        $this->info("FC: {$fcAmount} (Cumul: {$fcCumul}) - {$fcPercentage}%");
+                        $this->info("CC: {$ccAmount} (Cumul: {$ccCumul}) - {$ccPercentage}%");
+                        $this->info("Revenue: {$dailyRevenue} (Cumul: {$cumulRevenue})");
+                    } else {
+                        $this->info("Created FC/CC records (without percentages) for {$day}/{$month}/{$year} - Restaurant {$restaurantId}");
+                        $this->info("FC: {$fcAmount} (Cumul: {$fcCumul})");
+                        $this->info("CC: {$ccAmount} (Cumul: {$ccCumul})");
+                        $this->info("No revenue data available");
+                    }
                 }
 
                 // Move to next month
