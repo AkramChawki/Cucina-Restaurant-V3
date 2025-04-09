@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 
 export default function BMLRestauSelect({ restaurants }) {
     const { auth } = usePage().props;
@@ -35,9 +35,31 @@ export default function BMLRestauSelect({ restaurants }) {
         return filtered;
     }, [restaurants, auth.user.restau]);
 
-    const handleContinue = () => {
+    // Modified handleContinue function to use router.visit with query params
+    const handleContinue = (e) => {
         if (selectedRestau) {
+            e.preventDefault(); // Prevent the default Link behavior
             setIsLoading(true);
+            
+            // Get current date for default month/year
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+            const currentYear = now.getFullYear();
+            
+            // Use Inertia router to navigate with query parameters
+            router.visit(`/bml/${selectedRestau}`, {
+                data: {
+                    month: currentMonth,
+                    year: currentYear,
+                    type: "" // Empty string for "tous les types"
+                },
+                onSuccess: () => {
+                    setIsLoading(false);
+                },
+                onError: () => {
+                    setIsLoading(false);
+                }
+            });
         }
     };
 

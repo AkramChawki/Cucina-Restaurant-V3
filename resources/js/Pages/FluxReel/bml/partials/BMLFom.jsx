@@ -227,7 +227,10 @@ export default function BMLForm({
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
-    const [selectedType, setSelectedType] = useState(currentType);
+    const [selectedType, setSelectedType] = useState(() => {
+        console.log("Setting initial selectedType:", currentType);
+        return String(currentType || "");
+    });
     const [isLoading, setIsLoading] = useState(false);
     const [rowSavingStates, setRowSavingStates] = useState({});
     const initialRender = useRef(true);
@@ -237,6 +240,13 @@ export default function BMLForm({
         key: "date",
         direction: "ascending",
     });
+    useEffect(() => {
+        console.log("currentType prop changed to:", currentType);
+        if (currentType !== selectedType) {
+            console.log("Updating selectedType state from prop");
+            setSelectedType(String(currentType || ""));
+        }
+    }, [currentType]);
 
     useEffect(() => {
         if (restaurant && (!existingEntries || existingEntries.length === 0)) {
@@ -647,29 +657,26 @@ export default function BMLForm({
             setSelectedType(newType);
             setIsLoading(true);
 
-            // IMPORTANT: Don't convert empty string to null
-            // const typeParam = newType === "" ? null : newType;
-            // Instead, just use the string directly
-
-            const url = route("bml.show", [restaurant.slug]);
-            console.log("Navigating to:", url, "with type:", newType);
+            // Use the dedicated filter endpoint
+            const url = route("bml.filter", [restaurant.slug]);
+            console.log("Using filter endpoint:", url, "with type:", newType);
 
             router.get(
                 url,
                 {
                     month: monthDate.getMonth() + 1,
                     year: monthDate.getFullYear(),
-                    type: newType, // Use the string directly
+                    type: newType, // No conversion to null - send as string
                 },
                 {
                     preserveScroll: true,
                     preserveState: true,
                     onSuccess: (page) => {
-                        console.log("Navigation successful", page);
+                        console.log("Filter successful", page);
                         setIsLoading(false);
                     },
                     onError: (errors) => {
-                        console.error("Navigation error:", errors);
+                        console.error("Filter error:", errors);
                         setIsLoading(false);
                         addToast(
                             "Erreur lors du chargement des données.",
@@ -703,20 +710,26 @@ export default function BMLForm({
         setMonthDate(newDate);
         setIsLoading(true);
 
+        // Use the dedicated filter endpoint
+        const url = route("bml.filter", [restaurant.slug]);
+        console.log("Using filter endpoint for month change:", url);
+
         router.get(
-            route("bml.show", [restaurant.slug]),
+            url,
             {
                 month: newDate.getMonth() + 1,
                 year: newDate.getFullYear(),
-                type: selectedType,
+                type: selectedType, // Pass the current selectedType
             },
             {
                 preserveScroll: true,
                 preserveState: true,
-                onSuccess: () => {
+                onSuccess: (page) => {
+                    console.log("Month filter successful", page);
                     setIsLoading(false);
                 },
-                onError: () => {
+                onError: (errors) => {
+                    console.error("Month filter error:", errors);
                     setIsLoading(false);
                     addToast("Erreur lors du chargement des données.", "error");
                 },
