@@ -9,13 +9,19 @@ export default function BML({ restaurant, currentMonth, existingEntries, types, 
     console.log('Type is null?', currentType === null);
     console.log('Type is undefined?', currentType === undefined);
     console.log('Available types:', types);
+    console.log('Existing entries:', existingEntries);
+    console.log('Existing entries is array?', Array.isArray(existingEntries));
     console.log('Existing entries count:', existingEntries ? existingEntries.length : 'No entries');
+    
+    // Ensure existingEntries is always an array
+    const safeEntries = Array.isArray(existingEntries) ? existingEntries : [];
     
     // Ensure currentType is always a string (even if null/undefined)
     const processedType = currentType || '';
     
     useEffect(() => {
         console.log('BML component mounted with processed type:', processedType);
+        console.log('Using safe entries array with length:', safeEntries.length);
     }, []);
     
     return (
@@ -26,7 +32,7 @@ export default function BML({ restaurant, currentMonth, existingEntries, types, 
                     <BMLForm
                         restaurant={restaurant}
                         currentMonth={currentMonth}
-                        existingEntries={existingEntries || []}
+                        existingEntries={safeEntries}
                         types={types}
                         currentType={processedType}
                     />

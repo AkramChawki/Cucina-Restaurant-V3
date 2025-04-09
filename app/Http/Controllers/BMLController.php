@@ -108,26 +108,24 @@ class BMLController extends Controller
         ]);
     }
 
-    // Modify the show method in BMLController.php
     public function show(Request $request, $restaurantSlug)
     {
-        // Force log all incoming parameters to debug
         Log::info('BML Show Request Raw', [
             'all_parameters' => $request->all(),
-            'query_string' => $request->getQueryString()
+            'query_string' => $request->getQueryString(),
+            'route' => $request->route()->getName(),
+            'restaurant_slug' => $restaurantSlug
         ]);
 
         $restaurant = Restaurant::where('slug', $restaurantSlug)->firstOrFail();
         $currentMonth = $request->get('month', now()->month);
         $currentYear = $request->get('year', now()->year);
-        $type = $request->get('type', ''); // Default to empty string
+        $type = $request->input('type', '');
 
-        // Ensure type is properly handled for various null-like values
         if ($type === null || $type === 'null' || $type === 'undefined' || !isset($type)) {
             $type = '';
         }
 
-        // Log the processed parameters for debugging
         Log::info('BML Show Request Processed', [
             'restaurant' => $restaurant->name,
             'restaurant_id' => $restaurant->id,
@@ -139,12 +137,10 @@ class BMLController extends Controller
             'type_length' => strlen($type),
         ]);
 
-        // Create query to get entries
         $query = BML::where('restaurant_id', $restaurant->id)
             ->where('month', $currentMonth)
             ->where('year', $currentYear);
 
-        // Only apply type filter if a specific type is selected and non-empty
         if (!empty($type)) {
             Log::info('Applying type filter', ['type' => $type]);
             $query->where('type', $type);
@@ -152,7 +148,6 @@ class BMLController extends Controller
             Log::info('No type filter applied, showing all types');
         }
 
-        // Add explicit ordering by date
         $query->orderBy('date', 'asc');
 
         $entries = $query->get();
@@ -163,7 +158,6 @@ class BMLController extends Controller
             'types_found' => $entries->pluck('type')->unique()->toArray()
         ]);
 
-        // Format entries for the frontend
         $existingEntries = $entries->map(function ($entry) {
             return [
                 'id' => $entry->id,
@@ -176,11 +170,12 @@ class BMLController extends Controller
                 'type' => $entry->type,
                 'total_ttc' => (float)$entry->total_ttc
             ];
-        });
+        })->values()->all();
 
         Log::info('Mapped entries', [
-            'count' => $existingEntries->count(),
-            'first_entry' => $existingEntries->first()
+            'count' => count($existingEntries),
+            'first_entry' => !empty($existingEntries) ? $existingEntries[0] : null,
+            'is_array' => is_array($existingEntries)
         ]);
 
         return Inertia::render('FluxReel/bml/BML', [
@@ -191,7 +186,7 @@ class BMLController extends Controller
             ],
             'existingEntries' => $existingEntries,
             'types' => BML::TYPES,
-            'currentType' => $type, // Make sure to return the processed type
+            'currentType' => $type,
         ]);
     }
 

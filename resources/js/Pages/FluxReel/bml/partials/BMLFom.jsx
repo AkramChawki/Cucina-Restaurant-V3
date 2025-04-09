@@ -240,6 +240,42 @@ export default function BMLForm({
         key: "date",
         direction: "ascending",
     });
+
+    useEffect(() => {
+        // Debug the existingEntries prop
+        console.log("existingEntries received:", existingEntries);
+        console.log(
+            "existingEntries is array?",
+            Array.isArray(existingEntries)
+        );
+        console.log("existingEntries length:", existingEntries.length);
+
+        // Check if we need to update the rows state
+        if (existingEntries && existingEntries.length > 0) {
+            console.log("Setting rows from existingEntries");
+            const formattedRows = existingEntries.map((entry, index) => ({
+                id: Date.now() + index,
+                fournisseur:
+                    entry.fournisseur || getFournisseurByType(entry.type),
+                designation: entry.designation || "",
+                quantity: entry.quantity || "",
+                price: entry.price || "",
+                unite: entry.unite || "",
+                date: formatDate(entry.date),
+                type: entry.type || selectedType,
+                total_ttc: parseFloat(entry.total_ttc) || 0,
+                isNew: false,
+                isSaving: false,
+                hasChanges: false,
+                originalId: entry.id,
+            }));
+            setRows(formattedRows);
+        } else if (!rows.length || (rows.length === 1 && rows[0].isNew)) {
+            console.log("Keeping default row");
+            // Keep default row if no entries
+        }
+    }, [existingEntries]);
+
     useEffect(() => {
         console.log("currentType prop changed to:", currentType);
         if (currentType !== selectedType) {
@@ -325,19 +361,25 @@ export default function BMLForm({
 
     useEffect(() => {
         if (initialRender.current) {
+            console.log("Initial render, skipping");
             initialRender.current = false;
             return;
         }
 
+        console.log("Checking if entries changed");
         const entriesChanged =
             JSON.stringify(prevExistingEntries.current) !==
             JSON.stringify(existingEntries);
+        console.log("Entries changed?", entriesChanged);
+
         prevExistingEntries.current = existingEntries;
 
         if (!entriesChanged) {
+            console.log("No change in entries, skipping update");
             return;
         }
 
+        console.log("Entries changed, updating rows");
         if (existingEntries && existingEntries.length > 0) {
             const formattedRows = existingEntries.map((entry, index) => ({
                 id: Date.now() + index,
@@ -355,11 +397,13 @@ export default function BMLForm({
                 hasChanges: false,
                 originalId: entry.id,
             }));
+            console.log("Setting rows with formatted data", formattedRows);
             setRows(formattedRows);
         } else {
+            console.log("No entries or empty array, setting default row");
             setRows([getDefaultRow()]);
         }
-    }, [existingEntries]);
+    }, [existingEntries, selectedType]);
 
     // Apply sorting to rows
     const sortedRows = [...rows].sort((a, b) => {
@@ -382,6 +426,12 @@ export default function BMLForm({
         if (valueA > valueB) {
             return sortConfig.direction === "ascending" ? 1 : -1;
         }
+
+        console.log("Sorted rows count before render:", sortedRows.length);
+        console.log(
+            "First sorted row:",
+            sortedRows.length > 0 ? sortedRows[0] : null
+        );
         return 0;
     });
 
