@@ -177,20 +177,28 @@ const CostAnalyticsDashboard = ({
                         <span className="text-blue-600">FC: </span>
                         {formatCurrency(fcAmount)}
                         {fcPercentage !== null
-                            ? `(${formatPercentage(fcPercentage)})`
-                            : "(N/A)"}
+                            ? ` (${formatPercentage(fcPercentage)})`
+                            : " (N/A)"}
                     </p>
                     <p className="text-sm">
                         <span className="text-green-600">CC: </span>
                         {formatCurrency(ccAmount)}
                         {ccPercentage !== null
-                            ? `(${formatPercentage(ccPercentage)})`
-                            : "(N/A)"}
+                            ? ` (${formatPercentage(ccPercentage)})`
+                            : " (N/A)"}
                     </p>
                     <p className="text-sm">
                         <span className="text-gray-600">CA: </span>
                         {formatCurrency(revenue)}
                     </p>
+                    {revenue > 0 && (
+                        <p className="text-sm font-medium pt-1 border-t mt-1">
+                            <span className="text-purple-600">FC+CC: </span>
+                            {formatPercentage(
+                                ((fcAmount + ccAmount) / revenue) * 100
+                            )}
+                        </p>
+                    )}
                 </div>
             );
         } catch (error) {

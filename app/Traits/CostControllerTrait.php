@@ -9,6 +9,14 @@ use Inertia\Inertia;
 
 trait CostControllerTrait
 {
+    private function updateAnalyticsForDate($restaurantId, $day, $month, $year)
+    {
+        // Get the CostAnalyticsController instance
+        $costAnalyticsController = app()->make(\App\Http\Controllers\CostAnalyticsController::class);
+
+        // Call the recalculateForDay method
+        $costAnalyticsController->recalculateForDay($restaurantId, $day, $month, $year);
+    }
     public function index()
     {
         $restaurants = Restaurant::all(['id', 'name', 'slug']);
@@ -95,6 +103,7 @@ trait CostControllerTrait
 
         $costEntry->update(['daily_data' => $dailyData]);
 
+        // Update day total
         DayTotal::updateOrCreate(
             [
                 'restaurant_id' => $request->restaurant_id,
@@ -104,6 +113,14 @@ trait CostControllerTrait
                 'type' => $this->getCostType()
             ],
             ['total' => $request->day_total]
+        );
+
+        // Update analytics for this day
+        $this->updateAnalyticsForDate(
+            $request->restaurant_id,
+            $request->day,
+            $request->month,
+            $request->year
         );
 
         return redirect()->back();

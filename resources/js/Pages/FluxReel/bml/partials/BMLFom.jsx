@@ -6,7 +6,7 @@ import {
     Save,
     Calendar,
     ChevronsUpDown,
-    AlertCircle
+    AlertCircle,
 } from "lucide-react";
 import { useToast, ToastContainer } from "@/Components/Toast";
 
@@ -222,7 +222,7 @@ export default function BMLForm({
     const { auth, processing } = usePage().props;
     const isGuest = Boolean(auth.user.guest);
     console.log("Guest status:", auth.user.guest, "isGuest:", isGuest);
-    
+
     const { toasts, addToast, removeToast } = useToast();
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
@@ -237,6 +237,24 @@ export default function BMLForm({
         key: "date",
         direction: "ascending",
     });
+
+    useEffect(() => {
+        if (restaurant && (!existingEntries || existingEntries.length === 0)) {
+            router.get(
+                route("bml.show", [restaurant.slug]),
+                {
+                    month: monthDate.getMonth() + 1,
+                    year: monthDate.getFullYear(),
+                    type: selectedType,
+                },
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onFinish: () => setIsLoading(false),
+                }
+            );
+        }
+    }, [restaurant]);
 
     const getDefaultRow = () => ({
         id: Date.now() + Math.floor(Math.random() * 1000),
@@ -393,7 +411,10 @@ export default function BMLForm({
 
     const addRow = () => {
         if (isGuest) {
-            addToast("Mode consultation uniquement. Vous ne pouvez pas ajouter de lignes.", "warning");
+            addToast(
+                "Mode consultation uniquement. Vous ne pouvez pas ajouter de lignes.",
+                "warning"
+            );
             return;
         }
         setRows((currentRows) => [...currentRows, getDefaultRow()]);
@@ -402,10 +423,13 @@ export default function BMLForm({
     // Delete a row
     const removeRow = async (id) => {
         if (isGuest) {
-            addToast("Mode consultation uniquement. Vous ne pouvez pas supprimer de lignes.", "warning");
+            addToast(
+                "Mode consultation uniquement. Vous ne pouvez pas supprimer de lignes.",
+                "warning"
+            );
             return;
         }
-        
+
         // Check if this is an existing row (not newly created)
         const rowToRemove = rows.find((row) => row.id === id);
 
@@ -476,10 +500,13 @@ export default function BMLForm({
     // Save a single row
     const saveRow = async (rowId) => {
         if (isGuest) {
-            addToast("Mode consultation uniquement. Vous ne pouvez pas enregistrer de modifications.", "warning");
+            addToast(
+                "Mode consultation uniquement. Vous ne pouvez pas enregistrer de modifications.",
+                "warning"
+            );
             return;
         }
-        
+
         const row = rows.find((r) => r.id === rowId);
         if (!row) return;
 
@@ -573,7 +600,7 @@ export default function BMLForm({
 
     const handleInputChange = (id, field, value) => {
         if (isGuest) return; // Prevent changes if user is a guest
-        
+
         setRows((currentRows) =>
             currentRows.map((row) => {
                 if (row.id === id) {
@@ -602,7 +629,6 @@ export default function BMLForm({
     };
 
     const handleTypeChange = (e) => {
-        
         try {
             const newType = e.target.value;
             console.log("Type changed to:", newType);
@@ -621,17 +647,19 @@ export default function BMLForm({
             setSelectedType(newType);
             setIsLoading(true);
 
-            const typeParam = newType === "" ? null : newType;
+            // IMPORTANT: Don't convert empty string to null
+            // const typeParam = newType === "" ? null : newType;
+            // Instead, just use the string directly
 
             const url = route("bml.show", [restaurant.slug]);
-            console.log("Navigating to:", url, "with type:", typeParam);
+            console.log("Navigating to:", url, "with type:", newType);
 
             router.get(
                 url,
                 {
                     month: monthDate.getMonth() + 1,
                     year: monthDate.getFullYear(),
-                    type: typeParam,
+                    type: newType, // Use the string directly
                 },
                 {
                     preserveScroll: true,
@@ -661,7 +689,6 @@ export default function BMLForm({
     };
 
     const handleMonthChange = (newDate) => {
-        
         // Check for unsaved changes
         if (hasUnsavedChanges) {
             if (
@@ -709,9 +736,12 @@ export default function BMLForm({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         if (isGuest) {
-            addToast("Mode consultation uniquement. Vous ne pouvez pas enregistrer de modifications.", "warning");
+            addToast(
+                "Mode consultation uniquement. Vous ne pouvez pas enregistrer de modifications.",
+                "warning"
+            );
             return;
         }
 
@@ -774,7 +804,7 @@ export default function BMLForm({
 
     const handleKeyPress = (e, rowId, fieldName, currentIndex) => {
         if (isGuest) return; // Prevent key actions if user is a guest
-        
+
         // If Enter is pressed, save the row
         if (e.key === "Enter") {
             e.preventDefault();
@@ -825,11 +855,14 @@ export default function BMLForm({
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg mb-4 p-3">
                     <div className="flex items-center justify-center">
                         <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
-                        <span className="font-medium text-yellow-800">Mode consultation uniquement. Vous ne pouvez pas modifier les données.</span>
+                        <span className="font-medium text-yellow-800">
+                            Mode consultation uniquement. Vous ne pouvez pas
+                            modifier les données.
+                        </span>
                     </div>
                 </div>
             )}
-            
+
             <div className="bg-white rounded-lg shadow p-4 mb-6">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div className="flex-1 flex items-center gap-4">
@@ -976,12 +1009,16 @@ export default function BMLForm({
                                                             ? "border-blue-300"
                                                             : ""
                                                     } ${
-                                                        isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                                        isGuest
+                                                            ? "bg-gray-100 cursor-not-allowed"
+                                                            : ""
                                                     }`}
                                                     required
                                                     disabled={
                                                         isLoading ||
-                                                        rowSavingStates[row.id] ||
+                                                        rowSavingStates[
+                                                            row.id
+                                                        ] ||
                                                         isGuest
                                                     }
                                                     readOnly={isGuest}
@@ -1038,7 +1075,9 @@ export default function BMLForm({
                                                         ? "border-blue-300"
                                                         : ""
                                                 } ${
-                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                                    isGuest
+                                                        ? "bg-gray-100 cursor-not-allowed"
+                                                        : ""
                                                 }`}
                                                 required
                                                 disabled={true}
@@ -1070,7 +1109,9 @@ export default function BMLForm({
                                                         ? "border-blue-300"
                                                         : ""
                                                 } ${
-                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                                    isGuest
+                                                        ? "bg-gray-100 cursor-not-allowed"
+                                                        : ""
                                                 }`}
                                                 required
                                                 disabled={
@@ -1081,7 +1122,8 @@ export default function BMLForm({
                                                 readOnly={isGuest}
                                                 autoComplete="off"
                                                 onFocus={() =>
-                                                    !isGuest && setActiveDropdown(row.id)
+                                                    !isGuest &&
+                                                    setActiveDropdown(row.id)
                                                 }
                                                 onBlur={() => {
                                                     setTimeout(
@@ -1162,7 +1204,9 @@ export default function BMLForm({
                                                         ? "border-blue-300"
                                                         : ""
                                                 } ${
-                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                                    isGuest
+                                                        ? "bg-gray-100 cursor-not-allowed"
+                                                        : ""
                                                 }`}
                                                 min="0"
                                                 step="0.01"
@@ -1201,12 +1245,16 @@ export default function BMLForm({
                                                             ? "border-blue-300"
                                                             : ""
                                                     } ${
-                                                        isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                                        isGuest
+                                                            ? "bg-gray-100 cursor-not-allowed"
+                                                            : ""
                                                     }`}
                                                     required
                                                     disabled={
                                                         isLoading ||
-                                                        rowSavingStates[row.id] ||
+                                                        rowSavingStates[
+                                                            row.id
+                                                        ] ||
                                                         isGuest
                                                     }
                                                     readOnly={isGuest}
@@ -1247,7 +1295,9 @@ export default function BMLForm({
                                                         ? "border-blue-300"
                                                         : ""
                                                 } ${
-                                                    isGuest ? "bg-gray-100 cursor-not-allowed" : ""
+                                                    isGuest
+                                                        ? "bg-gray-100 cursor-not-allowed"
+                                                        : ""
                                                 }`}
                                                 min="0"
                                                 step="0.01"
@@ -1276,17 +1326,24 @@ export default function BMLForm({
                                                         saveRow(row.id)
                                                     }
                                                     className={`text-blue-600 hover:text-blue-800 ${
-                                                        !row.hasChanges || isGuest
+                                                        !row.hasChanges ||
+                                                        isGuest
                                                             ? "opacity-50 cursor-not-allowed"
                                                             : ""
                                                     }`}
                                                     disabled={
                                                         isLoading ||
                                                         !row.hasChanges ||
-                                                        rowSavingStates[row.id] ||
+                                                        rowSavingStates[
+                                                            row.id
+                                                        ] ||
                                                         isGuest
                                                     }
-                                                    title={isGuest ? "Mode consultation uniquement" : "Enregistrer cette ligne"}
+                                                    title={
+                                                        isGuest
+                                                            ? "Mode consultation uniquement"
+                                                            : "Enregistrer cette ligne"
+                                                    }
                                                 >
                                                     {rowSavingStates[row.id] ? (
                                                         <div className="h-5 w-5 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
@@ -1300,17 +1357,25 @@ export default function BMLForm({
                                                         removeRow(row.id)
                                                     }
                                                     className={`text-red-600 hover:text-red-800 ${
-                                                        isGuest || rows.length <= 1 || rowSavingStates[row.id]
+                                                        isGuest ||
+                                                        rows.length <= 1 ||
+                                                        rowSavingStates[row.id]
                                                             ? "opacity-50 cursor-not-allowed"
                                                             : ""
                                                     }`}
                                                     disabled={
                                                         isLoading ||
                                                         rows.length <= 1 ||
-                                                        rowSavingStates[row.id] ||
+                                                        rowSavingStates[
+                                                            row.id
+                                                        ] ||
                                                         isGuest
                                                     }
-                                                    title={isGuest ? "Mode consultation uniquement" : "Supprimer cette ligne"}
+                                                    title={
+                                                        isGuest
+                                                            ? "Mode consultation uniquement"
+                                                            : "Supprimer cette ligne"
+                                                    }
                                                 >
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>
@@ -1390,10 +1455,16 @@ export default function BMLForm({
                             type="button"
                             onClick={addRow}
                             className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
-                                isLoading || isGuest ? "opacity-50 cursor-not-allowed" : ""
+                                isLoading || isGuest
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
                             }`}
                             disabled={isLoading || isGuest}
-                            title={isGuest ? "Mode consultation uniquement" : "Ajouter une ligne"}
+                            title={
+                                isGuest
+                                    ? "Mode consultation uniquement"
+                                    : "Ajouter une ligne"
+                            }
                         >
                             <PlusCircle className="h-4 w-4 mr-2" />
                             Ajouter une ligne
@@ -1406,8 +1477,14 @@ export default function BMLForm({
                                     ? "opacity-50 cursor-not-allowed"
                                     : ""
                             }`}
-                            disabled={isLoading || !hasUnsavedChanges || isGuest}
-                            title={isGuest ? "Mode consultation uniquement" : "Enregistrer toutes les modifications"}
+                            disabled={
+                                isLoading || !hasUnsavedChanges || isGuest
+                            }
+                            title={
+                                isGuest
+                                    ? "Mode consultation uniquement"
+                                    : "Enregistrer toutes les modifications"
+                            }
                         >
                             {isLoading
                                 ? "Enregistrement..."

@@ -22,6 +22,7 @@ class BMLController extends Controller
         ]);
     }
 
+    // Modify the show method in BMLController.php
     public function show(Request $request, $restaurantSlug)
     {
         // Force log all incoming parameters to debug
@@ -35,8 +36,8 @@ class BMLController extends Controller
         $currentYear = $request->get('year', now()->year);
         $type = $request->get('type', ''); // Default to empty string
 
-        // Convert 'null' or 'undefined' strings to actual empty string
-        if ($type === 'null' || $type === 'undefined') {
+        // Ensure type is properly handled for various null-like values
+        if ($type === null || $type === 'null' || $type === 'undefined' || !isset($type)) {
             $type = '';
         }
 
@@ -151,6 +152,7 @@ class BMLController extends Controller
             // Track updated day totals
             $updatedDayTotals = [];
             $createdIds = [];
+            $updatedAnalyticsData = []; // Track days that need analytics update
 
             // Process each date and type combination separately
             foreach ($rowsByDateAndType as $dateTypeKey => $rows) {
@@ -213,6 +215,23 @@ class BMLController extends Controller
                     'total' => $dayTotal,
                     'date' => $date
                 ];
+
+                // Add to analytics update list
+                $updatedAnalyticsData[$day . '-' . $month . '-' . $year] = [
+                    'day' => $day,
+                    'month' => $month,
+                    'year' => $year
+                ];
+            }
+
+            // Update analytics data for each affected day
+            foreach ($updatedAnalyticsData as $dateKey => $dateData) {
+                $this->updateAnalyticsForDate(
+                    $request->restaurant_id,
+                    $dateData['day'],
+                    $dateData['month'],
+                    $dateData['year']
+                );
             }
 
             // Commit transaction if everything succeeded
@@ -317,10 +336,14 @@ class BMLController extends Controller
 
             $createdId = null;
             $updatedDayTotals = [];
+            $updatedAnalyticsData = []; // Track days that need analytics update
 
             // Process each row (typically just one)
             foreach ($request->rows as $rowData) {
                 $date = Carbon::parse($rowData['date']);
+                $day = $date->day;
+                $month = $date->month;
+                $year = $date->year;
 
                 // Check if there's an existing entry to update
                 if (isset($rowData['originalId']) && $rowData['originalId']) {
@@ -361,22 +384,39 @@ class BMLController extends Controller
                 // Update the day total
                 $this->updateDayTotal(
                     $request->restaurant_id,
-                    $date->day,
-                    $date->month,
-                    $date->year,
+                    $day,
+                    $month,
+                    $year,
                     $rowData['type'],
                     $request->day_total
                 );
 
                 // Add to updated day totals
                 $updatedDayTotals[] = [
-                    'day' => $date->day,
-                    'month' => $date->month,
-                    'year' => $date->year,
+                    'day' => $day,
+                    'month' => $month,
+                    'year' => $year,
                     'type' => $rowData['type'],
                     'total' => $request->day_total,
                     'date' => $date->format('Y-m-d')
                 ];
+
+                // Add to analytics update list
+                $updatedAnalyticsData[$day . '-' . $month . '-' . $year] = [
+                    'day' => $day,
+                    'month' => $month,
+                    'year' => $year
+                ];
+            }
+
+            // Update analytics data for each affected day
+            foreach ($updatedAnalyticsData as $dateKey => $dateData) {
+                $this->updateAnalyticsForDate(
+                    $request->restaurant_id,
+                    $dateData['day'],
+                    $dateData['month'],
+                    $dateData['year']
+                );
             }
 
             DB::commit();
@@ -454,6 +494,9 @@ class BMLController extends Controller
                 $newDayTotal
             );
 
+            // Update analytics for this day
+            $this->updateAnalyticsForDate($request->restaurant_id, $day, $month, $year);
+
             DB::commit();
 
             // Find the restaurant
@@ -480,5 +523,14 @@ class BMLController extends Controller
             // Redirect back with error
             return redirect()->back()->with('error', 'Failed to delete entry: ' . $e->getMessage());
         }
+    }
+
+    private function updateAnalyticsForDate($restaurantId, $day, $month, $year)
+    {
+        // Get the CostAnalyticsController instance
+        $costAnalyticsController = app()->make(CostAnalyticsController::class);
+
+        // Call the recalculateForDay method
+        $costAnalyticsController->recalculateForDay($restaurantId, $day, $month, $year);
     }
 }
