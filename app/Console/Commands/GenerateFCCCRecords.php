@@ -5,11 +5,27 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class GenerateFCCCRecords extends Command
 {
     protected $signature = 'generate:fccc {startMonth?} {startYear?} {endMonth?} {endYear?}';
     protected $description = 'Generate Food Cost and Consumable Cost records for specified period';
+
+    // Define constant arrays matching the ones in CostAnalyticsController
+    protected $fcTypes = [
+        'cuisine',
+        'pizza',
+        'economat',
+        'bml_giada',
+        'bml_gastro',
+        'bml_legume',
+        'bml_boisson',
+        'ramadan'
+    ];
+
+    // Define the consumable cost type
+    protected $ccTypes = ['consommable'];
 
     public function handle()
     {
@@ -21,33 +37,17 @@ class GenerateFCCCRecords extends Command
 
         $this->info("Generating FC and CC records from {$startMonth}/{$startYear} to {$endMonth}/{$endYear}");
 
-        // Define the food cost types
-        $fcTypes = [
-            'cuisine',
-            'pizza',
-            'economat',
-            'bml_giada',
-            'bml_gastro',
-            'bml_legume',
-            'bml_boisson',
-            'ramadan'
-        ];
-
-        // Define the consumable cost type
-        $ccTypes = ['consommable'];
-
         // Get all restaurants
-        $restaurants = DB::table('day_totals')
-            ->select('restaurant_id')
-            ->distinct()
-            ->get();
+        $restaurants = DB::table('restaurants')->select('id', 'name')->get();
 
         $this->info("Found " . count($restaurants) . " restaurants");
 
         // Process each restaurant
         foreach ($restaurants as $restaurant) {
-            $restaurantId = $restaurant->restaurant_id;
-            $this->info("Processing restaurant ID: {$restaurantId}");
+            $restaurantId = $restaurant->id;
+            $restaurantName = $restaurant->name;
+            
+            $this->info("Processing restaurant: {$restaurantName} (ID: {$restaurantId})");
 
             // Process each month in the range
             $currentDate = Carbon::createFromDate($startYear, $startMonth, 1);
@@ -58,95 +58,69 @@ class GenerateFCCCRecords extends Command
                 $month = $currentDate->month;
                 $daysInMonth = $currentDate->daysInMonth;
 
-                $this->info("Processing {$month}/{$year} for restaurant {$restaurantId}");
+                $this->info("Processing {$month}/{$year} for restaurant {$restaurantName}");
 
-                // Get restaurant name based on ID
-                $restaurantName = '';
-                switch ($restaurantId) {
-                    case 1:
-                        $restaurantName = 'Cucina Napoli - Anoual';
-                        break;
-                    case 2:
-                        $restaurantName = 'Cucina Napoli - Palmier';
-                        break;
-                    case 5:
-                        $restaurantName = 'Cucina Napoli - Ziraoui';
-                        break;
-                    default:
-                        // Handle other restaurant mappings as needed
-                        $this->warn("Unknown restaurant ID: {$restaurantId}");
-                        break;
-                }
+                // Get all revenues for the month upfront
+                $this->info("Getting revenue data...");
+                $revenueData = DB::table('cloture_caisses')
+                    ->where('restau', $restaurantName)
+                    ->whereYear('date', $year)
+                    ->whereMonth('date', $month)
+                    ->select(DB::raw('DAY(date) as day'), DB::raw('SUM(montant) as daily_revenue'))
+                    ->groupBy(DB::raw('DAY(date)'))
+                    ->get()
+                    ->keyBy('day');
 
-                // Get all revenues for the month upfront (to avoid multiple queries)
-                $monthlyRevenues = [];
-                $cumulativeRevenues = [];
-                $totalMonthlyRevenue = 0;
+                // Get all FC totals for the month
+                $this->info("Getting FC data...");
+                $fcData = DB::table('day_totals')
+                    ->where('restaurant_id', $restaurantId)
+                    ->where('month', $month)
+                    ->where('year', $year)
+                    ->whereIn('type', $this->fcTypes)
+                    ->select('day', DB::raw('SUM(total) as daily_fc'))
+                    ->groupBy('day')
+                    ->get()
+                    ->keyBy('day');
 
+                // Get all CC totals for the month
+                $this->info("Getting CC data...");
+                $ccData = DB::table('day_totals')
+                    ->where('restaurant_id', $restaurantId)
+                    ->where('month', $month)
+                    ->where('year', $year)
+                    ->whereIn('type', $this->ccTypes)
+                    ->select('day', DB::raw('SUM(total) as daily_cc'))
+                    ->groupBy('day')
+                    ->get()
+                    ->keyBy('day');
+
+                // Calculate cumulative values
+                $cumulativeFC = 0;
+                $cumulativeCC = 0;
+                $cumulativeRevenue = 0;
+
+                // Now create records for each day
                 for ($day = 1; $day <= $daysInMonth; $day++) {
-                    $dailyRev = DB::table('cloture_caisses')
-                        ->where('restau', $restaurantName)
-                        ->whereDate('date', "{$year}-{$month}-{$day}")
-                        ->sum('montant');
+                    // Get the daily values (or 0 if no data)
+                    $fcAmount = isset($fcData[$day]) ? $fcData[$day]->daily_fc : 0;
+                    $ccAmount = isset($ccData[$day]) ? $ccData[$day]->daily_cc : 0;
+                    $dailyRevenue = isset($revenueData[$day]) ? $revenueData[$day]->daily_revenue : 0;
+                    
+                    // Update cumulative values
+                    $cumulativeFC += $fcAmount;
+                    $cumulativeCC += $ccAmount;
+                    $cumulativeRevenue += $dailyRevenue;
 
-                    $monthlyRevenues[$day] = $dailyRev;
-                    $totalMonthlyRevenue += $dailyRev;
-                    $cumulativeRevenues[$day] = $totalMonthlyRevenue;
-                }
-
-                // Get all FC/CC totals for the month upfront
-                $monthlyFC = [];
-                $cumulativeFC = [];
-                $totalMonthlyFC = 0;
-
-                $monthlyCC = [];
-                $cumulativeCC = [];
-                $totalMonthlyCC = 0;
-
-                for ($day = 1; $day <= $daysInMonth; $day++) {
-                    // Calculate FC (Food Cost) for this day
-                    $fcAmount = DB::table('day_totals')
-                        ->where('restaurant_id', $restaurantId)
-                        ->where('day', $day)
-                        ->where('month', $month)
-                        ->where('year', $year)
-                        ->whereIn('type', $fcTypes)
-                        ->sum('total');
-
-                    $monthlyFC[$day] = $fcAmount;
-                    $totalMonthlyFC += $fcAmount;
-                    $cumulativeFC[$day] = $totalMonthlyFC;
-
-                    // Calculate CC (Consumable Cost) for this day
-                    $ccAmount = DB::table('day_totals')
-                        ->where('restaurant_id', $restaurantId)
-                        ->where('day', $day)
-                        ->where('month', $month)
-                        ->where('year', $year)
-                        ->whereIn('type', $ccTypes)
-                        ->sum('total');
-
-                    $monthlyCC[$day] = $ccAmount;
-                    $totalMonthlyCC += $ccAmount;
-                    $cumulativeCC[$day] = $totalMonthlyCC;
-                }
-
-                // Now create records for each day based on the pre-calculated values
-                for ($day = 1; $day <= $daysInMonth; $day++) {
-                    // Get the daily values
-                    $fcAmount = $monthlyFC[$day] ?? 0;
-                    $ccAmount = $monthlyCC[$day] ?? 0;
-                    $fcCumul = $cumulativeFC[$day] ?? 0;
-                    $ccCumul = $cumulativeCC[$day] ?? 0;
-                    $dailyRevenue = $monthlyRevenues[$day] ?? 0;
-                    $cumulRevenue = $cumulativeRevenues[$day] ?? 0;
-
-                    // Check if there's revenue for this day
-                    $hasRevenue = isset($monthlyRevenues[$day]) && $monthlyRevenues[$day] > 0;
-
-                    // Calculate percentages based on cumulative values only if revenue exists
-                    $fcPercentage = $hasRevenue && $cumulRevenue > 0 ? ($fcCumul / $cumulRevenue) * 100 : null;
-                    $ccPercentage = $hasRevenue && $cumulRevenue > 0 ? ($ccCumul / $cumulRevenue) * 100 : null;
+                    // Calculate percentages only if revenue exists for the day
+                    // IMPORTANT: Following the same logic as CostAnalyticsController
+                    $fcPercentage = null;
+                    $ccPercentage = null;
+                    
+                    if ($dailyRevenue > 0) {
+                        $fcPercentage = ($fcAmount / $dailyRevenue) * 100;
+                        $ccPercentage = ($ccAmount / $dailyRevenue) * 100;
+                    }
 
                     // Store FC record
                     $this->storeRecord([
@@ -156,9 +130,9 @@ class GenerateFCCCRecords extends Command
                         'year' => $year,
                         'type' => 'FC',
                         'amount' => $fcAmount,
-                        'cumul' => $fcCumul,
+                        'cumul' => $cumulativeFC,
                         'revenue' => $dailyRevenue,
-                        'cumul_revenue' => $cumulRevenue,
+                        'cumul_revenue' => $cumulativeRevenue,
                         'percentage' => $fcPercentage
                     ]);
 
@@ -170,25 +144,28 @@ class GenerateFCCCRecords extends Command
                         'year' => $year,
                         'type' => 'CC',
                         'amount' => $ccAmount,
-                        'cumul' => $ccCumul,
+                        'cumul' => $cumulativeCC,
                         'revenue' => $dailyRevenue,
-                        'cumul_revenue' => $cumulRevenue,
+                        'cumul_revenue' => $cumulativeRevenue,
                         'percentage' => $ccPercentage
                     ]);
 
-                    // Log message depending on whether there's revenue
-                    if ($hasRevenue) {
-                        $this->info("Created FC/CC records for {$day}/{$month}/{$year} - Restaurant {$restaurantId}");
-                        $this->info("FC: {$fcAmount} (Cumul: {$fcCumul}) - {$fcPercentage}%");
-                        $this->info("CC: {$ccAmount} (Cumul: {$ccCumul}) - {$ccPercentage}%");
-                        $this->info("Revenue: {$dailyRevenue} (Cumul: {$cumulRevenue})");
+                    // Log progress
+                    if ($dailyRevenue > 0) {
+                        $this->info("Day {$day}: FC: {$fcAmount} ({$fcPercentage}%), CC: {$ccAmount} ({$ccPercentage}%), Revenue: {$dailyRevenue}");
                     } else {
-                        $this->info("Created FC/CC records (without percentages) for {$day}/{$month}/{$year} - Restaurant {$restaurantId}");
-                        $this->info("FC: {$fcAmount} (Cumul: {$fcCumul})");
-                        $this->info("CC: {$ccAmount} (Cumul: {$ccCumul})");
-                        $this->info("No revenue data available");
+                        $this->info("Day {$day}: FC: {$fcAmount}, CC: {$ccAmount}, No revenue");
                     }
                 }
+
+                // Calculate and log monthly summary
+                $fcAverage = $cumulativeRevenue > 0 ? ($cumulativeFC / $cumulativeRevenue) * 100 : null;
+                $ccAverage = $cumulativeRevenue > 0 ? ($cumulativeCC / $cumulativeRevenue) * 100 : null;
+                
+                $this->info("Month {$month}/{$year} Summary:");
+                $this->info("Total FC: {$cumulativeFC}, Average: " . ($fcAverage !== null ? round($fcAverage, 2) . '%' : 'N/A'));
+                $this->info("Total CC: {$cumulativeCC}, Average: " . ($ccAverage !== null ? round($ccAverage, 2) . '%' : 'N/A'));
+                $this->info("Total Revenue: {$cumulativeRevenue}");
 
                 // Move to next month
                 $currentDate->addMonth();
@@ -196,50 +173,64 @@ class GenerateFCCCRecords extends Command
         }
 
         $this->info("FC and CC records generation completed!");
+        
+        // Log completion for monitoring
+        Log::info('Generated FC and CC records', [
+            'period' => "{$startMonth}/{$startYear} to {$endMonth}/{$endYear}",
+            'completed_at' => now()
+        ]);
     }
 
     private function storeRecord($data)
     {
-        // Check if record already exists
-        $exists = DB::table('cost_analytics')->where([
-            'restaurant_id' => $data['restaurant_id'],
-            'day' => $data['day'],
-            'month' => $data['month'],
-            'year' => $data['year'],
-            'type' => $data['type']
-        ])->exists();
-
-        if ($exists) {
-            // Update existing record
-            DB::table('cost_analytics')->where([
+        try {
+            // Check if record already exists
+            $exists = DB::table('cost_analytics')->where([
                 'restaurant_id' => $data['restaurant_id'],
                 'day' => $data['day'],
                 'month' => $data['month'],
                 'year' => $data['year'],
                 'type' => $data['type']
-            ])->update([
-                'amount' => $data['amount'],
-                'cumul' => $data['cumul'],
-                'revenue' => $data['revenue'],
-                'cumul_revenue' => $data['cumul_revenue'],
-                'percentage' => $data['percentage'],
-                'updated_at' => now()
-            ]);
-        } else {
-            // Create new record
-            DB::table('cost_analytics')->insert([
-                'restaurant_id' => $data['restaurant_id'],
-                'day' => $data['day'],
-                'month' => $data['month'],
-                'year' => $data['year'],
-                'type' => $data['type'],
-                'amount' => $data['amount'],
-                'cumul' => $data['cumul'],
-                'revenue' => $data['revenue'],
-                'cumul_revenue' => $data['cumul_revenue'],
-                'percentage' => $data['percentage'],
-                'created_at' => now(),
-                'updated_at' => now()
+            ])->exists();
+
+            if ($exists) {
+                // Update existing record
+                DB::table('cost_analytics')->where([
+                    'restaurant_id' => $data['restaurant_id'],
+                    'day' => $data['day'],
+                    'month' => $data['month'],
+                    'year' => $data['year'],
+                    'type' => $data['type']
+                ])->update([
+                    'amount' => $data['amount'],
+                    'cumul' => $data['cumul'],
+                    'revenue' => $data['revenue'],
+                    'cumul_revenue' => $data['cumul_revenue'],
+                    'percentage' => $data['percentage'],
+                    'updated_at' => now()
+                ]);
+            } else {
+                // Create new record
+                DB::table('cost_analytics')->insert([
+                    'restaurant_id' => $data['restaurant_id'],
+                    'day' => $data['day'],
+                    'month' => $data['month'],
+                    'year' => $data['year'],
+                    'type' => $data['type'],
+                    'amount' => $data['amount'],
+                    'cumul' => $data['cumul'],
+                    'revenue' => $data['revenue'],
+                    'cumul_revenue' => $data['cumul_revenue'],
+                    'percentage' => $data['percentage'],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->error("Error storing record: " . $e->getMessage());
+            Log::error('Error in GenerateFCCCRecords', [
+                'error' => $e->getMessage(),
+                'data' => $data
             ]);
         }
     }
