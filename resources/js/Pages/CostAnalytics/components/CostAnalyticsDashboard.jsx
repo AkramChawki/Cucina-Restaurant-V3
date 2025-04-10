@@ -325,7 +325,7 @@ const CostAnalyticsDashboard = ({
                                     <h2 className="text-lg font-semibold text-blue-700">
                                         Food Cost (FC)
                                     </h2>
-                                    <div className="mt-2 grid grid-cols-2 gap-3">
+                                    <div className="mt-2 grid grid-cols-2 gap-5">
                                         <div>
                                             <p className="text-sm text-gray-500">
                                                 Total
@@ -354,7 +354,7 @@ const CostAnalyticsDashboard = ({
                                     <h2 className="text-lg font-semibold text-green-700">
                                         Consumable Cost (CC)
                                     </h2>
-                                    <div className="mt-2 grid grid-cols-2 gap-3">
+                                    <div className="mt-2 grid grid-cols-2 gap-5">
                                         <div>
                                             <p className="text-sm text-gray-500">
                                                 Total
@@ -383,7 +383,7 @@ const CostAnalyticsDashboard = ({
                                     <h2 className="text-lg font-semibold text-green-700">
                                     Total (FC + CC)
                                     </h2>
-                                    <div className="mt-2 grid grid-cols-2 gap-3">
+                                    <div className="mt-2 grid grid-cols-2 gap-5">
                                         <div>
                                             <p className="text-sm text-gray-500">
                                                 Total Costs
@@ -414,7 +414,7 @@ const CostAnalyticsDashboard = ({
                                     <h2 className="text-lg font-semibold text-purple-700">
                                         Revenue
                                     </h2>
-                                    <div className="mt-2 grid grid-cols-2 gap-3">
+                                    <div className="mt-2 grid grid-cols-2 gap-5">
                                         <div>
                                             <p className="text-sm text-gray-500">
                                                 Total Revenue
