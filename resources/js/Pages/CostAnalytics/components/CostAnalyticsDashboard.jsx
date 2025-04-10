@@ -437,7 +437,7 @@ const CostAnalyticsDashboard = ({
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-500">
-                                                % of Revenue
+                                                % of COSTS
                                             </p>
                                             <p className="text-xl font-bold">
                                                 {formatPercentage(
