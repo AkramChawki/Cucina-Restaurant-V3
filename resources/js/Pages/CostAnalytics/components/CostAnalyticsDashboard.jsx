@@ -330,7 +330,7 @@ const CostAnalyticsDashboard = ({
                                             <p className="text-sm text-gray-500">
                                                 Total
                                             </p>
-                                            <p className="text-xl font-bold">
+                                            <p className="text-lg font-bold">
                                                 {formatCurrency(
                                                     monthlySummary.fc.total
                                                 )}
@@ -340,7 +340,7 @@ const CostAnalyticsDashboard = ({
                                             <p className="text-sm text-gray-500">
                                                 Average
                                             </p>
-                                            <p className="text-xl font-bold">
+                                            <p className="text-lg font-bold">
                                                 {formatPercentage(
                                                     monthlySummary.fc.average
                                                 )}
@@ -359,7 +359,7 @@ const CostAnalyticsDashboard = ({
                                             <p className="text-sm text-gray-500">
                                                 Total
                                             </p>
-                                            <p className="text-xl font-bold">
+                                            <p className="text-lg font-bold">
                                                 {formatCurrency(
                                                     monthlySummary.cc.total
                                                 )}
@@ -369,7 +369,7 @@ const CostAnalyticsDashboard = ({
                                             <p className="text-sm text-gray-500">
                                                 Average
                                             </p>
-                                            <p className="text-xl font-bold">
+                                            <p className="text-lg font-bold">
                                                 {formatPercentage(
                                                     monthlySummary.cc.average
                                                 )}
@@ -388,7 +388,7 @@ const CostAnalyticsDashboard = ({
                                             <p className="text-sm text-gray-500">
                                                 Total Costs
                                             </p>
-                                            <p className="text-xl font-bold">
+                                            <p className="text-lg font-bold">
                                                 {formatCurrency(
                                                     monthlySummary.combined
                                                         .total
@@ -399,7 +399,7 @@ const CostAnalyticsDashboard = ({
                                             <p className="text-sm text-gray-500">
                                                 % of COSTS
                                             </p>
-                                            <p className="text-xl font-bold">
+                                            <p className="text-lg font-bold">
                                                 {formatPercentage(
                                                     monthlySummary.combined
                                                         .percentage
