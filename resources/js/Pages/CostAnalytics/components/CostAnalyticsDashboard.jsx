@@ -346,26 +346,6 @@ const CostAnalyticsDashboard = ({
                                                 )}
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">
-                                                Highest
-                                            </p>
-                                            <p className="text-lg font-medium">
-                                                {formatPercentage(
-                                                    monthlySummary.fc.highest
-                                                )}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">
-                                                Lowest
-                                            </p>
-                                            <p className="text-lg font-medium">
-                                                {formatPercentage(
-                                                    monthlySummary.fc.lowest
-                                                )}
-                                            </p>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -395,33 +375,13 @@ const CostAnalyticsDashboard = ({
                                                 )}
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">
-                                                Highest
-                                            </p>
-                                            <p className="text-lg font-medium">
-                                                {formatPercentage(
-                                                    monthlySummary.cc.highest
-                                                )}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">
-                                                Lowest
-                                            </p>
-                                            <p className="text-lg font-medium">
-                                                {formatPercentage(
-                                                    monthlySummary.cc.lowest
-                                                )}
-                                            </p>
-                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Combined Card */}
-                                <div className="bg-purple-50 p-4 rounded-lg shadow">
-                                    <h2 className="text-lg font-semibold text-purple-700">
-                                        Total (FC + CC)
+                                {/* Costs Card */}
+                                <div className="bg-green-50 p-4 rounded-lg shadow">
+                                    <h2 className="text-lg font-semibold text-green-700">
+                                    Total (FC + CC)
                                     </h2>
                                     <div className="mt-2 grid grid-cols-2 gap-2">
                                         <div>
@@ -446,6 +406,15 @@ const CostAnalyticsDashboard = ({
                                                 )}
                                             </p>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Combined Card */}
+                                <div className="bg-purple-50 p-4 rounded-lg shadow">
+                                    <h2 className="text-lg font-semibold text-purple-700">
+                                        Revenue
+                                    </h2>
+                                    <div className="mt-2 grid grid-cols-2 gap-2">
                                         <div>
                                             <p className="text-sm text-gray-500">
                                                 Total Revenue
