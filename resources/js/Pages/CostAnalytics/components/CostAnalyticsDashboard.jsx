@@ -319,7 +319,7 @@ const CostAnalyticsDashboard = ({
                             </div>
 
                             {/* Summary Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                                 {/* FC Card */}
                                 <div className="bg-blue-50 p-4 rounded-lg shadow">
                                     <h2 className="text-lg font-semibold text-blue-700">
