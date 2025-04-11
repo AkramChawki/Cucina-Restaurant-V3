@@ -10,19 +10,41 @@ export default function SharedCostForm({
 }) {
     const { auth, processing } = usePage().props;
     // Fix: Use proper type conversion for MySQL tinyint(1) boolean
-    const isGuest = Boolean(auth.user.guest);
-    console.log("Guest status:", auth.user.guest, "isGuest:", isGuest);
+    const isGuest = auth.user.guest === 1;
+    
+    // Parse user roles from JSON if needed
+    const userRoles = typeof auth.user.role === 'string' 
+        ? JSON.parse(auth.user.role) 
+        : (Array.isArray(auth.user.role) ? auth.user.role : []);
+    
+    // Check if user has specific roles
+    const isDataEntryRole = checkDataEntryRole(userRoles);
+    const isVerifierRole = checkVerifierRole(userRoles);
+    
+    // Helper functions to check roles
+    function checkDataEntryRole(roles) {
+        const dataEntryRoles = ['Cost-Cuisine', 'Cost-Pizza', 'Cost-Economat', 'Cost-Consomable'];
+        return roles.some(role => dataEntryRoles.includes(role));
+    }
+    
+    function checkVerifierRole(roles) {
+        const verifierRoles = ['Audit', 'Admin', 'Analytics'];
+        return roles.some(role => verifierRoles.includes(role));
+    }
     
     const [monthDate, setMonthDate] = useState(
         new Date(currentMonth.year, currentMonth.month - 1)
     );
+    
+    const [selectedDay, setSelectedDay] = useState(null);
+    const [showVerifyModal, setShowVerifyModal] = useState(false);
+    
     const daysInMonth = Array.from(
         { length: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate() },
         (_, i) => i + 1
     );
     
     const handleMonthChange = (e) => {
-        
         const newDate = new Date(e.target.value);
         setMonthDate(newDate);
 
@@ -68,17 +90,24 @@ export default function SharedCostForm({
     const handleValueChange = (product, day, period, value) => {
         if (isGuest) return; // Prevent changes if user is a guest
         
+        // Check if the user can edit this entry
+        if (!canEditEntry(product, day)) {
+            alert("You don't have permission to edit this entry.");
+            return;
+        }
+        
         const morning = period === 'morning' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'morning')) || 0;
         const afternoon = period === 'afternoon' ? parseFloat(value) || 0 : parseFloat(getValue(product, day, 'afternoon')) || 0;
         const productTotal = (morning + afternoon) * (product.prix || 0);
         let dailyData = { ...(product.values || {}) };
         if (!dailyData[day]) {
-            dailyData[day] = { morning: 0, afternoon: 0, total: 0 };
+            dailyData[day] = { morning: 0, afternoon: 0, total: 0, status: 'pending' };
         }
         dailyData[day] = {
             morning: morning,
             afternoon: afternoon,
-            total: productTotal
+            total: productTotal,
+            status: dailyData[day].status || 'pending'
         };
         let newDayTotal = 0;
         products.forEach(p => {
@@ -104,6 +133,88 @@ export default function SharedCostForm({
         });
     };
 
+    const handleVerify = (day) => {
+        setSelectedDay(day);
+        setShowVerifyModal(true);
+    };
+    
+    const confirmVerification = () => {
+        if (!selectedDay) return;
+        
+        // Process verification for all products for this day
+        products.forEach(product => {
+            if (hasEntryForDay(product, selectedDay)) {
+                router.post(route(routeName), {
+                    restaurant_id: restaurant.id,
+                    product_id: product.id,
+                    day: selectedDay,
+                    month: monthDate.getMonth() + 1,
+                    year: monthDate.getFullYear(),
+                    period: 'morning', // Doesn't matter which period
+                    value: getValue(product, selectedDay, 'morning'), // Use existing value
+                    daily_data: {
+                        morning: parseFloat(getValue(product, selectedDay, 'morning')) || 0,
+                        afternoon: parseFloat(getValue(product, selectedDay, 'afternoon')) || 0,
+                        total: calculateProductDayTotal(product, selectedDay),
+                        status: 'verified'
+                    },
+                    day_total: calculateDayTotal(selectedDay),
+                    verify: true // Special flag for verification
+                }, {
+                    preserveScroll: true,
+                    preserveState: true
+                });
+            }
+        });
+        
+        setShowVerifyModal(false);
+    };
+    
+    // Helper function to check if a product has any entry for a specific day
+    const hasEntryForDay = (product, day) => {
+        return product.values && product.values[day] && 
+            (parseFloat(product.values[day].morning) > 0 || parseFloat(product.values[day].afternoon) > 0);
+    };
+    
+    // Helper function to check if an entry can be edited
+    const canEditEntry = (product, day) => {
+        // Verifiers can always edit
+        if (isVerifierRole) return true;
+        
+        // Data entry role can only edit new entries or their own pending entries from today
+        if (isDataEntryRole) {
+            if (!product.values || !product.values[day]) return true; // New entry
+            
+            const entryStatus = product.values[day].status || 'pending';
+            const createdAt = product.values[day].created_at;
+            
+            // Can edit if pending and created today
+            if (entryStatus === 'pending' && createdAt) {
+                const today = new Date().toDateString();
+                const createdDate = new Date(createdAt).toDateString();
+                return today === createdDate;
+            }
+            
+            return false; // Can't edit older entries or verified entries
+        }
+        
+        return false; // Default deny
+    };
+    
+    // Helper to check if an entry is verified
+    const isEntryVerified = (product, day) => {
+        return product.values && 
+               product.values[day] && 
+               product.values[day].status === 'verified';
+    };
+    
+    // Helper to check if a day has all entries verified
+    const isDayVerified = (day) => {
+        return products.every(product => 
+            !hasEntryForDay(product, day) || isEntryVerified(product, day)
+        );
+    };
+
     const handleWheel = (e) => {
         e.target.blur();
     };
@@ -121,6 +232,20 @@ export default function SharedCostForm({
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-4 rounded-lg">
                         Loading...
+                    </div>
+                </div>
+            )}
+            
+            {/* Role banner */}
+            {(isDataEntryRole || isVerifierRole) && (
+                <div className={`${isDataEntryRole ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border-b p-3`}>
+                    <div className="flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isDataEntryRole ? 'text-blue-600' : 'text-green-600'} mr-2`} viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span className={`font-medium ${isDataEntryRole ? 'text-blue-800' : 'text-green-800'}`}>
+                            {isDataEntryRole ? 'Mode saisie. Vous pouvez ajouter de nouvelles données ou modifier vos saisies du jour.' : 'Mode vérification. Vous pouvez vérifier et modifier toutes les entrées.'}
+                        </span>
                     </div>
                 </div>
             )}
@@ -182,7 +307,27 @@ export default function SharedCostForm({
                                     </th>
                                     {daysInMonth.map(day => (
                                         <th key={day} className="px-3 py-3 text-center border-x min-w-[90px]">
-                                            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
+                                                {/* Verification status indicator */}
+                                                {isVerifierRole && (
+                                                    <button 
+                                                        onClick={() => handleVerify(day)}
+                                                        className={`px-2 py-0.5 rounded text-xs ${
+                                                            isDayVerified(day) 
+                                                                ? 'bg-green-100 text-green-800' 
+                                                                : 'bg-yellow-100 text-yellow-800'
+                                                        }`}
+                                                    >
+                                                        {isDayVerified(day) ? 'Vérifié' : 'Vérifier'}
+                                                    </button>
+                                                )}
+                                                {!isVerifierRole && isDayVerified(day) && (
+                                                    <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-800">
+                                                        Vérifié
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className="text-sm font-semibold text-green-600">
                                                 {calculateDayTotal(day).toFixed(2)}DH
                                             </div>
@@ -221,41 +366,51 @@ export default function SharedCostForm({
                                                 </div>
                                             </div>
                                         </td>
-                                        {daysInMonth.map(day => (
-                                            <td key={day} className="px-1 py-2 border-x min-w-[90px]">
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="grid grid-cols-2 gap-1">
-                                                        <input
-                                                            type="number"
-                                                            className={`w-full border-gray-300 rounded-sm ${isGuest ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'} text-sm p-1`}
-                                                            value={getValue(product, day, 'morning')}
-                                                            onChange={(e) => handleValueChange(product, day, 'morning', e.target.value)}
-                                                            onWheel={handleWheel}
-                                                            step="0.01"
-                                                            min="0"
-                                                            placeholder="0"
-                                                            disabled={isGuest}
-                                                            readOnly={isGuest}
-                                                        />
-                                                        <input
-                                                            type="number"
-                                                            className={`w-full border-gray-300 rounded-sm ${isGuest ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'} text-sm p-1`}
-                                                            value={getValue(product, day, 'afternoon')}
-                                                            onChange={(e) => handleValueChange(product, day, 'afternoon', e.target.value)}
-                                                            onWheel={handleWheel}
-                                                            step="0.01"
-                                                            min="0"
-                                                            placeholder="0"
-                                                            disabled={isGuest}
-                                                            readOnly={isGuest}
-                                                        />
+                                        {daysInMonth.map(day => {
+                                            const isVerified = isEntryVerified(product, day);
+                                            const canEdit = canEditEntry(product, day);
+                                            const cellDisabled = !canEdit || isGuest;
+                                            
+                                            return (
+                                                <td key={day} className={`px-1 py-2 border-x min-w-[90px] ${isVerified ? 'bg-green-50' : ''}`}>
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="grid grid-cols-2 gap-1">
+                                                            <input
+                                                                type="number"
+                                                                className={`w-full border-${isVerified ? 'green' : 'gray'}-300 rounded-sm ${
+                                                                    cellDisabled ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'
+                                                                } text-sm p-1`}
+                                                                value={getValue(product, day, 'morning')}
+                                                                onChange={(e) => handleValueChange(product, day, 'morning', e.target.value)}
+                                                                onWheel={handleWheel}
+                                                                step="0.01"
+                                                                min="0"
+                                                                placeholder="0"
+                                                                disabled={cellDisabled}
+                                                                readOnly={cellDisabled}
+                                                            />
+                                                            <input
+                                                                type="number"
+                                                                className={`w-full border-${isVerified ? 'green' : 'gray'}-300 rounded-sm ${
+                                                                    cellDisabled ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-green-500 focus:border-green-500'
+                                                                } text-sm p-1`}
+                                                                value={getValue(product, day, 'afternoon')}
+                                                                onChange={(e) => handleValueChange(product, day, 'afternoon', e.target.value)}
+                                                                onWheel={handleWheel}
+                                                                step="0.01"
+                                                                min="0"
+                                                                placeholder="0"
+                                                                disabled={cellDisabled}
+                                                                readOnly={cellDisabled}
+                                                            />
+                                                        </div>
+                                                        <div className="text-xs text-right text-gray-600 pr-1">
+                                                            {calculateProductDayTotal(product, day).toFixed(2)}DH
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs text-right text-gray-600 pr-1">
-                                                        {calculateProductDayTotal(product, day).toFixed(2)}DH
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        ))}
+                                                </td>
+                                            );
+                                        })}
                                     </tr>
                                 ))}
                             </tbody>
@@ -263,6 +418,33 @@ export default function SharedCostForm({
                     </div>
                 </div>
             </div>
+            
+            {/* Verification Modal */}
+            {showVerifyModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirmer la vérification</h3>
+                        <p className="text-gray-600 mb-6">
+                            Êtes-vous sûr de vouloir vérifier les entrées pour le jour {selectedDay} ? 
+                            Cette action marquera toutes les entrées comme vérifiées.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+                                onClick={() => setShowVerifyModal(false)}
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-md"
+                                onClick={confirmVerification}
+                            >
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

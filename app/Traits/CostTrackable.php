@@ -11,11 +11,15 @@ trait CostTrackable
             'product_id',
             'month',
             'year',
-            'daily_data'
+            'daily_data',
+            'status',
+            'verified_by_id',
+            'verified_at'
         ];
 
         $this->casts = array_merge($this->casts, [
-            'daily_data' => 'array'
+            'daily_data' => 'array',
+            'verified_at' => 'datetime'
         ]);
     }
 
@@ -29,6 +33,11 @@ trait CostTrackable
         return $this->belongsTo(\App\Models\CuisinierProduct::class, 'product_id');
     }
 
+    public function verifiedBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'verified_by_id');
+    }
+
     public static function getMonthlyData($restaurantId, $month, $year)
     {
         return self::where('restaurant_id', $restaurantId)
@@ -36,13 +45,17 @@ trait CostTrackable
             ->where('year', $year)
             ->get()
             ->mapWithKeys(function ($record) {
-                // Ensure daily_data has both periods for each day
                 $standardizedData = [];
                 if ($record->daily_data) {
                     foreach ($record->daily_data as $day => $periods) {
                         $standardizedData[$day] = [
                             'morning' => $periods['morning'] ?? 0,
-                            'afternoon' => $periods['afternoon'] ?? 0
+                            'afternoon' => $periods['afternoon'] ?? 0,
+                            'status' => $periods['status'] ?? 'pending',
+                            'created_at' => $periods['created_at'] ?? null,
+                            'updated_at' => $periods['updated_at'] ?? null,
+                            'verified_at' => $periods['verified_at'] ?? null,
+                            'verified_by' => $periods['verified_by'] ?? null
                         ];
                     }
                 }
