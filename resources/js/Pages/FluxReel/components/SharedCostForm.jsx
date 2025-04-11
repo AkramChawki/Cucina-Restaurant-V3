@@ -17,9 +17,9 @@ export default function SharedCostForm({
         ? JSON.parse(auth.user.role) 
         : (Array.isArray(auth.user.role) ? auth.user.role : []);
     
-    // Check if user has specific roles
-    const isDataEntryRole = checkDataEntryRole(userRoles);
-    const isVerifierRole = checkVerifierRole(userRoles);
+    // Check if user has specific roles - but ONLY if they're not a guest
+    const isDataEntryRole = !isGuest && checkDataEntryRole(userRoles);
+    const isVerifierRole = !isGuest && checkVerifierRole(userRoles);
     
     // Helper functions to check roles
     function checkDataEntryRole(roles) {
@@ -134,12 +134,13 @@ export default function SharedCostForm({
     };
 
     const handleVerify = (day) => {
+        if (isGuest) return; // Prevent verification if user is a guest
         setSelectedDay(day);
         setShowVerifyModal(true);
     };
     
     const confirmVerification = () => {
-        if (!selectedDay) return;
+        if (isGuest || !selectedDay) return; // Prevent verification if user is a guest
         
         // Process verification for all products for this day
         products.forEach(product => {
@@ -178,6 +179,9 @@ export default function SharedCostForm({
     
     // Helper function to check if an entry can be edited
     const canEditEntry = (product, day) => {
+        // Guest users can never edit
+        if (isGuest) return false;
+        
         // Verifiers can always edit
         if (isVerifierRole) return true;
         
