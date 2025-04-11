@@ -83,7 +83,12 @@ trait CostControllerTrait
             'daily_data' => 'required|array',
             'day_total' => 'required|numeric|min:0'
         ]);
-
+    
+        // First check: block guest users regardless of roles
+        if (auth()->user()->guest == 1) {
+            return redirect()->back()->with('error', 'Guests cannot modify data.');
+        }
+    
         $userRole = auth()->user()->role;
         $isDataEntryRole = $this->isDataEntryRole($userRole);
         $isVerifierRole = $this->isVerifierRole($userRole);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 
 export default function SharedCostForm({
@@ -9,15 +9,20 @@ export default function SharedCostForm({
     currentMonth
 }) {
     const { auth, processing } = usePage().props;
-    // Fix: Use proper type conversion for MySQL tinyint(1) boolean
-    const isGuest = auth.user.guest === 1;
+    console.log('Auth user:', auth.user);
+    console.log('Guest status raw:', auth.user.guest);
+    const isGuest = auth.user.guest === 1 || 
+                   auth.user.guest === true || 
+                   auth.user.guest === '1' || 
+                   String(auth.user.guest).toLowerCase() === 'true';
+    
+    console.log('Final guest detection:', isGuest);
     
     // Parse user roles from JSON if needed
     const userRoles = typeof auth.user.role === 'string' 
         ? JSON.parse(auth.user.role) 
         : (Array.isArray(auth.user.role) ? auth.user.role : []);
     
-    // Check if user has specific roles - but ONLY if they're not a guest
     const isDataEntryRole = !isGuest && checkDataEntryRole(userRoles);
     const isVerifierRole = !isGuest && checkVerifierRole(userRoles);
     
@@ -43,6 +48,10 @@ export default function SharedCostForm({
         { length: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate() },
         (_, i) => i + 1
     );
+    
+    useEffect(() => {
+        console.log("Component mounted, guest status:", isGuest);
+    }, []);
     
     const handleMonthChange = (e) => {
         const newDate = new Date(e.target.value);
@@ -71,14 +80,12 @@ export default function SharedCostForm({
         }, 0);
     };
 
-    // Calculate the monthly total (sum of all day totals)
     const calculateMonthlyTotal = () => {
         return daysInMonth.reduce((sum, day) => {
             return sum + calculateDayTotal(day);
         }, 0);
     };
 
-    // Calculate the total quantity for a product across all days
     const calculateProductTotalQty = (product) => {
         return daysInMonth.reduce((sum, day) => {
             const morning = parseFloat(getValue(product, day, 'morning')) || 0;
@@ -88,9 +95,12 @@ export default function SharedCostForm({
     };
 
     const handleValueChange = (product, day, period, value) => {
-        if (isGuest) return; // Prevent changes if user is a guest
+        // Double-check guest status to prevent any edits
+        if (isGuest) {
+            console.log("Blocked edit attempt by guest user");
+            return;
+        }
         
-        // Check if the user can edit this entry
         if (!canEditEntry(product, day)) {
             alert("You don't have permission to edit this entry.");
             return;
@@ -134,15 +144,22 @@ export default function SharedCostForm({
     };
 
     const handleVerify = (day) => {
-        if (isGuest) return; // Prevent verification if user is a guest
+        if (isGuest) {
+            console.log("Blocked verification attempt by guest user");
+            return;
+        }
         setSelectedDay(day);
         setShowVerifyModal(true);
     };
     
     const confirmVerification = () => {
-        if (isGuest || !selectedDay) return; // Prevent verification if user is a guest
+        if (isGuest) {
+            console.log("Blocked verification confirmation by guest user");
+            return;
+        }
         
-        // Process verification for all products for this day
+        if (!selectedDay) return;
+        
         products.forEach(product => {
             if (hasEntryForDay(product, selectedDay)) {
                 router.post(route(routeName), {
@@ -151,8 +168,8 @@ export default function SharedCostForm({
                     day: selectedDay,
                     month: monthDate.getMonth() + 1,
                     year: monthDate.getFullYear(),
-                    period: 'morning', // Doesn't matter which period
-                    value: getValue(product, selectedDay, 'morning'), // Use existing value
+                    period: 'morning',
+                    value: getValue(product, selectedDay, 'morning'),
                     daily_data: {
                         morning: parseFloat(getValue(product, selectedDay, 'morning')) || 0,
                         afternoon: parseFloat(getValue(product, selectedDay, 'afternoon')) || 0,
@@ -160,7 +177,7 @@ export default function SharedCostForm({
                         status: 'verified'
                     },
                     day_total: calculateDayTotal(selectedDay),
-                    verify: true // Special flag for verification
+                    verify: true
                 }, {
                     preserveScroll: true,
                     preserveState: true
@@ -171,15 +188,13 @@ export default function SharedCostForm({
         setShowVerifyModal(false);
     };
     
-    // Helper function to check if a product has any entry for a specific day
     const hasEntryForDay = (product, day) => {
         return product.values && product.values[day] && 
             (parseFloat(product.values[day].morning) > 0 || parseFloat(product.values[day].afternoon) > 0);
     };
     
-    // Helper function to check if an entry can be edited
     const canEditEntry = (product, day) => {
-        // Guest users can never edit
+        // Always block guests from editing
         if (isGuest) return false;
         
         // Verifiers can always edit
@@ -205,14 +220,12 @@ export default function SharedCostForm({
         return false; // Default deny
     };
     
-    // Helper to check if an entry is verified
     const isEntryVerified = (product, day) => {
         return product.values && 
                product.values[day] && 
                product.values[day].status === 'verified';
     };
     
-    // Helper to check if a day has all entries verified
     const isDayVerified = (day) => {
         return products.every(product => 
             !hasEntryForDay(product, day) || isEntryVerified(product, day)
@@ -240,8 +253,8 @@ export default function SharedCostForm({
                 </div>
             )}
             
-            {/* Role banner */}
-            {(isDataEntryRole || isVerifierRole) && (
+            {/* Role banner - ONLY SHOW IF NOT A GUEST */}
+            {!isGuest && (isDataEntryRole || isVerifierRole) && (
                 <div className={`${isDataEntryRole ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border-b p-3`}>
                     <div className="flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isDataEntryRole ? 'text-blue-600' : 'text-green-600'} mr-2`} viewBox="0 0 20 20" fill="currentColor">
@@ -313,7 +326,7 @@ export default function SharedCostForm({
                                         <th key={day} className="px-3 py-3 text-center border-x min-w-[90px]">
                                             <div className="flex justify-between items-center mb-1">
                                                 <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">{day}</div>
-                                                {/* Verification status indicator */}
+                                                {/* Verification status indicator - only show action button for verifiers */}
                                                 {isVerifierRole && (
                                                     <button 
                                                         onClick={() => handleVerify(day)}
@@ -326,7 +339,8 @@ export default function SharedCostForm({
                                                         {isDayVerified(day) ? 'Vérifié' : 'Vérifier'}
                                                     </button>
                                                 )}
-                                                {!isVerifierRole && isDayVerified(day) && (
+                                                {/* Always show the verification status label for guests or non-verifiers */}
+                                                {(isGuest || !isVerifierRole) && isDayVerified(day) && (
                                                     <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-800">
                                                         Vérifié
                                                     </span>
