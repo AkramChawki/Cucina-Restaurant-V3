@@ -10,7 +10,7 @@ export default function Show({ records, restaurant }) {
     // Format currency values
     const formatCurrency = (value) => {
         if (value === null || value === undefined) return "—";
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(value);
     };
 
     // Format date

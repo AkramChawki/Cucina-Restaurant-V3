@@ -1,0 +1,1 @@
+import{a as t,F as e,j as r,b as a}from"./app-7e58894e.js";import m from"./Formulaire-33a96c5e.js";import{F as i}from"./Footer-f0bcda2c.js";import"./index-08c7c3df.js";function l({restau:o}){return t(e,{children:[r(a,{title:`Ajouter Clôture - ${o}`}),r(m,{restau:o}),r(i,{})]})}export{l as default};
