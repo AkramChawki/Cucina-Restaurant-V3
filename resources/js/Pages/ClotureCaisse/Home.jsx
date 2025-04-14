@@ -1,8 +1,10 @@
-import React from 'react';
-import { Head, Link } from "@inertiajs/react";
-import Footer from '@/Components/Footer';
+import React from "react";
+import { Head, Link, usePage } from "@inertiajs/react";
+import Footer from "@/Components/Footer";
 
 export default function Home({ restaurants }) {
+    const { auth } = usePage().props;
+
     const CardOverlay = ({ title, link }) => (
         <div className="relative group h-80 overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:scale-[1.02]">
             <div className="absolute inset-0">
@@ -47,14 +49,16 @@ export default function Home({ restaurants }) {
                             title="Ajouter une Clôture de Caisse"
                             link="/cloture-caisse/select-restaurant"
                         />
-                        <CardOverlay
-                            title="Consulter les Clôtures de Caisse"
-                            link="/cloture-caisse/show"
-                        />
+                        {auth.user.role.includes("CCVoir") && (
+                            <CardOverlay
+                                title="Consulter les Clôtures de Caisse"
+                                link="/cloture-caisse/show"
+                            />
+                        )}
                     </div>
                 </div>
             </div>
-            
+
             <Footer />
         </>
     );
