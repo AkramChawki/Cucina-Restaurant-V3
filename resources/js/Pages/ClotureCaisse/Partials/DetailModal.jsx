@@ -7,8 +7,8 @@ export default function DetailModal({ isOpen, setIsOpen, record }) {
 
     // Format currency values
     const formatCurrency = (value) => {
-        if (value === null || value === undefined) return "—";
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+        if (value === null || value === undefined || value === "") return "—";
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(value);
     };
 
     // Format date
@@ -29,7 +29,7 @@ export default function DetailModal({ isOpen, setIsOpen, record }) {
         {
             title: "Informations générales",
             fields: [
-                { label: "Date", value: formatDate(record.date) },
+                { label: "Date", value: record.date },
                 { label: "Heure", value: record.time },
                 { label: "Responsable", value: record.responsable },
                 { label: "Restaurant", value: record.restau },
@@ -128,7 +128,7 @@ export default function DetailModal({ isOpen, setIsOpen, record }) {
                                         <Dialog.Title as="h3" className="text-xl font-semibold leading-6 text-gray-900 mb-6">
                                             Détails de la clôture de caisse
                                         </Dialog.Title>
-                                        <div className="mt-2 space-y-6">
+                                        <div className="mt-2 space-y-6 max-h-[70vh] overflow-y-auto pb-4">
                                             {sections.map((section, sectionIndex) => (
                                                 <div key={sectionIndex} className="border rounded-lg overflow-hidden">
                                                     <div className="bg-gray-50 px-4 py-2 border-b">
@@ -136,9 +136,9 @@ export default function DetailModal({ isOpen, setIsOpen, record }) {
                                                     </div>
                                                     <div className="divide-y divide-gray-200">
                                                         {section.fields.map((field, fieldIndex) => (
-                                                            <div key={fieldIndex} className="px-4 py-3 flex justify-between">
+                                                            <div key={fieldIndex} className="px-4 py-3 sm:grid sm:grid-cols-2 sm:gap-4">
                                                                 <dt className="text-sm font-medium text-gray-500">{field.label}</dt>
-                                                                <dd className="text-sm text-gray-900">{field.value}</dd>
+                                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0">{field.value}</dd>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -151,7 +151,7 @@ export default function DetailModal({ isOpen, setIsOpen, record }) {
                                                     <h4 className="font-medium text-gray-900">Signature</h4>
                                                 </div>
                                                 <div className="p-4 flex justify-center">
-                                                    <img src={record.signature} alt="Signature" className="max-h-32" />
+                                                    <img src={record.signature} alt="Signature" className="max-h-40" />
                                                 </div>
                                             </div>
                                         </div>
@@ -160,7 +160,7 @@ export default function DetailModal({ isOpen, setIsOpen, record }) {
                                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                                     <button
                                         type="button"
-                                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                        className="mt-3 inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:w-auto"
                                         onClick={() => setIsOpen(false)}
                                     >
                                         Fermer

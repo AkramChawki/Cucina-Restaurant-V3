@@ -62,25 +62,20 @@ export default function Show({ records, restaurant }) {
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsable</th>
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant Caisse</th>
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant Espèce</th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Charge</th>
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Détails</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
                                             {records.map((record) => (
                                                 <tr key={record.id}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(record.date)}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.date}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.time}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.responsable}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(record.montant)}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(record.montantE)}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(record.charge)}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                         <button 
-                                                            onClick={() => {
-                                                                // Open modal with details (to be implemented)
-                                                                alert(`Détails pour ${record.id}`);
-                                                            }}
+                                                            onClick={() => openDetailModal(record)}
                                                             className="text-green-600 hover:text-green-900"
                                                         >
                                                             Voir plus
