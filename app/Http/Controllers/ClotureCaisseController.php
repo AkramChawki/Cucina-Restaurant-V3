@@ -13,8 +13,7 @@ class ClotureCaisseController extends Controller
 {
     public function index()
     {
-        $restaurants = Restaurant::all();
-        return Inertia::render('ClotureCaisse/ClotureCaisse', ["restaurants" => $restaurants]);
+        return Inertia::render('ClotureCaisse/Home',);
     }
 
     public function create(Request $request)
@@ -25,6 +24,27 @@ class ClotureCaisseController extends Controller
         
         return Inertia::render('ClotureCaisse/Ajouter', [
             'restau' => $request->query('restau')
+        ]);
+    }
+
+    public function show(Request $request, $restaurant = null)
+    {
+        if (!$restaurant) {
+            $restaurants = Restaurant::all();
+            return Inertia::render('ClotureCaisse/SelectRestaurant', [
+                "restaurants" => $restaurants,
+                "action" => "show"
+            ]);
+        }
+        
+        // Get all cloture caisse records for the specified restaurant
+        $records = ClotureCaisse::where('restau', $restaurant)
+            ->orderBy('date', 'desc')
+            ->get();
+            
+        return Inertia::render('ClotureCaisse/Show', [
+            'records' => $records,
+            'restaurant' => $restaurant
         ]);
     }
 
@@ -57,6 +77,7 @@ class ClotureCaisseController extends Controller
             'appE' => 'nullable|numeric',
             'appC' => 'nullable|numeric',
             'shooting' => 'nullable|numeric',
+            'charge' => 'nullable|numeric',
             'signature' => 'required'
         ]);
 

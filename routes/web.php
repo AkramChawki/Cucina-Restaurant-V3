@@ -103,8 +103,10 @@ Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
 
     Route::controller(ClotureCaisseController::class)->group(function () {
         Route::get('/cloture-caisse', 'index');
-        Route::get('/cloture-caisse/ajouter', 'create');
-        Route::post('/cloture-caisse', 'store');
+        Route::get('/cloture-caisse/add', 'create')->name('cloture-caisse.add');
+        Route::post('/cloture-caisse', 'store')->name('cloture-caisse.store');
+        Route::get('/cloture-caisse/show', 'show')->name('cloture-caisse.select-show');
+        Route::get('/cloture-caisse/{restaurant}', 'show')->name('cloture-caisse.show');
     });
 
     Route::get('/flux-reel', [HomeController::class, 'FluxReel'])->name('FluxReel');

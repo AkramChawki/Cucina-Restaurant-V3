@@ -35,6 +35,7 @@ class ClotureCaisse extends Model
         'appE',
         'appC',
         'shooting',
+        'charge',
         'ComGlovo',
         'signature',
     ];

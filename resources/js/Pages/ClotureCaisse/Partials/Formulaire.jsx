@@ -33,6 +33,7 @@ export default function Formulaire({ restau }) {
         appE: "",
         appC: "",
         shooting: "",
+        charge: "",
         signature: "",
     });
 
@@ -59,7 +60,7 @@ export default function Formulaire({ restau }) {
                 <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                     <div>
                         <h3 className="text-lg leading-6 font-medium text-gray-900">
-                            Cloture Caisse
+                            Cloture Caisse - {restau}
                         </h3>
                         <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
                             {/* Date Field */}
@@ -275,6 +276,16 @@ export default function Formulaire({ restau }) {
                                 onChange={(e) => setData('shooting', e.target.value)}
                                 error={errors.shooting}
                             />
+                            
+                            {/* New Charge Field */}
+                            <FormField
+                                label="Charge"
+                                name="charge"
+                                type="number"
+                                value={data.charge}
+                                onChange={(e) => setData('charge', e.target.value)}
+                                error={errors.charge}
+                            />
                         </div>
                     </div>
                 </div>
@@ -321,7 +332,7 @@ export default function Formulaire({ restau }) {
                 {/* Form Actions */}
                 <div className="flex justify-end pt-5">
                     <Link
-                        href="/"
+                        href="/cloture-caisse"
                         className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
                         Annuler
