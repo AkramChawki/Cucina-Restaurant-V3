@@ -13,13 +13,23 @@ class ClotureCaisseController extends Controller
 {
     public function index()
     {
-        return Inertia::render('ClotureCaisse/Home',);
+        $restaurants = Restaurant::all();
+        return Inertia::render('ClotureCaisse/Home', ["restaurants" => $restaurants]);
+    }
+
+    public function selectRestaurant()
+    {
+        $restaurants = Restaurant::all();
+        return Inertia::render('ClotureCaisse/SelectRestaurant', [
+            "restaurants" => $restaurants,
+            "action" => "add"
+        ]);
     }
 
     public function create(Request $request)
     {
         if (!$request->has('restau')) {
-            return redirect('/cloture-caisse');
+            return redirect()->route('cloture-caisse.select');
         }
         
         return Inertia::render('ClotureCaisse/Ajouter', [

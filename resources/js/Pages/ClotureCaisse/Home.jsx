@@ -2,7 +2,7 @@ import React from 'react';
 import { Head, Link } from "@inertiajs/react";
 import Footer from '@/Components/Footer';
 
-export default function Home() {
+export default function Home({ restaurants }) {
     const CardOverlay = ({ title, link }) => (
         <div className="relative group h-80 overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:scale-[1.02]">
             <div className="absolute inset-0">
@@ -45,7 +45,7 @@ export default function Home() {
                     <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
                         <CardOverlay
                             title="Ajouter une Clôture de Caisse"
-                            link="/cloture-caisse/add"
+                            link="/cloture-caisse/select-restaurant"
                         />
                         <CardOverlay
                             title="Consulter les Clôtures de Caisse"

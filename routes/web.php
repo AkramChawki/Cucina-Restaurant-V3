@@ -103,6 +103,7 @@ Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
 
     Route::controller(ClotureCaisseController::class)->group(function () {
         Route::get('/cloture-caisse', 'index');
+        Route::get('/cloture-caisse/select-restaurant', 'selectRestaurant')->name('cloture-caisse.select');
         Route::get('/cloture-caisse/add', 'create')->name('cloture-caisse.add');
         Route::post('/cloture-caisse', 'store')->name('cloture-caisse.store');
         Route::get('/cloture-caisse/show', 'show')->name('cloture-caisse.select-show');
