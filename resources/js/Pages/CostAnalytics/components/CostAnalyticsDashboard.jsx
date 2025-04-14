@@ -461,7 +461,7 @@ const CostAnalyticsDashboard = ({
                                                 yAxisId="left"
                                                 orientation="left"
                                                 label={{
-                                                    value: "Amount (€)",
+                                                    value: "Amount (MAD)",
                                                     angle: -90,
                                                     position: "insideLeft",
                                                 }}
