@@ -93,7 +93,7 @@ const CostAnalyticsDashboard = ({
         }
     };
 
-    // Format currency (euro)
+    // Format currency (MAD)
     const formatCurrency = (value) => {
         return new Intl.NumberFormat("fr-FR", {
             style: "currency",
@@ -136,7 +136,6 @@ const CostAnalyticsDashboard = ({
     };
 
     // Custom tooltip for charts
-    // Replace the current CustomTooltip implementation with this more robust version
     const CustomTooltip = ({ active, payload, label }) => {
         if (
             !active ||
@@ -318,8 +317,8 @@ const CostAnalyticsDashboard = ({
                                 </div>
                             </div>
 
-                            {/* Summary Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            {/* Summary Cards - UPDATED as per request */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 {/* FC Card */}
                                 <div className="bg-blue-50 p-4 rounded-lg shadow">
                                     <h2 className="text-lg font-semibold text-blue-700">
@@ -338,11 +337,11 @@ const CostAnalyticsDashboard = ({
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-500">
-                                                Average
+                                                Percentage
                                             </p>
                                             <p className="text-lg font-bold">
                                                 {formatPercentage(
-                                                    monthlySummary.fc.average
+                                                    monthlySummary.fc.percentage
                                                 )}
                                             </p>
                                         </div>
@@ -367,49 +366,18 @@ const CostAnalyticsDashboard = ({
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-500">
-                                                Average
+                                                Percentage
                                             </p>
                                             <p className="text-lg font-bold">
                                                 {formatPercentage(
-                                                    monthlySummary.cc.average
+                                                    monthlySummary.cc.percentage
                                                 )}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Costs Card */}
-                                <div className="bg-green-50 p-4 rounded-lg shadow">
-                                    <h2 className="text-lg font-semibold text-green-700">
-                                    Total (FC + CC)
-                                    </h2>
-                                    <div className="mt-2 grid grid-cols-2 gap-5">
-                                        <div>
-                                            <p className="text-sm text-gray-500">
-                                                Total Costs
-                                            </p>
-                                            <p className="text-lg font-bold">
-                                                {formatCurrency(
-                                                    monthlySummary.combined
-                                                        .total
-                                                )}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">
-                                                % of COSTS
-                                            </p>
-                                            <p className="text-lg font-bold">
-                                                {formatPercentage(
-                                                    monthlySummary.combined
-                                                        .percentage
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Combined Card */}
+                                {/* Revenue Card */}
                                 <div className="bg-purple-50 p-4 rounded-lg shadow">
                                     <h2 className="text-lg font-semibold text-purple-700">
                                         Revenue
@@ -577,7 +545,7 @@ const CostAnalyticsDashboard = ({
                                 </div>
                             </div>
 
-                            {/* Data Table */}
+                            {/* Updated Data Table based on Excel format */}
                             <div>
                                 <h2 className="text-xl font-semibold mb-4">
                                     Daily Data
@@ -603,7 +571,7 @@ const CostAnalyticsDashboard = ({
                                                         scope="col"
                                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                                     >
-                                                        FC %
+                                                        Cumul FC
                                                     </th>
                                                     <th
                                                         scope="col"
@@ -615,19 +583,31 @@ const CostAnalyticsDashboard = ({
                                                         scope="col"
                                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                                     >
-                                                        CC %
+                                                        Cumul CC
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                                     >
-                                                        Revenue
+                                                        Chiffre Affaire
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                                     >
-                                                        FC+CC %
+                                                        Cumul Chiffre Affaire
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                                    >
+                                                        Taux FC
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                                    >
+                                                        Taux CC
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -653,8 +633,8 @@ const CostAnalyticsDashboard = ({
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatPercentage(
-                                                                    data.fc_percentage
+                                                                {formatCurrency(
+                                                                    data.fc_cumul
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -663,8 +643,8 @@ const CostAnalyticsDashboard = ({
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatPercentage(
-                                                                    data.cc_percentage
+                                                                {formatCurrency(
+                                                                    data.cc_cumul
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -673,15 +653,19 @@ const CostAnalyticsDashboard = ({
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {data.revenue >
-                                                                0
-                                                                    ? formatPercentage(
-                                                                          ((data.fc_amount +
-                                                                              data.cc_amount) /
-                                                                              data.revenue) *
-                                                                              100
-                                                                      )
-                                                                    : "N/A"}
+                                                                {formatCurrency(
+                                                                    data.cumul_revenue
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {formatPercentage(
+                                                                    data.fc_percentage
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {formatPercentage(
+                                                                    data.cc_percentage
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     )

@@ -41,38 +41,50 @@ class CostAnalyticsController extends Controller
             ->orderBy('day')
             ->get();
 
-        // Calculate monthly totals and averages
-        // Only include valid percentage values (not null) when calculating average/min/max
-        $fcValidPercentages = $foodCosts->filter(function ($item) {
-            return $item->percentage !== null;
-        })->pluck('percentage');
+        // Get the last day with data for final monthly totals
+        $lastDayWithData = max(
+            $foodCosts->max('day') ?? 0,
+            $consumableCosts->max('day') ?? 0
+        );
 
-        $ccValidPercentages = $consumableCosts->filter(function ($item) {
-            return $item->percentage !== null;
-        })->pluck('percentage');
+        // Get the cumulative totals as of the last day
+        $finalFcCumul = $foodCosts->where('day', $lastDayWithData)->first()->cumul ?? 0;
+        $finalCcCumul = $consumableCosts->where('day', $lastDayWithData)->first()->cumul ?? 0;
+        $finalRevenueCumul = $foodCosts->where('day', $lastDayWithData)->first()->cumul_revenue ?? 0;
 
+        // Calculate FC percentage from cumulative values
+        $fcPercentage = null;
+        if ($finalRevenueCumul > 0) {
+            $fcPercentage = ($finalFcCumul / $finalRevenueCumul) * 100;
+        }
+
+        // Calculate CC percentage from cumulative values
+        $ccPercentage = null;
+        if ($finalRevenueCumul > 0) {
+            $ccPercentage = ($finalCcCumul / $finalRevenueCumul) * 100;
+        }
+
+        // Calculate combined percentage
+        $combinedPercentage = null;
+        if ($finalRevenueCumul > 0) {
+            $combinedPercentage = (($finalFcCumul + $finalCcCumul) / $finalRevenueCumul) * 100;
+        }
+
+        // Create monthly summary with the updated calculations
         $monthlySummary = [
             'fc' => [
-                'total' => $foodCosts->sum('amount'),
-                'average' => $fcValidPercentages->count() > 0 ? $fcValidPercentages->avg() : null,
-                'highest' => $fcValidPercentages->count() > 0 ? $fcValidPercentages->max() : null,
-                'lowest' => $fcValidPercentages->count() > 0 ? $fcValidPercentages->min() : null,
+                'total' => $finalFcCumul,
+                'percentage' => $fcPercentage
             ],
             'cc' => [
-                'total' => $consumableCosts->sum('amount'),
-                'average' => $ccValidPercentages->count() > 0 ? $ccValidPercentages->avg() : null,
-                'highest' => $ccValidPercentages->count() > 0 ? $ccValidPercentages->max() : null,
-                'lowest' => $ccValidPercentages->count() > 0 ? $ccValidPercentages->min() : null,
+                'total' => $finalCcCumul,
+                'percentage' => $ccPercentage
             ],
-            'total_revenue' => $foodCosts->sum('revenue')
-        ];
-
-        // Calculate FC+CC combined
-        $monthlySummary['combined'] = [
-            'total' => $monthlySummary['fc']['total'] + $monthlySummary['cc']['total'],
-            'percentage' => $monthlySummary['total_revenue'] > 0
-                ? (($monthlySummary['fc']['total'] + $monthlySummary['cc']['total']) / $monthlySummary['total_revenue']) * 100
-                : null
+            'combined' => [
+                'total' => $finalFcCumul + $finalCcCumul,
+                'percentage' => $combinedPercentage
+            ],
+            'total_revenue' => $finalRevenueCumul
         ];
 
         // Format the data for charts
@@ -83,14 +95,15 @@ class CostAnalyticsController extends Controller
             $fcData = $foodCosts->where('day', $i)->first();
             $ccData = $consumableCosts->where('day', $i)->first();
 
+            // If we have actual data for this day, use it; otherwise use default values
             $chartData[] = [
                 'day' => $i,
                 'fc_amount' => $fcData ? $fcData->amount : 0,
                 'cc_amount' => $ccData ? $ccData->amount : 0,
                 'fc_cumul' => $fcData ? $fcData->cumul : 0,
                 'cc_cumul' => $ccData ? $ccData->cumul : 0,
-                'fc_percentage' => $fcData ? $fcData->percentage : null,  // Allow null
-                'cc_percentage' => $ccData ? $ccData->percentage : null,  // Allow null
+                'fc_percentage' => $fcData ? $fcData->percentage : null,
+                'cc_percentage' => $ccData ? $ccData->percentage : null,
                 'revenue' => $fcData ? $fcData->revenue : 0,
                 'cumul_revenue' => $fcData ? $fcData->cumul_revenue : 0,
             ];
@@ -107,6 +120,7 @@ class CostAnalyticsController extends Controller
             'chartData' => $chartData,
         ]);
     }
+
     public function generateDaily()
     {
         $today = Carbon::today();
@@ -123,7 +137,6 @@ class CostAnalyticsController extends Controller
             'bml_gastro',
             'bml_legume',
             'bml_boisson',
-            'ramadan'
         ];
 
         // Define the consumable cost type
@@ -187,7 +200,7 @@ class CostAnalyticsController extends Controller
             // Get daily revenue from cloture_caisses table
             $dailyRevenue = DB::table('cloture_caisses')
                 ->where('restau', $restaurant->name) // Using restaurant name instead of ID
-                ->whereDate('date', $today->format('Y-m-d'))
+                ->whereDate('date', $today->copy()->subDay()->format('Y-m-d'))
                 ->sum('montant');
 
             // Calculate cumulative revenue for the month
@@ -198,14 +211,12 @@ class CostAnalyticsController extends Controller
                 ->whereDay('date', '<=', $day)
                 ->sum('montant');
 
-            // Calculate FC percentage only if revenue exists and is not zero
-            // Convert to percentage values (0-100 range)
+            // Calculate percentages using daily revenue
             $fcPercentage = null;
             if ($dailyRevenue > 0) {
                 $fcPercentage = ($fcAmount / $dailyRevenue) * 100;
             }
 
-            // Calculate CC percentage only if revenue exists and is not zero
             $ccPercentage = null;
             if ($dailyRevenue > 0) {
                 $ccPercentage = ($ccAmount / $dailyRevenue) * 100;
@@ -252,6 +263,7 @@ class CostAnalyticsController extends Controller
 
         return redirect()->back()->with('message', "Generated data for {$generatedCount} restaurants");
     }
+
     public function recalculateForDay($restaurantId, $day, $month, $year)
     {
         // Define the food cost types
@@ -263,7 +275,6 @@ class CostAnalyticsController extends Controller
             'bml_gastro',
             'bml_legume',
             'bml_boisson',
-            'ramadan'
         ];
 
         // Define the consumable cost type
@@ -308,6 +319,9 @@ class CostAnalyticsController extends Controller
             ->whereIn('type', $ccTypes)
             ->sum('total');
 
+        // Create a Carbon date object for the target day
+        $targetDate = Carbon::createFromDate($year, $month, $day);
+
         // Get daily revenue from cloture_caisses table
         $dailyRevenue = DB::table('cloture_caisses')
             ->where('restau', $restaurant->name) // Using restaurant name instead of ID
@@ -324,13 +338,12 @@ class CostAnalyticsController extends Controller
             ->whereDay('date', '<=', $day)
             ->sum('montant');
 
-        // Calculate FC percentage only if revenue exists and is not zero
+        // Calculate percentages using daily revenue
         $fcPercentage = null;
         if ($dailyRevenue > 0) {
             $fcPercentage = ($fcAmount / $dailyRevenue) * 100;
         }
 
-        // Calculate CC percentage only if revenue exists and is not zero
         $ccPercentage = null;
         if ($dailyRevenue > 0) {
             $ccPercentage = ($ccAmount / $dailyRevenue) * 100;

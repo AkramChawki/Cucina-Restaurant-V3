@@ -21,7 +21,6 @@ class GenerateFCCCRecords extends Command
         'bml_gastro',
         'bml_legume',
         'bml_boisson',
-        'ramadan'
     ];
 
     // Define the consumable cost type
@@ -41,6 +40,27 @@ class GenerateFCCCRecords extends Command
         $restaurants = DB::table('restaurants')->select('id', 'name')->get();
 
         $this->info("Found " . count($restaurants) . " restaurants");
+        
+        // Clear existing data if requested
+        if ($this->confirm('Do you want to clear existing cost analytics data for this period?', true)) {
+            $deleted = DB::table('cost_analytics')
+                ->where(function($query) use ($startYear, $startMonth, $endYear, $endMonth) {
+                    $query->where(function($q) use ($startYear, $startMonth) {
+                        $q->where('year', $startYear)->where('month', '>=', $startMonth);
+                    });
+                    if ($startYear != $endYear) {
+                        $query->orWhere(function($q) use ($startYear, $endYear) {
+                            $q->where('year', '>', $startYear)->where('year', '<', $endYear);
+                        });
+                    }
+                    $query->orWhere(function($q) use ($endYear, $endMonth) {
+                        $q->where('year', $endYear)->where('month', '<=', $endMonth);
+                    });
+                })
+                ->delete();
+            
+            $this->info("Deleted {$deleted} existing records");
+        }
 
         // Process each restaurant
         foreach ($restaurants as $restaurant) {
@@ -113,7 +133,6 @@ class GenerateFCCCRecords extends Command
                     $cumulativeRevenue += $dailyRevenue;
 
                     // Calculate percentages only if revenue exists for the day
-                    // IMPORTANT: Following the same logic as CostAnalyticsController
                     $fcPercentage = null;
                     $ccPercentage = null;
                     
@@ -151,20 +170,22 @@ class GenerateFCCCRecords extends Command
                     ]);
 
                     // Log progress
-                    if ($dailyRevenue > 0) {
-                        $this->info("Day {$day}: FC: {$fcAmount} ({$fcPercentage}%), CC: {$ccAmount} ({$ccPercentage}%), Revenue: {$dailyRevenue}");
-                    } else {
-                        $this->info("Day {$day}: FC: {$fcAmount}, CC: {$ccAmount}, No revenue");
+                    if ($day % 5 == 0 || $day == $daysInMonth) {
+                        if ($dailyRevenue > 0) {
+                            $this->info("Day {$day}: FC: {$fcAmount} ({$fcPercentage}%), CC: {$ccAmount} ({$ccPercentage}%), Revenue: {$dailyRevenue}");
+                        } else {
+                            $this->info("Day {$day}: FC: {$fcAmount}, CC: {$ccAmount}, No revenue");
+                        }
                     }
                 }
 
                 // Calculate and log monthly summary
-                $fcAverage = $cumulativeRevenue > 0 ? ($cumulativeFC / $cumulativeRevenue) * 100 : null;
-                $ccAverage = $cumulativeRevenue > 0 ? ($cumulativeCC / $cumulativeRevenue) * 100 : null;
+                $fcPercentage = $cumulativeRevenue > 0 ? ($cumulativeFC / $cumulativeRevenue) * 100 : null;
+                $ccPercentage = $cumulativeRevenue > 0 ? ($cumulativeCC / $cumulativeRevenue) * 100 : null;
                 
                 $this->info("Month {$month}/{$year} Summary:");
-                $this->info("Total FC: {$cumulativeFC}, Average: " . ($fcAverage !== null ? round($fcAverage, 2) . '%' : 'N/A'));
-                $this->info("Total CC: {$cumulativeCC}, Average: " . ($ccAverage !== null ? round($ccAverage, 2) . '%' : 'N/A'));
+                $this->info("Total FC: {$cumulativeFC}, Percentage: " . ($fcPercentage !== null ? round($fcPercentage, 2) . '%' : 'N/A'));
+                $this->info("Total CC: {$cumulativeCC}, Percentage: " . ($ccPercentage !== null ? round($ccPercentage, 2) . '%' : 'N/A'));
                 $this->info("Total Revenue: {$cumulativeRevenue}");
 
                 // Move to next month
