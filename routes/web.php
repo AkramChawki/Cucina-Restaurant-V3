@@ -190,6 +190,9 @@ Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
     Route::get('/cost-analytics', [CostAnalyticsController::class, 'index'])->name('cost-analytics.index');
     Route::post('/cost-analytics/generate-daily', [CostAnalyticsController::class, 'generateDaily'])->name('cost-analytics.generate-daily');
 
+    Route::get('/cost-analytics/summary', [App\Http\Controllers\CostAnalyticsController::class, 'getSummaryData'])
+    ->name('cost-analytics.summary');
+
     Route::get('/cost-ramadan', [CostRamadanController::class, 'index'])
         ->name('cost-ramadan.index');
 

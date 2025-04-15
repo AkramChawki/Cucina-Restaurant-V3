@@ -6,10 +6,11 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class GenerateFCCCRecords extends Command
 {
-    protected $signature = 'generate:fccc {startMonth?} {startYear?} {endMonth?} {endYear?}';
+    protected $signature = 'generate:fccc {startMonth?} {startYear?} {endMonth?} {endYear?} {--truncate-all : Truncate entire cost_analytics table before regenerating}';
     protected $description = 'Generate Food Cost and Consumable Cost records for specified period';
 
     // Define constant arrays matching the ones in CostAnalyticsController
@@ -28,6 +29,19 @@ class GenerateFCCCRecords extends Command
 
     public function handle()
     {
+        // Check if we should truncate all data
+        if ($this->option('truncate-all')) {
+            if ($this->confirm('WARNING: This will delete ALL cost analytics data. Are you sure?', false)) {
+                $this->info('Truncating cost_analytics table...');
+                Schema::disableForeignKeyConstraints();
+                DB::table('cost_analytics')->truncate();
+                Schema::enableForeignKeyConstraints();
+                $this->info('Cost analytics table truncated successfully.');
+            } else {
+                $this->info('Truncate operation cancelled.');
+            }
+        }
+
         // Get parameters (default: January and February 2025)
         $startMonth = $this->argument('startMonth') ?? 1;
         $startYear = $this->argument('startYear') ?? 2025;
@@ -41,8 +55,8 @@ class GenerateFCCCRecords extends Command
 
         $this->info("Found " . count($restaurants) . " restaurants");
         
-        // Clear existing data if requested
-        if ($this->confirm('Do you want to clear existing cost analytics data for this period?', true)) {
+        // Clear existing data for this period if not already truncated and if requested
+        if (!$this->option('truncate-all') && $this->confirm('Do you want to clear existing cost analytics data for this period?', true)) {
             $deleted = DB::table('cost_analytics')
                 ->where(function($query) use ($startYear, $startMonth, $endYear, $endMonth) {
                     $query->where(function($q) use ($startYear, $startMonth) {
@@ -62,11 +76,16 @@ class GenerateFCCCRecords extends Command
             $this->info("Deleted {$deleted} existing records");
         }
 
+        // Create progress bar
+        $progressBar = $this->output->createProgressBar(count($restaurants));
+        $progressBar->start();
+
         // Process each restaurant
         foreach ($restaurants as $restaurant) {
             $restaurantId = $restaurant->id;
             $restaurantName = $restaurant->name;
             
+            $this->newLine();
             $this->info("Processing restaurant: {$restaurantName} (ID: {$restaurantId})");
 
             // Process each month in the range
@@ -132,50 +151,49 @@ class GenerateFCCCRecords extends Command
                     $cumulativeCC += $ccAmount;
                     $cumulativeRevenue += $dailyRevenue;
 
-                    // Calculate percentages only if revenue exists for the day
+                    // Calculate percentages based on cumulative values
                     $fcPercentage = null;
                     $ccPercentage = null;
                     
-                    if ($dailyRevenue > 0) {
-                        $fcPercentage = ($fcAmount / $dailyRevenue) * 100;
-                        $ccPercentage = ($ccAmount / $dailyRevenue) * 100;
+                    if ($cumulativeRevenue > 0) {
+                        $fcPercentage = ($cumulativeFC / $cumulativeRevenue) * 100;
+                        $ccPercentage = ($cumulativeCC / $cumulativeRevenue) * 100;
                     }
 
-                    // Store FC record
-                    $this->storeRecord([
-                        'restaurant_id' => $restaurantId,
-                        'day' => $day,
-                        'month' => $month,
-                        'year' => $year,
-                        'type' => 'FC',
-                        'amount' => $fcAmount,
-                        'cumul' => $cumulativeFC,
-                        'revenue' => $dailyRevenue,
-                        'cumul_revenue' => $cumulativeRevenue,
-                        'percentage' => $fcPercentage
-                    ]);
+                    // Only create records if there's actual data for this day or before
+                    if ($fcAmount > 0 || $ccAmount > 0 || $dailyRevenue > 0 || $cumulativeFC > 0 || $cumulativeCC > 0 || $cumulativeRevenue > 0) {
+                        // Store FC record
+                        $this->storeRecord([
+                            'restaurant_id' => $restaurantId,
+                            'day' => $day,
+                            'month' => $month,
+                            'year' => $year,
+                            'type' => 'FC',
+                            'amount' => $fcAmount,
+                            'cumul' => $cumulativeFC,
+                            'revenue' => $dailyRevenue,
+                            'cumul_revenue' => $cumulativeRevenue,
+                            'percentage' => $fcPercentage
+                        ]);
 
-                    // Store CC record
-                    $this->storeRecord([
-                        'restaurant_id' => $restaurantId,
-                        'day' => $day,
-                        'month' => $month,
-                        'year' => $year,
-                        'type' => 'CC',
-                        'amount' => $ccAmount,
-                        'cumul' => $cumulativeCC,
-                        'revenue' => $dailyRevenue,
-                        'cumul_revenue' => $cumulativeRevenue,
-                        'percentage' => $ccPercentage
-                    ]);
+                        // Store CC record
+                        $this->storeRecord([
+                            'restaurant_id' => $restaurantId,
+                            'day' => $day,
+                            'month' => $month,
+                            'year' => $year,
+                            'type' => 'CC',
+                            'amount' => $ccAmount,
+                            'cumul' => $cumulativeCC,
+                            'revenue' => $dailyRevenue,
+                            'cumul_revenue' => $cumulativeRevenue,
+                            'percentage' => $ccPercentage
+                        ]);
+                    }
 
-                    // Log progress
-                    if ($day % 5 == 0 || $day == $daysInMonth) {
-                        if ($dailyRevenue > 0) {
-                            $this->info("Day {$day}: FC: {$fcAmount} ({$fcPercentage}%), CC: {$ccAmount} ({$ccPercentage}%), Revenue: {$dailyRevenue}");
-                        } else {
-                            $this->info("Day {$day}: FC: {$fcAmount}, CC: {$ccAmount}, No revenue");
-                        }
+                    // Log progress for days with data
+                    if (($fcAmount > 0 || $ccAmount > 0 || $dailyRevenue > 0) && ($day % 5 == 0 || $day == $daysInMonth)) {
+                        $this->info("Day {$day}: FC: {$fcAmount} ({$fcPercentage}%), CC: {$ccAmount} ({$ccPercentage}%), Revenue: {$dailyRevenue}");
                     }
                 }
 
@@ -191,8 +209,12 @@ class GenerateFCCCRecords extends Command
                 // Move to next month
                 $currentDate->addMonth();
             }
+            
+            $progressBar->advance();
         }
-
+        
+        $progressBar->finish();
+        $this->newLine(2);
         $this->info("FC and CC records generation completed!");
         
         // Log completion for monitoring

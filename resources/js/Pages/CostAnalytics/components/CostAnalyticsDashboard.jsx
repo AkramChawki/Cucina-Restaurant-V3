@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
+import { RefreshCw } from "lucide-react";
 import {
     LineChart,
     Line,
@@ -20,10 +21,13 @@ const CostAnalyticsDashboard = ({
     selectedYear,
     foodCosts,
     consumableCosts,
-    monthlySummary,
-    chartData,
+    monthlySummary: initialMonthlySummary,
+    chartData: initialChartData,
 }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [monthlySummary, setMonthlySummary] = useState(initialMonthlySummary);
+    const [chartData, setChartData] = useState(initialChartData);
+    const [lastRefreshed, setLastRefreshed] = useState(new Date());
 
     // Handle restaurant change
     const handleRestaurantChange = (e) => {
@@ -73,6 +77,46 @@ const CostAnalyticsDashboard = ({
         );
     };
 
+    const fetchSummaryData = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch(
+                `/cost-analytics/summary?restaurant_id=${selectedRestaurant}&month=${selectedMonth}&year=${selectedYear}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMonthlySummary(data.monthlySummary);
+                setLastRefreshed(new Date());
+            }
+        } catch (error) {
+            console.error("Error fetching summary data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Refresh full data
+    const refreshFullData = () => {
+        setIsLoading(true);
+        router.reload({
+            only: [
+                "foodCosts",
+                "consumableCosts",
+                "monthlySummary",
+                "chartData",
+            ],
+            preserveScroll: true,
+            preserveState: false,
+            onFinish: () => setIsLoading(false),
+        });
+    };
+
     // Generate daily FC and CC data
     const handleGenerateDaily = async () => {
         setIsLoading(true);
@@ -92,6 +136,33 @@ const CostAnalyticsDashboard = ({
             setIsLoading(false);
         }
     };
+
+    // Set up auto-refresh
+    useEffect(() => {
+        // Refresh immediately on mount
+        fetchSummaryData();
+
+        // Set up refresh interval
+        const refreshInterval = setInterval(fetchSummaryData, 30000); // Every 30 seconds
+
+        // Handle visibility change (refresh when tab becomes visible)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                fetchSummaryData();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        // Clean up
+        return () => {
+            clearInterval(refreshInterval);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
+    }, [selectedRestaurant, selectedMonth, selectedYear]);
 
     // Format currency (MAD)
     const formatCurrency = (value) => {
@@ -315,6 +386,21 @@ const CostAnalyticsDashboard = ({
                                             : "Generate Today's Data"}
                                     </button>
                                 </div>
+                                <div className="flex items-end">
+                                    <button
+                                        type="button"
+                                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                        onClick={refreshFullData}
+                                        disabled={isLoading}
+                                    >
+                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                        Refresh All Data
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="text-right text-xs text-gray-500 mb-2">
+                                Last refreshed: {lastRefreshed.toLocaleTimeString()}
                             </div>
 
                             {/* Summary Cards - UPDATED as per request */}

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ClotureCaisseController extends Controller
 {
@@ -104,7 +106,8 @@ class ClotureCaisseController extends Controller
         Storage::disk('public')->put("/signatures/$imageName", base64_decode($image));
 
         try {
-            ClotureCaisse::create(array_merge(
+            // Create the record
+            $clotureCaisse = ClotureCaisse::create(array_merge(
                 $request->all(),
                 [
                     "signature" => url("/") . "/storage/signatures/$imageName",
@@ -112,8 +115,51 @@ class ClotureCaisseController extends Controller
                 ]
             ));
 
+            // Get the date to update analytics
+            $date = Carbon::parse($request->date);
+            
+            // Find the restaurant
+            $restaurant = Restaurant::where('name', $request->restau)->first();
+            
+            if ($restaurant) {
+                Log::info("Updating analytics after cloture caisse", [
+                    'restaurant' => $restaurant->name,
+                    'date' => $date->format('Y-m-d'),
+                    'revenue' => $request->montant
+                ]);
+                
+                // Get the CostAnalyticsController instance
+                $costAnalyticsController = app()->make(CostAnalyticsController::class);
+                
+                // Update analytics for this date
+                $costAnalyticsController->recalculateForDay(
+                    $restaurant->id,
+                    $date->day,
+                    $date->month,
+                    $date->year
+                );
+                
+                // Also update any previous days in this month that might not have been calculated correctly
+                for ($day = 1; $day < $date->day; $day++) {
+                    $costAnalyticsController->recalculateForDay(
+                        $restaurant->id,
+                        $day,
+                        $date->month,
+                        $date->year
+                    );
+                }
+            } else {
+                Log::warning("Restaurant not found for analytics update", [
+                    'restaurant_name' => $request->restau
+                ]);
+            }
+
             return redirect("/")->with('success', 'Clôture de caisse enregistrée avec succès');
         } catch (\Exception $e) {
+            Log::error("Error in cloture caisse store", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement');
         }
     }
