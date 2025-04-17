@@ -81,7 +81,7 @@ const CostAnalyticsDashboard = ({
         try {
             setIsLoading(true);
             const response = await fetch(
-                `/cost-analytics/summary?restaurant_id=${selectedRestaurant}&month=${selectedMonth}&year=${selectedYear}`
+                `/cost-analytics/summary?restaurant_id=${selectedRestaurant}&month=${selectedMonth}&year=${selectedYear}&_=${Date.now()}`
             );
 
             if (!response.ok) {
@@ -91,6 +91,7 @@ const CostAnalyticsDashboard = ({
             const data = await response.json();
 
             if (data.success) {
+                console.log("Refreshed summary data:", data); // Add logging
                 setMonthlySummary(data.monthlySummary);
                 setLastRefreshed(new Date());
             }
@@ -113,7 +114,10 @@ const CostAnalyticsDashboard = ({
             ],
             preserveScroll: true,
             preserveState: false,
-            onFinish: () => setIsLoading(false),
+            onFinish: () => {
+                setIsLoading(false);
+                setTimeout(fetchSummaryData, 500);
+            },
         });
     };
 
@@ -400,7 +404,8 @@ const CostAnalyticsDashboard = ({
                             </div>
 
                             <div className="text-right text-xs text-gray-500 mb-2">
-                                Last refreshed: {lastRefreshed.toLocaleTimeString()}
+                                Last refreshed:{" "}
+                                {lastRefreshed.toLocaleTimeString()}
                             </div>
 
                             {/* Summary Cards - UPDATED as per request */}

@@ -42,25 +42,20 @@ class CostAnalyticsController extends Controller
             ->orderBy('day')
             ->get();
 
-        // Get the last day with actual data (not just cumulatives copied forward)
-        $lastDayWithFC = $foodCosts->max(function($item) {
-            return $item->amount > 0 ? $item->day : 0;
-        });
-        
-        $lastDayWithCC = $consumableCosts->max(function($item) {
-            return $item->amount > 0 ? $item->day : 0;
-        });
-        
-        $lastDayWithRevenue = $foodCosts->max(function($item) {
-            return $item->revenue > 0 ? $item->day : 0;
-        });
-        
-        $lastDayWithData = max($lastDayWithFC, $lastDayWithCC, $lastDayWithRevenue);
+        // Important change: Get the latest day entry regardless of amount/revenue
+        $lastDay = max(
+            $foodCosts->max('day') ?? 0,
+            $consumableCosts->max('day') ?? 0
+        );
 
-        // Get the cumulative totals as of the last day with actual data
-        $finalFcCumul = $foodCosts->where('day', $lastDayWithData)->first()->cumul ?? 0;
-        $finalCcCumul = $consumableCosts->where('day', $lastDayWithData)->first()->cumul ?? 0;
-        $finalRevenueCumul = $foodCosts->where('day', $lastDayWithData)->first()->cumul_revenue ?? 0;
+        // Get the cumulative totals as of the last day
+        $lastFcEntry = $foodCosts->where('day', $lastDay)->first();
+        $lastCcEntry = $consumableCosts->where('day', $lastDay)->first();
+
+        // Use the latest values for summary
+        $finalFcCumul = $lastFcEntry ? $lastFcEntry->cumul : 0;
+        $finalCcCumul = $lastCcEntry ? $lastCcEntry->cumul : 0;
+        $finalRevenueCumul = $lastFcEntry ? $lastFcEntry->cumul_revenue : ($lastCcEntry ? $lastCcEntry->cumul_revenue : 0);
 
         // Calculate FC percentage from cumulative values
         $fcPercentage = null;
@@ -104,58 +99,57 @@ class CostAnalyticsController extends Controller
         // Create a lookup for existing data by day
         $fcByDay = $foodCosts->keyBy('day');
         $ccByDay = $consumableCosts->keyBy('day');
-        
-        $lastKnownFcCumul = 0;
-        $lastKnownCcCumul = 0;
-        $lastKnownRevenueCumul = 0;
 
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $fcData = $fcByDay->get($i);
             $ccData = $ccByDay->get($i);
-            
-            // Get the amount values (default to 0 if no data)
+
+            // Get actual values for this day (default to 0 if no data)
             $fcAmount = $fcData ? $fcData->amount : 0;
             $ccAmount = $ccData ? $ccData->amount : 0;
             $revenue = $fcData ? $fcData->revenue : 0;
-            
-            // Only update cumulative values if we have real data
-            if ($fcData && $fcData->amount > 0) {
-                $lastKnownFcCumul = $fcData->cumul;
-            }
-            
-            if ($ccData && $ccData->amount > 0) {
-                $lastKnownCcCumul = $ccData->cumul;
-            }
-            
-            if ($fcData && $fcData->revenue > 0) {
-                $lastKnownRevenueCumul = $fcData->cumul_revenue;
-            }
-            
-            // For current day and future days, only show cumulative data if there's actual data
-            $showCumul = $i <= $lastDayWithData;
-            
-            // Calculate percentages based on cumulative values (not daily)
-            $fcPercentage = null;
-            $ccPercentage = null;
-            
-            if ($showCumul && $lastKnownRevenueCumul > 0) {
-                $fcPercentage = ($lastKnownFcCumul / $lastKnownRevenueCumul) * 100;
-                $ccPercentage = ($lastKnownCcCumul / $lastKnownRevenueCumul) * 100;
+            $fcCumul = $fcData ? $fcData->cumul : 0;
+            $ccCumul = $ccData ? $ccData->cumul : 0;
+            $cumulRevenue = $fcData ? $fcData->cumul_revenue : 0;
+
+            // Only show data for days up to the last day with actual data
+            if ($i > $lastDay) {
+                // For future days, don't show cumulative values (to avoid misleading data)
+                $fcCumul = 0;
+                $ccCumul = 0;
+                $cumulRevenue = 0;
             }
 
-            // Only add cumulative data to the day if there's actual data for that day or before
+            // Get the percentage values (they've already been calculated correctly in the database)
+            $fcPercentage = $fcData ? $fcData->percentage : null;
+            $ccPercentage = $ccData ? $ccData->percentage : null;
+
+            // Add to chart data
             $chartData[] = [
                 'day' => $i,
                 'fc_amount' => $fcAmount,
                 'cc_amount' => $ccAmount,
-                'fc_cumul' => $showCumul ? $lastKnownFcCumul : 0,
-                'cc_cumul' => $showCumul ? $lastKnownCcCumul : 0,
+                'fc_cumul' => $fcCumul,
+                'cc_cumul' => $ccCumul,
                 'fc_percentage' => $fcPercentage,
                 'cc_percentage' => $ccPercentage,
                 'revenue' => $revenue,
-                'cumul_revenue' => $showCumul ? $lastKnownRevenueCumul : 0,
+                'cumul_revenue' => $cumulRevenue,
             ];
         }
+
+        // Log the summary data being sent to the view
+        Log::info('Cost Analytics Index Summary', [
+            'restaurant_id' => $restaurantId,
+            'month' => $month,
+            'year' => $year,
+            'lastDay' => $lastDay,
+            'finalFcCumul' => $finalFcCumul,
+            'finalCcCumul' => $finalCcCumul,
+            'finalRevenueCumul' => $finalRevenueCumul,
+            'fc_percentage' => $fcPercentage,
+            'cc_percentage' => $ccPercentage
+        ]);
 
         return Inertia::render('CostAnalytics/Dashboard', [
             'restaurants' => $restaurants,
@@ -367,32 +361,51 @@ class CostAnalyticsController extends Controller
             ]);
         }
 
-        // Get the selected restaurant's data for the last day of data
-        $lastDayFC = CostAnalytics::where('restaurant_id', $restaurantId)
+        // Get FC entries for the month
+        $fcEntries = CostAnalytics::where('restaurant_id', $restaurantId)
             ->where('type', 'FC')
             ->where('month', $month)
             ->where('year', $year)
             ->orderBy('day', 'desc')
-            ->first();
+            ->get();
 
-        $lastDayCC = CostAnalytics::where('restaurant_id', $restaurantId)
+        // Get CC entries for the month
+        $ccEntries = CostAnalytics::where('restaurant_id', $restaurantId)
             ->where('type', 'CC')
             ->where('month', $month)
             ->where('year', $year)
             ->orderBy('day', 'desc')
-            ->first();
+            ->get();
 
-        if (!$lastDayFC && !$lastDayCC) {
+        if ($fcEntries->isEmpty() && $ccEntries->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => 'No data available'
             ]);
         }
 
-        // Get cumulative values
-        $finalFcCumul = $lastDayFC ? $lastDayFC->cumul : 0;
-        $finalCcCumul = $lastDayCC ? $lastDayCC->cumul : 0;
-        $finalRevenueCumul = $lastDayFC ? $lastDayFC->cumul_revenue : ($lastDayCC ? $lastDayCC->cumul_revenue : 0);
+        // Find the latest day entry
+        $lastDay = max(
+            $fcEntries->max('day') ?? 0,
+            $ccEntries->max('day') ?? 0
+        );
+
+        // Get entries for the last day
+        $lastFcEntry = $fcEntries->where('day', $lastDay)->first();
+        $lastCcEntry = $ccEntries->where('day', $lastDay)->first();
+
+        // Get cumulative values from the latest day
+        $finalFcCumul = $lastFcEntry ? $lastFcEntry->cumul : 0;
+        $finalCcCumul = $lastCcEntry ? $lastCcEntry->cumul : 0;
+        $finalRevenueCumul = $lastFcEntry ? $lastFcEntry->cumul_revenue : ($lastCcEntry ? $lastCcEntry->cumul_revenue : 0);
+
+        // Log debug info
+        Log::info("Analytics summary data", [
+            'lastDay' => $lastDay,
+            'finalFcCumul' => $finalFcCumul,
+            'finalCcCumul' => $finalCcCumul,
+            'finalRevenueCumul' => $finalRevenueCumul
+        ]);
 
         // Calculate percentages
         $fcPercentage = $finalRevenueCumul > 0 ? ($finalFcCumul / $finalRevenueCumul) * 100 : null;
@@ -416,7 +429,8 @@ class CostAnalyticsController extends Controller
                     'percentage' => $combinedPercentage
                 ],
                 'total_revenue' => $finalRevenueCumul
-            ]
+            ],
+            'lastDay' => $lastDay
         ]);
     }
 }
