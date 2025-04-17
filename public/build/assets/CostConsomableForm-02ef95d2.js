@@ -1,0 +1,1 @@
+import{j as t}from"./app-dd9432af.js";import e from"./SharedCostForm-6c8f9e2b.js";function m(o){return t(e,{title:"Cost Consomable",routeName:"cost-consomable.update-value",...o})}export{m as default};

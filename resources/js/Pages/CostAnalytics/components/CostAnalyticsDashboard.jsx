@@ -24,6 +24,8 @@ const CostAnalyticsDashboard = ({
     monthlySummary: initialMonthlySummary,
     chartData: initialChartData,
     currentDay,
+    lastDay,
+    daysInMonth
 }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [monthlySummary, setMonthlySummary] = useState(initialMonthlySummary);
@@ -94,56 +96,6 @@ const CostAnalyticsDashboard = ({
             if (data.success) {
                 console.log("Refreshed summary data:", data);
                 setMonthlySummary(data.monthlySummary);
-                
-                // Update chart data with latest summary values
-                if (data.monthlySummary.last_updated_day) {
-                    const updatedChartData = [...chartData];
-                    const lastDay = data.monthlySummary.last_updated_day;
-                    
-                    // Only update data up to the last updated day
-                    for (let i = 0; i < updatedChartData.length; i++) {
-                        const dayRecord = updatedChartData[i];
-                        
-                        // If this is the last updated day, update the values
-                        if (dayRecord.day === lastDay) {
-                            const fcData = foodCosts.find(fc => fc.day === lastDay);
-                            const ccData = consumableCosts.find(cc => cc.day === lastDay);
-                            
-                            if (fcData) {
-                                dayRecord.fc_amount = fcData.amount;
-                                dayRecord.fc_cumul = fcData.cumul;
-                                dayRecord.fc_percentage = fcData.percentage;
-                                dayRecord.revenue = fcData.revenue;
-                                dayRecord.cumul_revenue = fcData.cumul_revenue;
-                            }
-                            
-                            if (ccData) {
-                                dayRecord.cc_amount = ccData.amount;
-                                dayRecord.cc_cumul = ccData.cumul;
-                                dayRecord.cc_percentage = ccData.percentage;
-                                if (!fcData) {
-                                    dayRecord.revenue = ccData.revenue;
-                                    dayRecord.cumul_revenue = ccData.cumul_revenue;
-                                }
-                            }
-                        }
-                        
-                        // For future dates, ensure they're set to 0
-                        if (dayRecord.day > currentDay) {
-                            dayRecord.fc_amount = 0;
-                            dayRecord.cc_amount = 0;
-                            dayRecord.fc_cumul = 0;
-                            dayRecord.cc_cumul = 0;
-                            dayRecord.fc_percentage = null;
-                            dayRecord.cc_percentage = null;
-                            dayRecord.revenue = 0;
-                            dayRecord.cumul_revenue = 0;
-                        }
-                    }
-                    
-                    setChartData(updatedChartData);
-                }
-                
                 setLastRefreshed(new Date());
             }
         } catch (error) {
@@ -162,7 +114,9 @@ const CostAnalyticsDashboard = ({
                 "consumableCosts",
                 "monthlySummary",
                 "chartData",
-                "currentDay"
+                "currentDay",
+                "lastDay",
+                "daysInMonth"
             ],
             preserveScroll: true,
             preserveState: false,
@@ -340,8 +294,21 @@ const CostAnalyticsDashboard = ({
         }
     };
 
-    // Filter chart data to only show up to the current day
-    const filteredChartData = chartData.filter(data => data.day <= currentDay);
+    // Determine what to show in the UI
+    const displayDay = currentDay > 0 ? currentDay : (lastDay > 0 ? lastDay : daysInMonth);
+    const chartDisplayTitle = currentDay > 0 
+        ? `(Up to day ${currentDay})` 
+        : (lastDay > 0 ? `(Up to day ${lastDay})` : '');
+
+    // Filter chart data to only show up to the current day if we have a valid current day
+    // Otherwise show all days in the month for historical data
+    const validChartData = chartData || [];
+    const filteredChartData = currentDay > 0 
+        ? validChartData.filter(data => data.day <= currentDay && !data.is_future)
+        : validChartData;
+
+    // Make sure we have at least some data to display
+    const hasChartData = filteredChartData && filteredChartData.length > 0;
 
     return (
         <>
@@ -432,16 +399,14 @@ const CostAnalyticsDashboard = ({
                                     </select>
                                 </div>
 
-                                <div className="flex items-end space-x-2">
+                                <div className="flex items-end gap-2">
                                     <button
                                         type="button"
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         onClick={handleGenerateDaily}
                                         disabled={isLoading}
                                     >
-                                        {isLoading
-                                            ? "Processing..."
-                                            : "Generate Today's Data"}
+                                        {isLoading ? "Processing..." : "Generate Today's Data"}
                                     </button>
                                     <button
                                         type="button"
@@ -457,11 +422,11 @@ const CostAnalyticsDashboard = ({
 
                             <div className="text-right text-xs text-gray-500 mb-2">
                                 Last refreshed:{" "}
-                                {lastRefreshed.toLocaleTimeString()} 
+                                {lastRefreshed.toLocaleTimeString()}
                                 {isLoading && <span className="ml-2 text-orange-500 animate-pulse">Refreshing...</span>}
                             </div>
 
-                            {/* Summary Cards - UPDATED as per request */}
+                            {/* Summary Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 {/* FC Card */}
                                 <div className="bg-blue-50 p-4 rounded-lg shadow">
@@ -549,150 +514,154 @@ const CostAnalyticsDashboard = ({
                                 </div>
                             </div>
 
-                            {/* Charts */}
+                            {/* Daily Costs Chart */}
                             <div className="mb-6">
                                 <h2 className="text-xl font-semibold mb-4">
-                                    Daily Costs (Up to day {currentDay})
+                                    Daily Costs {chartDisplayTitle}
                                 </h2>
                                 <div className="h-96 bg-white rounded-lg shadow p-4">
-                                    <ResponsiveContainer
-                                        width="100%"
-                                        height="100%"
-                                    >
-                                        <LineChart data={filteredChartData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis
-                                                dataKey="day"
-                                                label={{
-                                                    value: "Day",
-                                                    position: "insideBottom",
-                                                    offset: -5,
-                                                }}
-                                            />
-                                            <YAxis
-                                                yAxisId="left"
-                                                orientation="left"
-                                                label={{
-                                                    value: "Amount (MAD)",
-                                                    angle: -90,
-                                                    position: "insideLeft",
-                                                }}
-                                            />
-                                            <YAxis
-                                                yAxisId="right"
-                                                orientation="right"
-                                                label={{
-                                                    value: "Percentage (%)",
-                                                    angle: 90,
-                                                    position: "insideRight",
-                                                }}
-                                            />
-                                            <Tooltip
-                                                content={<CustomTooltip />}
-                                            />
-                                            <Legend />
-                                            <Line
-                                                yAxisId="left"
-                                                type="monotone"
-                                                dataKey="fc_amount"
-                                                name="FC Amount"
-                                                stroke="#3b82f6"
-                                                activeDot={{ r: 8 }}
-                                            />
-                                            <Line
-                                                yAxisId="left"
-                                                type="monotone"
-                                                dataKey="cc_amount"
-                                                name="CC Amount"
-                                                stroke="#10b981"
-                                                activeDot={{ r: 8 }}
-                                            />
-                                            <Line
-                                                yAxisId="right"
-                                                type="monotone"
-                                                dataKey="fc_percentage"
-                                                name="FC %"
-                                                stroke="#1d4ed8"
-                                                strokeDasharray="5 5"
-                                                connectNulls={false} // Don't connect through null values
-                                                isAnimationActive={false} // Disable animation for better stability with null values
-                                            />
-                                            <Line
-                                                yAxisId="right"
-                                                type="monotone"
-                                                dataKey="cc_percentage"
-                                                name="CC %"
-                                                stroke="#047857"
-                                                strokeDasharray="5 5"
-                                                connectNulls={false} // Don't connect through null values
-                                                isAnimationActive={false} // Disable animation for better stability with null values
-                                            />
-                                            <Line
-                                                yAxisId="left"
-                                                type="monotone"
-                                                dataKey="revenue"
-                                                name="Revenue"
-                                                stroke="#6b7280"
-                                                dot={false}
-                                            />
-                                        </LineChart>
-                                    </ResponsiveContainer>
+                                    {hasChartData ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={filteredChartData}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis
+                                                    dataKey="day"
+                                                    label={{
+                                                        value: "Day",
+                                                        position: "insideBottom",
+                                                        offset: -5,
+                                                    }}
+                                                />
+                                                <YAxis
+                                                    yAxisId="left"
+                                                    orientation="left"
+                                                    label={{
+                                                        value: "Amount (MAD)",
+                                                        angle: -90,
+                                                        position: "insideLeft",
+                                                    }}
+                                                />
+                                                <YAxis
+                                                    yAxisId="right"
+                                                    orientation="right"
+                                                    label={{
+                                                        value: "Percentage (%)",
+                                                        angle: 90,
+                                                        position: "insideRight",
+                                                    }}
+                                                />
+                                                <Tooltip
+                                                    content={<CustomTooltip />}
+                                                />
+                                                <Legend />
+                                                <Line
+                                                    yAxisId="left"
+                                                    type="monotone"
+                                                    dataKey="fc_amount"
+                                                    name="FC Amount"
+                                                    stroke="#3b82f6"
+                                                    activeDot={{ r: 8 }}
+                                                />
+                                                <Line
+                                                    yAxisId="left"
+                                                    type="monotone"
+                                                    dataKey="cc_amount"
+                                                    name="CC Amount"
+                                                    stroke="#10b981"
+                                                    activeDot={{ r: 8 }}
+                                                />
+                                                <Line
+                                                    yAxisId="right"
+                                                    type="monotone"
+                                                    dataKey="fc_percentage"
+                                                    name="FC %"
+                                                    stroke="#1d4ed8"
+                                                    strokeDasharray="5 5"
+                                                    connectNulls={true}
+                                                />
+                                                <Line
+                                                    yAxisId="right"
+                                                    type="monotone"
+                                                    dataKey="cc_percentage"
+                                                    name="CC %"
+                                                    stroke="#047857"
+                                                    strokeDasharray="5 5"
+                                                    connectNulls={true}
+                                                />
+                                                <Line
+                                                    yAxisId="left"
+                                                    type="monotone"
+                                                    dataKey="revenue"
+                                                    name="Revenue"
+                                                    stroke="#6b7280"
+                                                    dot={false}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center">
+                                            <p className="text-gray-500">No data available for this time period</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Cumulative Charts */}
                             <div className="mb-6">
                                 <h2 className="text-xl font-semibold mb-4">
-                                    Cumulative Monthly Data (Up to day {currentDay})
+                                    Cumulative Monthly Data {chartDisplayTitle}
                                 </h2>
                                 <div className="h-96 bg-white rounded-lg shadow p-4">
-                                    <ResponsiveContainer
-                                        width="100%"
-                                        height="100%"
-                                    >
-                                        <LineChart data={filteredChartData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis
-                                                dataKey="day"
-                                                label={{
-                                                    value: "Day",
-                                                    position: "insideBottom",
-                                                    offset: -5,
-                                                }}
-                                            />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="fc_cumul"
-                                                name="FC Cumulative"
-                                                stroke="#3b82f6"
-                                                strokeWidth={2}
-                                            />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="cc_cumul"
-                                                name="CC Cumulative"
-                                                stroke="#10b981"
-                                                strokeWidth={2}
-                                            />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="cumul_revenue"
-                                                name="Revenue Cumulative"
-                                                stroke="#6b7280"
-                                                strokeWidth={2}
-                                            />
-                                        </LineChart>
-                                    </ResponsiveContainer>
+                                    {hasChartData ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={filteredChartData}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis
+                                                    dataKey="day"
+                                                    label={{
+                                                        value: "Day",
+                                                        position: "insideBottom",
+                                                        offset: -5,
+                                                    }}
+                                                />
+                                                <YAxis />
+                                                <Tooltip />
+                                                <Legend />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="fc_cumul"
+                                                    name="FC Cumulative"
+                                                    stroke="#3b82f6"
+                                                    strokeWidth={2}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="cc_cumul"
+                                                    name="CC Cumulative"
+                                                    stroke="#10b981"
+                                                    strokeWidth={2}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="cumul_revenue"
+                                                    name="Revenue Cumulative"
+                                                    stroke="#6b7280"
+                                                    strokeWidth={2}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center">
+                                            <p className="text-gray-500">No data available for this time period</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Updated Data Table based on Excel format */}
                             <div>
                                 <h2 className="text-xl font-semibold mb-4">
-                                    Daily Data (Up to day {currentDay})
+                                    Daily Data {chartDisplayTitle}
                                 </h2>
                                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                                     <div className="overflow-x-auto">
@@ -756,63 +725,71 @@ const CostAnalyticsDashboard = ({
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {filteredChartData.map(
-                                                    (data, index) => (
-                                                        <tr
-                                                            key={index}
-                                                            className={
-                                                                index % 2 === 0
-                                                                    ? "bg-white"
-                                                                    : "bg-gray-50"
-                                                            }
-                                                        >
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                                {formatDate(
-                                                                    data.day
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatCurrency(
-                                                                    data.fc_amount
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatCurrency(
-                                                                    data.fc_cumul
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatCurrency(
-                                                                    data.cc_amount
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatCurrency(
-                                                                    data.cc_cumul
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatCurrency(
-                                                                    data.revenue
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatCurrency(
-                                                                    data.cumul_revenue
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatPercentage(
-                                                                    data.fc_percentage
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {formatPercentage(
-                                                                    data.cc_percentage
-                                                                )}
-                                                            </td>
-                                                        </tr>
+                                                {hasChartData ? (
+                                                    filteredChartData.map(
+                                                        (data, index) => (
+                                                            <tr
+                                                                key={index}
+                                                                className={
+                                                                    index % 2 === 0
+                                                                        ? "bg-white"
+                                                                        : "bg-gray-50"
+                                                                }
+                                                            >
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                    {formatDate(
+                                                                        data.day
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatCurrency(
+                                                                        data.fc_amount
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatCurrency(
+                                                                        data.fc_cumul
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatCurrency(
+                                                                        data.cc_amount
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatCurrency(
+                                                                        data.cc_cumul
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatCurrency(
+                                                                        data.revenue
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatCurrency(
+                                                                        data.cumul_revenue
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatPercentage(
+                                                                        data.fc_percentage
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {formatPercentage(
+                                                                        data.cc_percentage
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        )
                                                     )
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">
+                                                            No data available for this time period
+                                                        </td>
+                                                    </tr>
                                                 )}
                                             </tbody>
                                         </table>

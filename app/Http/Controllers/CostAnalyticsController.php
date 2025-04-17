@@ -44,20 +44,26 @@ class CostAnalyticsController extends Controller
 
         // Get today's date
         $today = Carbon::today();
-        $currentDay = ($month == $today->month && $year == $today->year)
-            ? $today->day
-            : ($year < $today->year || ($year == $today->year && $month < $today->month)
-                ? 31 // Past month, use max days
-                : 0); // Future month, use 0 days
 
-        // Find the latest day with records (up to today)
-        $lastDay = min(
-            max(
+        // Determine the current day limit
+        $currentDay = 0;
+        if ($year < $today->year || ($year == $today->year && $month < $today->month)) {
+            // Past month - use last day of that month
+            $currentDay = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+        } elseif ($year == $today->year && $month == $today->month) {
+            // Current month - use today's day
+            $currentDay = $today->day;
+        }
+        // For future months, currentDay remains 0
+
+        // Find the latest day with actual records (up to the current day or end of month for past)
+        $lastDay = 0;
+        if ($currentDay > 0) {
+            $lastDay = max(
                 $foodCosts->where('day', '<=', $currentDay)->max('day') ?? 0,
                 $consumableCosts->where('day', '<=', $currentDay)->max('day') ?? 0
-            ),
-            $currentDay
-        );
+            );
+        }
 
         // Get the LATEST entries for both FC and CC
         $latestFcEntry = $foodCosts->where('day', $lastDay)->first();
@@ -99,32 +105,32 @@ class CostAnalyticsController extends Controller
         $fcByDay = $foodCosts->keyBy('day');
         $ccByDay = $consumableCosts->keyBy('day');
 
-        // Last cumulative values for past days with no data
+        // Last cumulative values for days with no data
         $lastFcCumul = 0;
         $lastCcCumul = 0;
         $lastRevenueCumul = 0;
 
+        // Generate data for all days in the month
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $fcData = $fcByDay->get($i);
             $ccData = $ccByDay->get($i);
 
-            // Check if this day is in the future
-            $isInFuture = ($year > $today->year) ||
-                ($year == $today->year && $month > $today->month) ||
-                ($year == $today->year && $month == $today->month && $i > $today->day);
+            // Check if this day is in the future or beyond our current day limit
+            $isOutOfRange = ($currentDay > 0 && $i > $currentDay);
 
-            if ($isInFuture) {
-                // For future dates, set all values to 0 or null
+            if ($isOutOfRange) {
+                // For future dates or days beyond our range, set all values to 0
                 $chartData[] = [
                     'day' => $i,
                     'fc_amount' => 0,
                     'cc_amount' => 0,
-                    'fc_cumul' => 0,
-                    'cc_cumul' => 0,
+                    'fc_cumul' => $lastFcCumul,  // Keep the last cumulative value for continuity
+                    'cc_cumul' => $lastCcCumul,  // Keep the last cumulative value for continuity
                     'fc_percentage' => null,
                     'cc_percentage' => null,
                     'revenue' => 0,
-                    'cumul_revenue' => 0,
+                    'cumul_revenue' => $lastRevenueCumul, // Keep the last cumulative value for continuity
+                    'is_future' => true,
                 ];
             } else {
                 // For past and current dates, use actual data or carry forward the last cumulative values
@@ -139,7 +145,7 @@ class CostAnalyticsController extends Controller
 
                 if ($ccData) {
                     $lastCcCumul = $ccData->cumul;
-                    if (!$fcData) { // If no FC data but we have CC data with revenue
+                    if (!$fcData && $ccData->cumul_revenue > 0) { // If no FC data but we have CC data with revenue
                         $lastRevenueCumul = $ccData->cumul_revenue;
                     }
                 }
@@ -154,6 +160,7 @@ class CostAnalyticsController extends Controller
                     'cc_percentage' => $ccData ? $ccData->percentage : null,
                     'revenue' => $fcData ? $fcData->revenue : ($ccData ? $ccData->revenue : 0),
                     'cumul_revenue' => $fcData ? $fcData->cumul_revenue : ($ccData ? $ccData->cumul_revenue : $lastRevenueCumul),
+                    'is_future' => false,
                 ];
             }
         }
@@ -163,6 +170,8 @@ class CostAnalyticsController extends Controller
             'restaurant_id' => $restaurantId,
             'current_day' => $currentDay,
             'last_day_found' => $lastDay,
+            'days_in_month' => $daysInMonth,
+            'chart_data_count' => count($chartData),
             'final_fc_cumul' => $finalFcCumul,
             'final_cc_cumul' => $finalCcCumul,
             'final_revenue_cumul' => $finalRevenueCumul
@@ -177,7 +186,9 @@ class CostAnalyticsController extends Controller
             'consumableCosts' => $consumableCosts,
             'monthlySummary' => $monthlySummary,
             'chartData' => $chartData,
-            'currentDay' => $currentDay
+            'currentDay' => $currentDay,
+            'lastDay' => $lastDay,
+            'daysInMonth' => $daysInMonth
         ]);
     }
 
@@ -403,20 +414,26 @@ class CostAnalyticsController extends Controller
 
         // Get today's date
         $today = Carbon::today();
-        $currentDay = ($month == $today->month && $year == $today->year)
-            ? $today->day
-            : ($year < $today->year || ($year == $today->year && $month < $today->month)
-                ? 31 // Past month, use max days
-                : 0); // Future month, use 0 days
 
-        // Find the latest day with records (up to today)
-        $lastDay = min(
-            max(
+        // Determine the current day limit
+        $currentDay = 0;
+        if ($year < $today->year || ($year == $today->year && $month < $today->month)) {
+            // Past month - use last day of that month
+            $currentDay = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+        } elseif ($year == $today->year && $month == $today->month) {
+            // Current month - use today's day
+            $currentDay = $today->day;
+        }
+        // For future months, currentDay remains 0
+
+        // Find the latest day with records (up to the current day or end of month for past)
+        $lastDay = 0;
+        if ($currentDay > 0) {
+            $lastDay = max(
                 $fcEntries->where('day', '<=', $currentDay)->max('day') ?? 0,
                 $ccEntries->where('day', '<=', $currentDay)->max('day') ?? 0
-            ),
-            $currentDay
-        );
+            );
+        }
 
         // Get the latest entries
         $latestFcEntry = $fcEntries->where('day', $lastDay)->first();
@@ -434,10 +451,10 @@ class CostAnalyticsController extends Controller
 
         Log::info('Summary API data', [
             'last_day' => $lastDay,
+            'currentDay' => $currentDay,
             'finalFcCumul' => $finalFcCumul,
             'finalCcCumul' => $finalCcCumul,
-            'finalRevenueCumul' => $finalRevenueCumul,
-            'current_day' => $currentDay
+            'finalRevenueCumul' => $finalRevenueCumul
         ]);
 
         // Return summary data
@@ -458,7 +475,8 @@ class CostAnalyticsController extends Controller
                 ],
                 'total_revenue' => $finalRevenueCumul,
                 'last_updated_day' => $lastDay
-            ]
+            ],
+            'currentDay' => $currentDay
         ]);
     }
 }
