@@ -23,6 +23,7 @@ const CostAnalyticsDashboard = ({
     consumableCosts,
     monthlySummary: initialMonthlySummary,
     chartData: initialChartData,
+    currentDay,
 }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [monthlySummary, setMonthlySummary] = useState(initialMonthlySummary);
@@ -91,8 +92,58 @@ const CostAnalyticsDashboard = ({
             const data = await response.json();
 
             if (data.success) {
-                console.log("Refreshed summary data:", data); // Add logging
+                console.log("Refreshed summary data:", data);
                 setMonthlySummary(data.monthlySummary);
+                
+                // Update chart data with latest summary values
+                if (data.monthlySummary.last_updated_day) {
+                    const updatedChartData = [...chartData];
+                    const lastDay = data.monthlySummary.last_updated_day;
+                    
+                    // Only update data up to the last updated day
+                    for (let i = 0; i < updatedChartData.length; i++) {
+                        const dayRecord = updatedChartData[i];
+                        
+                        // If this is the last updated day, update the values
+                        if (dayRecord.day === lastDay) {
+                            const fcData = foodCosts.find(fc => fc.day === lastDay);
+                            const ccData = consumableCosts.find(cc => cc.day === lastDay);
+                            
+                            if (fcData) {
+                                dayRecord.fc_amount = fcData.amount;
+                                dayRecord.fc_cumul = fcData.cumul;
+                                dayRecord.fc_percentage = fcData.percentage;
+                                dayRecord.revenue = fcData.revenue;
+                                dayRecord.cumul_revenue = fcData.cumul_revenue;
+                            }
+                            
+                            if (ccData) {
+                                dayRecord.cc_amount = ccData.amount;
+                                dayRecord.cc_cumul = ccData.cumul;
+                                dayRecord.cc_percentage = ccData.percentage;
+                                if (!fcData) {
+                                    dayRecord.revenue = ccData.revenue;
+                                    dayRecord.cumul_revenue = ccData.cumul_revenue;
+                                }
+                            }
+                        }
+                        
+                        // For future dates, ensure they're set to 0
+                        if (dayRecord.day > currentDay) {
+                            dayRecord.fc_amount = 0;
+                            dayRecord.cc_amount = 0;
+                            dayRecord.fc_cumul = 0;
+                            dayRecord.cc_cumul = 0;
+                            dayRecord.fc_percentage = null;
+                            dayRecord.cc_percentage = null;
+                            dayRecord.revenue = 0;
+                            dayRecord.cumul_revenue = 0;
+                        }
+                    }
+                    
+                    setChartData(updatedChartData);
+                }
+                
                 setLastRefreshed(new Date());
             }
         } catch (error) {
@@ -111,12 +162,12 @@ const CostAnalyticsDashboard = ({
                 "consumableCosts",
                 "monthlySummary",
                 "chartData",
+                "currentDay"
             ],
             preserveScroll: true,
             preserveState: false,
             onFinish: () => {
                 setIsLoading(false);
-                setTimeout(fetchSummaryData, 500);
             },
         });
     };
@@ -130,7 +181,7 @@ const CostAnalyticsDashboard = ({
                 {},
                 {
                     onSuccess: () => {
-                        router.reload();
+                        refreshFullData();
                     },
                     onFinish: () => setIsLoading(false),
                 }
@@ -147,7 +198,7 @@ const CostAnalyticsDashboard = ({
         fetchSummaryData();
 
         // Set up refresh interval
-        const refreshInterval = setInterval(fetchSummaryData, 30000); // Every 30 seconds
+        const refreshInterval = setInterval(fetchSummaryData, 15000); // Every 15 seconds
 
         // Handle visibility change (refresh when tab becomes visible)
         const handleVisibilityChange = () => {
@@ -289,6 +340,9 @@ const CostAnalyticsDashboard = ({
         }
     };
 
+    // Filter chart data to only show up to the current day
+    const filteredChartData = chartData.filter(data => data.day <= currentDay);
+
     return (
         <>
             <Head title="Cost Analytics Dashboard" />
@@ -378,7 +432,7 @@ const CostAnalyticsDashboard = ({
                                     </select>
                                 </div>
 
-                                <div className="flex items-end">
+                                <div className="flex items-end space-x-2">
                                     <button
                                         type="button"
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -389,8 +443,6 @@ const CostAnalyticsDashboard = ({
                                             ? "Processing..."
                                             : "Generate Today's Data"}
                                     </button>
-                                </div>
-                                <div className="flex items-end">
                                     <button
                                         type="button"
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -405,7 +457,8 @@ const CostAnalyticsDashboard = ({
 
                             <div className="text-right text-xs text-gray-500 mb-2">
                                 Last refreshed:{" "}
-                                {lastRefreshed.toLocaleTimeString()}
+                                {lastRefreshed.toLocaleTimeString()} 
+                                {isLoading && <span className="ml-2 text-orange-500 animate-pulse">Refreshing...</span>}
                             </div>
 
                             {/* Summary Cards - UPDATED as per request */}
@@ -499,14 +552,14 @@ const CostAnalyticsDashboard = ({
                             {/* Charts */}
                             <div className="mb-6">
                                 <h2 className="text-xl font-semibold mb-4">
-                                    Daily Costs
+                                    Daily Costs (Up to day {currentDay})
                                 </h2>
                                 <div className="h-96 bg-white rounded-lg shadow p-4">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
                                     >
-                                        <LineChart data={chartData}>
+                                        <LineChart data={filteredChartData}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis
                                                 dataKey="day"
@@ -590,14 +643,14 @@ const CostAnalyticsDashboard = ({
                             {/* Cumulative Charts */}
                             <div className="mb-6">
                                 <h2 className="text-xl font-semibold mb-4">
-                                    Cumulative Monthly Data
+                                    Cumulative Monthly Data (Up to day {currentDay})
                                 </h2>
                                 <div className="h-96 bg-white rounded-lg shadow p-4">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
                                     >
-                                        <LineChart data={chartData}>
+                                        <LineChart data={filteredChartData}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis
                                                 dataKey="day"
@@ -639,7 +692,7 @@ const CostAnalyticsDashboard = ({
                             {/* Updated Data Table based on Excel format */}
                             <div>
                                 <h2 className="text-xl font-semibold mb-4">
-                                    Daily Data
+                                    Daily Data (Up to day {currentDay})
                                 </h2>
                                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                                     <div className="overflow-x-auto">
@@ -703,7 +756,7 @@ const CostAnalyticsDashboard = ({
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {chartData.map(
+                                                {filteredChartData.map(
                                                     (data, index) => (
                                                         <tr
                                                             key={index}
