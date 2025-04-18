@@ -191,29 +191,48 @@ class AggregateLivraisons extends Command
 
             $thermalReceipts = $thermalService->generateAllThermalReceipts($startDate, $endDate);
 
-            $this->info("Generated " . count($thermalReceipts) . " thermal receipts");
+            // DETAILED DEBUGGING - Examine what's returned from the service
+            $this->info("=== DETAILED DEBUGGING ===");
+            $this->info("Thermal service returned " . count($thermalReceipts) . " receipts");
 
-            if (empty($thermalReceipts)) {
-                // Check if there are any livraisons in this time period
-                $livraisonCount = \App\Models\Livraison::whereBetween('created_at', [$startDate, $endDate])->count();
-                $this->info("Found {$livraisonCount} livraisons in the same time period");
-            }
+            foreach ($thermalReceipts as $index => $receiptData) {
+                $this->info("Receipt #{$index}: Restaurant = {$receiptData['restaurant']}");
+                $this->info("  Receipt ID: {$receiptData['id']}");
+                $this->info("  Thermal blocks: " . count($receiptData['thermal_blocks']));
 
-            foreach ($thermalReceipts as $receiptData) {
+                // Try to create a record and catch any specific errors
                 try {
-                    // Save to new ThermalReceipt model
-                    $receipt = ThermalReceipt::create([
-                        'receipt_id' => $receiptData['id'],
-                        'restaurant' => $receiptData['restaurant'],
-                        'data' => $receiptData,
-                        'printed' => false,
-                    ]);
+                    // Save to new ThermalReceipt model with extra debug
+                    $this->info("  Attempting to create ThermalReceipt for {$receiptData['restaurant']}...");
 
-                    $this->info("Thermal receipt generated for {$receiptData['restaurant']} with ID {$receipt->id}");
+                    $receipt = new \App\Models\ThermalReceipt();
+                    $receipt->receipt_id = $receiptData['id'];
+                    $receipt->restaurant = $receiptData['restaurant'];
+                    $receipt->data = $receiptData;
+                    $receipt->printed = false;
+
+                    // Try to save and check result
+                    $saved = $receipt->save();
+
+                    if ($saved) {
+                        $this->info("  SUCCESS: Receipt saved with ID {$receipt->id}");
+                    } else {
+                        $this->error("  FAILED: Receipt not saved, no exception thrown");
+                    }
                 } catch (\Exception $e) {
-                    $this->error("Failed to create thermal receipt for {$receiptData['restaurant']}: " . $e->getMessage());
+                    $this->error("  EXCEPTION during save: " . $e->getMessage());
+                    $this->error("  Exception type: " . get_class($e));
+                    // Print stack trace for the first few frames
+                    $trace = $e->getTraceAsString();
+                    $this->error("  Trace: " . substr($trace, 0, 500) . "...");
                 }
             }
+
+            $this->info("=== END DEBUGGING ===");
+
+            // Count how many were actually saved
+            $savedCount = \App\Models\ThermalReceipt::whereBetween('created_at', [now()->subMinutes(5), now()])->count();
+            $this->info("Total thermal receipts saved in the last 5 minutes: {$savedCount}");
         } catch (\Exception $e) {
             $this->error("Error generating thermal receipts: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
