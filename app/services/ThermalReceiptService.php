@@ -23,8 +23,7 @@ class ThermalReceiptService
             })
             ->get();
 
-        // Debug info
-        Log::info("Restaurant: $restaurant, Start: $startDate, End: $endDate, Found: {$livraisons->count()} livraisons");
+        Log::info("Restaurant: $restaurant, Found: {$livraisons->count()} livraisons");
 
         if ($livraisons->isEmpty()) {
             return null;
@@ -47,7 +46,14 @@ class ThermalReceiptService
 
             // Add products from this livraison to the thermal type
             foreach ($livraison->data as $restauData) {
-                if ($restauData['restau'] === $restaurant) {
+                // Use strpos instead of exact matching - restaurant should be contained in restau string
+                // OR restaurant could be exactly 'Labo' for special case
+                if (($restaurant === 'Labo' && $restauData['restau'] === 'Labo') ||
+                    (strpos($restauData['restau'], $restaurant) !== false)
+                ) {
+
+                    Log::info("Processing products for {$restauData['restau']} (matched with $restaurant)");
+
                     foreach ($restauData['products'] as $product) {
                         // Check if product already exists in the thermal block
                         $existingProduct = $this->findExistingProduct($thermalBlocks[$thermalType]['products'], $product);
@@ -60,6 +66,8 @@ class ThermalReceiptService
                             $thermalBlocks[$thermalType]['products'][] = $product;
                         }
                     }
+                } else {
+                    Log::info("Skipping products for {$restauData['restau']} (does not match $restaurant)");
                 }
             }
         }
@@ -68,6 +76,11 @@ class ThermalReceiptService
         $thermalBlocks = array_filter($thermalBlocks, function ($block) {
             return !empty($block['products']);
         });
+
+        if (empty($thermalBlocks)) {
+            Log::info("No thermal blocks generated for $restaurant");
+            return null;
+        }
 
         // Create the final receipt data
         $receiptData = [
@@ -99,21 +112,26 @@ class ThermalReceiptService
      */
     public function generateAllThermalReceipts($startDate, $endDate)
     {
-        $restaurants = Livraison::whereBetween('created_at', [$startDate, $endDate])
-            ->distinct()
-            ->pluck('restaurant_group')
-            ->filter()
-            ->toArray();
+        // Use a list of the actual restaurant names that match what's in your database
+        $restaurantNames = [
+            'Cucina Napoli - Anoual',
+            'Cucina Napoli - Palmier',
+            'Cucina Napoli - To Go',
+            'Cucina Napoli - Ziraoui',
+            'Labo'
+        ];
 
-        // Log the restaurants found
-        Log::info("Found restaurant groups: " . implode(', ', $restaurants));
+        Log::info("Processing thermal receipts for restaurants: " . implode(', ', $restaurantNames));
 
         $receipts = [];
 
-        foreach ($restaurants as $restaurant) {
+        foreach ($restaurantNames as $restaurant) {
             $receipt = $this->generateThermalReceiptData($restaurant, $startDate, $endDate);
             if ($receipt) {
                 $receipts[] = $receipt;
+                Log::info("Thermal receipt created for $restaurant");
+            } else {
+                Log::info("No thermal receipt created for $restaurant");
             }
         }
 
