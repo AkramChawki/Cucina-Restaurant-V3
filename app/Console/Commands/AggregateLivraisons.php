@@ -43,7 +43,7 @@ class AggregateLivraisons extends Command
         $laboOrders = Labo::whereBetween('created_at', [$startDate, $endDate])->get();
 
         // Initialize aggregated data per restaurant
-        $restaurants = ['Anoual', 'Palmier', 'To Go', 'Ziraoui'];
+        $restaurants = ['Cucina Napoli - Anoual', 'Cucina Napoli - Palmier', 'Cucina Napoli - To Go', 'Cucina Napoli - Ziraoui'];
         $aggregatedData = [];
         foreach ($restaurants as $restaurant) {
             $aggregatedData[$restaurant] = array_fill_keys(BLTypeMappingService::$validTypes, []);
