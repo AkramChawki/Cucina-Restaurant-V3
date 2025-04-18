@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Livraison;
 use App\Models\ThermalReceipt;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ThermalReceiptService
@@ -16,20 +17,26 @@ class ThermalReceiptService
     {
         // Find all livraisons for this restaurant within the date range
         $livraisons = Livraison::where('restaurant_group', $restaurant)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate])
+                    ->orWhereBetween('date', [$startDate, $endDate]);
+            })
             ->get();
-            
+
+        // Debug info
+        Log::info("Restaurant: $restaurant, Start: $startDate, End: $endDate, Found: {$livraisons->count()} livraisons");
+
         if ($livraisons->isEmpty()) {
             return null;
         }
-        
+
         // Group livraisons by thermal type
         $thermalBlocks = [];
-        
+
         foreach ($livraisons as $livraison) {
             $originalType = $livraison->type;
             $thermalType = BLTypeMappingService::getThermalType($originalType);
-            
+
             // Initialize array for this thermal type if it doesn't exist
             if (!isset($thermalBlocks[$thermalType])) {
                 $thermalBlocks[$thermalType] = [
@@ -37,14 +44,14 @@ class ThermalReceiptService
                     'products' => []
                 ];
             }
-            
+
             // Add products from this livraison to the thermal type
             foreach ($livraison->data as $restauData) {
                 if ($restauData['restau'] === $restaurant) {
                     foreach ($restauData['products'] as $product) {
                         // Check if product already exists in the thermal block
                         $existingProduct = $this->findExistingProduct($thermalBlocks[$thermalType]['products'], $product);
-                        
+
                         if ($existingProduct) {
                             // Increase quantity of existing product
                             $existingProduct['qty'] = (string)((int)$existingProduct['qty'] + (int)$product['qty']);
@@ -56,12 +63,12 @@ class ThermalReceiptService
                 }
             }
         }
-        
+
         // Filter out empty thermal blocks
-        $thermalBlocks = array_filter($thermalBlocks, function($block) {
+        $thermalBlocks = array_filter($thermalBlocks, function ($block) {
             return !empty($block['products']);
         });
-        
+
         // Create the final receipt data
         $receiptData = [
             'id' => Str::uuid()->toString(),
@@ -69,10 +76,10 @@ class ThermalReceiptService
             'date' => Carbon::now()->format('Y-m-d H:i:s'),
             'thermal_blocks' => array_values($thermalBlocks), // Reset array keys
         ];
-        
+
         return $receiptData;
     }
-    
+
     /**
      * Find existing product in thermal block products array
      */
@@ -83,25 +90,33 @@ class ThermalReceiptService
                 return $product;
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Generate thermal receipts for all restaurants in a date range
      */
     public function generateAllThermalReceipts($startDate, $endDate)
     {
-        $restaurants = ['Anoual', 'Palmier', 'To Go', 'Ziraoui', 'Labo'];
+        $restaurants = Livraison::whereBetween('created_at', [$startDate, $endDate])
+            ->distinct()
+            ->pluck('restaurant_group')
+            ->filter()
+            ->toArray();
+
+        // Log the restaurants found
+        Log::info("Found restaurant groups: " . implode(', ', $restaurants));
+
         $receipts = [];
-        
+
         foreach ($restaurants as $restaurant) {
             $receipt = $this->generateThermalReceiptData($restaurant, $startDate, $endDate);
             if ($receipt) {
                 $receipts[] = $receipt;
             }
         }
-        
+
         return $receipts;
     }
 }

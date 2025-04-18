@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
 class BLTypeMappingService
 {
     /**
@@ -65,7 +67,9 @@ class BLTypeMappingService
      */
     public static function getThermalType($originalType)
     {
-        return self::$typeMapping[$originalType] ?? $originalType;
+        $result = self::$typeMapping[$originalType] ?? $originalType;
+        Log::info("Mapping BL Type: $originalType → $result");
+        return $result;
     }
     
     /**

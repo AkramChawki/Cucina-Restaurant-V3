@@ -185,27 +185,37 @@ class AggregateLivraisons extends Command
     {
         try {
             $thermalService = new ThermalReceiptService();
+
+            // Debug the date parameters
+            $this->info("Generating thermal receipts from {$startDate} to {$endDate}");
+
             $thermalReceipts = $thermalService->generateAllThermalReceipts($startDate, $endDate);
 
             $this->info("Generated " . count($thermalReceipts) . " thermal receipts");
 
+            if (empty($thermalReceipts)) {
+                // Check if there are any livraisons in this time period
+                $livraisonCount = \App\Models\Livraison::whereBetween('created_at', [$startDate, $endDate])->count();
+                $this->info("Found {$livraisonCount} livraisons in the same time period");
+            }
+
             foreach ($thermalReceipts as $receiptData) {
                 try {
                     // Save to new ThermalReceipt model
-                    ThermalReceipt::create([
+                    $receipt = ThermalReceipt::create([
                         'receipt_id' => $receiptData['id'],
                         'restaurant' => $receiptData['restaurant'],
                         'data' => $receiptData,
                         'printed' => false,
                     ]);
 
-                    $this->info("Thermal receipt generated for {$receiptData['restaurant']}");
+                    $this->info("Thermal receipt generated for {$receiptData['restaurant']} with ID {$receipt->id}");
                 } catch (\Exception $e) {
                     $this->error("Failed to create thermal receipt for {$receiptData['restaurant']}: " . $e->getMessage());
                 }
             }
         } catch (\Exception $e) {
-            $this->error("Error generating thermal receipts: " . $e->getMessage());
+            $this->error("Error generating thermal receipts: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
 }
