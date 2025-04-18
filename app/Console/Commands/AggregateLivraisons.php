@@ -8,29 +8,16 @@ use App\Models\CuisinierProduct;
 use App\Models\Livraison;
 use App\Models\BL;
 use App\Models\Labo;
+use App\Models\ThermalReceipt;
+use App\Services\BLTypeMappingService;
+use App\Services\ThermalReceiptService;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AggregateLivraisons extends Command
 {
     protected $signature = 'livraisons:aggregate';
     protected $description = 'Aggregate orders into livraisons by restaurant and type';
-
-    private $validTypes = [
-        'BL Economat',
-        'BL Poisson',
-        'BL Labo',
-        'BL Viande',
-        'BL Sauces Cuisine',
-        'BL Sauces Pizza',
-        'BL Boite Pizza',
-        'BL Arancini et Ravioli',
-        'BL Dessert',
-        'BL Charcuterie et frommage',
-        'BL Legume et jus',
-        'BL Pate a pizza',
-        'BL Conserve et pates',
-        "BL Ramadan"
-    ];
 
     private $summaryData = [];
 
@@ -44,6 +31,10 @@ class AggregateLivraisons extends Command
         } elseif ($now->hour == 16 && $now->minute == 00) {
             $startDate = Carbon::today('Africa/Casablanca')->setTime(4, 0, 0);
             $endDate = Carbon::today('Africa/Casablanca')->setTime(16, 30, 0);
+        } else {
+            // For testing
+            $startDate = Carbon::now('Africa/Casablanca')->subHours(12);
+            $endDate = Carbon::now('Africa/Casablanca');
         }
 
         // Get orders from all sources
@@ -55,11 +46,11 @@ class AggregateLivraisons extends Command
         $restaurants = ['Anoual', 'Palmier', 'To Go', 'Ziraoui'];
         $aggregatedData = [];
         foreach ($restaurants as $restaurant) {
-            $aggregatedData[$restaurant] = array_fill_keys($this->validTypes, []);
+            $aggregatedData[$restaurant] = array_fill_keys(BLTypeMappingService::$validTypes, []);
         }
 
         // Special handling for Labo (no restaurant)
-        $aggregatedData['Labo'] = array_fill_keys($this->validTypes, []);
+        $aggregatedData['Labo'] = array_fill_keys(BLTypeMappingService::$validTypes, []);
 
         // Process each type of order
         foreach ($cuisinierOrders as $order) {
@@ -78,12 +69,15 @@ class AggregateLivraisons extends Command
             $this->processOrder($order, $aggregatedData['Labo']);
         }
 
-        // Generate livraisons for each restaurant
+        // Generate livraisons for each restaurant (A4 PDFs)
         foreach ($aggregatedData as $restaurant => $typeData) {
             if (!empty(array_filter($typeData))) {
                 $this->processAggregatedData($typeData, $startDate, $restaurant);
             }
         }
+        
+        // Generate thermal receipts
+        $this->generateThermalReceipts($startDate, $endDate);
     }
 
     private function processOrder($order, &$aggregatedData)
@@ -96,7 +90,7 @@ class AggregateLivraisons extends Command
 
             $product = CuisinierProduct::find($productId);
 
-            if ($product && in_array($product->type, $this->validTypes)) {
+            if ($product && in_array($product->type, BLTypeMappingService::$validTypes)) {
                 $type = $product->type;
 
                 if ($isLaboOrder) {
@@ -139,7 +133,7 @@ class AggregateLivraisons extends Command
                     'products' => $productList
                 ];
 
-                if (!in_array($type, $this->validTypes)) {
+                if (!in_array($type, BLTypeMappingService::$validTypes)) {
                     $this->error("Invalid type: $type. Skipping this entry.");
                     continue;
                 }
@@ -185,5 +179,27 @@ class AggregateLivraisons extends Command
             return null;
         }
         return asset("storage/$directory/$file_name");
+    }
+    
+    private function generateThermalReceipts($startDate, $endDate)
+    {
+        $thermalService = new ThermalReceiptService();
+        $thermalReceipts = $thermalService->generateAllThermalReceipts($startDate, $endDate);
+        
+        foreach ($thermalReceipts as $receiptData) {
+            try {
+                // Save to new ThermalReceipt model
+                ThermalReceipt::create([
+                    'receipt_id' => $receiptData['id'],
+                    'restaurant' => $receiptData['restaurant'],
+                    'data' => $receiptData,
+                    'printed' => false,
+                ]);
+                
+                $this->info("Thermal receipt generated for {$receiptData['restaurant']}");
+            } catch (\Exception $e) {
+                $this->error("Failed to create thermal receipt for {$receiptData['restaurant']}: " . $e->getMessage());
+            }
+        }
     }
 }

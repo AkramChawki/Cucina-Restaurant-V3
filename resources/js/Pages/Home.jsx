@@ -216,6 +216,12 @@ function Home({ rubriques }) {
                                 link="/livraisons"
                             />
                         )}
+                        {hasRole("Thermal") && (
+                            <CardOverlay
+                                title="Impression Thermique"
+                                link="/thermal-receipts"
+                            />
+                        )}
 
                         {hasRole("Flux Reel") && (
                             <CardOverlay

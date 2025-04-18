@@ -11,6 +11,7 @@ use App\Http\Controllers\NumberController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\LivraisonController;
+use App\Http\Controllers\ThermalReceiptController;
 use App\Http\Controllers\BLController;
 use App\Http\Controllers\BMLController;
 use App\Http\Controllers\CostAnalyticsController;
@@ -27,6 +28,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'time.auth', 'password.change'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/livraisons', [LivraisonController::class, 'index'])->name('livraison.index');
+    
+    Route::prefix('thermal-receipts')->group(function () {
+        Route::get('/', [ThermalReceiptController::class, 'index'])->name('thermal-receipts.index');
+        Route::post('/{id}/printed', [ThermalReceiptController::class, 'markAsPrinted'])->name('thermal-receipts.mark-printed');
+        Route::get('/restaurant/{restaurant}', [ThermalReceiptController::class, 'getLatestForRestaurant'])->name('thermal-receipts.latest');
+    });
 
     Route::prefix('rubrique')->group(function () {
         Route::get('/{rubriqueTitle}', [RubriqueController::class, 'show'])->name('rubrique.show');
