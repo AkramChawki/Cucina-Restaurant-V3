@@ -10,8 +10,8 @@ use App\Models\BL;
 use App\Models\Labo;
 use App\Models\ThermalReceipt;
 use App\Services\BLTypeMappingService;
-use App\Services\ThermalReceiptService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AggregateLivraisons extends Command
@@ -183,58 +183,104 @@ class AggregateLivraisons extends Command
 
     private function generateThermalReceipts($startDate, $endDate)
     {
-        try {
-            $thermalService = new ThermalReceiptService();
-
-            // Debug the date parameters
-            $this->info("Generating thermal receipts from {$startDate} to {$endDate}");
-
-            $thermalReceipts = $thermalService->generateAllThermalReceipts($startDate, $endDate);
-
-            // DETAILED DEBUGGING - Examine what's returned from the service
-            $this->info("=== DETAILED DEBUGGING ===");
-            $this->info("Thermal service returned " . count($thermalReceipts) . " receipts");
-
-            foreach ($thermalReceipts as $index => $receiptData) {
-                $this->info("Receipt #{$index}: Restaurant = {$receiptData['restaurant']}");
-                $this->info("  Receipt ID: {$receiptData['id']}");
-                $this->info("  Thermal blocks: " . count($receiptData['thermal_blocks']));
-
-                // Try to create a record and catch any specific errors
-                try {
-                    // Save to new ThermalReceipt model with extra debug
-                    $this->info("  Attempting to create ThermalReceipt for {$receiptData['restaurant']}...");
-
-                    $receipt = new \App\Models\ThermalReceipt();
-                    $receipt->receipt_id = $receiptData['id'];
-                    $receipt->restaurant = $receiptData['restaurant'];
-                    $receipt->data = $receiptData;
-                    $receipt->printed = false;
-
-                    // Try to save and check result
-                    $saved = $receipt->save();
-
-                    if ($saved) {
-                        $this->info("  SUCCESS: Receipt saved with ID {$receipt->id}");
-                    } else {
-                        $this->error("  FAILED: Receipt not saved, no exception thrown");
+        // Force-create thermal receipts for each restaurant type
+        $restaurants = ['Cucina Napoli - Anoual', 'Cucina Napoli - Palmier', 'Cucina Napoli - To Go', 'Cucina Napoli - Ziraoui', 'Labo'];
+        
+        $this->info("Generating thermal receipts directly for each restaurant");
+        $createdCount = 0;
+        
+        foreach ($restaurants as $restaurant) {
+            $this->info("Processing $restaurant...");
+            
+            // Get livraisons for this restaurant
+            $livraisons = \App\Models\Livraison::where('restaurant_group', $restaurant)->get();
+            
+            if ($livraisons->isEmpty()) {
+                $this->info("No livraisons found for $restaurant, skipping");
+                continue;
+            }
+            
+            $this->info("Found " . $livraisons->count() . " livraisons for $restaurant");
+            
+            // Group products by thermal type
+            $thermalBlocks = [];
+            
+            foreach ($livraisons as $livraison) {
+                $originalType = $livraison->type;
+                $thermalType = BLTypeMappingService::getThermalType($originalType);
+                
+                if (!isset($thermalBlocks[$thermalType])) {
+                    $thermalBlocks[$thermalType] = [
+                        'type' => $thermalType,
+                        'products' => []
+                    ];
+                }
+                
+                // Get products
+                if (!empty($livraison->data)) {
+                    foreach ($livraison->data as $dataItem) {
+                        if (isset($dataItem['products']) && !empty($dataItem['products'])) {
+                            foreach ($dataItem['products'] as $product) {
+                                // Check if product already exists
+                                $exists = false;
+                                foreach ($thermalBlocks[$thermalType]['products'] as &$existingProduct) {
+                                    if ($existingProduct['product_id'] == $product['product_id']) {
+                                        $existingProduct['qty'] = (string)((int)$existingProduct['qty'] + (int)$product['qty']);
+                                        $exists = true;
+                                        break;
+                                    }
+                                }
+                                
+                                // Add if doesn't exist
+                                if (!$exists) {
+                                    $thermalBlocks[$thermalType]['products'][] = $product;
+                                }
+                            }
+                        }
                     }
-                } catch (\Exception $e) {
-                    $this->error("  EXCEPTION during save: " . $e->getMessage());
-                    $this->error("  Exception type: " . get_class($e));
-                    // Print stack trace for the first few frames
-                    $trace = $e->getTraceAsString();
-                    $this->error("  Trace: " . substr($trace, 0, 500) . "...");
                 }
             }
-
-            $this->info("=== END DEBUGGING ===");
-
-            // Count how many were actually saved
-            $savedCount = \App\Models\ThermalReceipt::whereBetween('created_at', [now()->subMinutes(5), now()])->count();
-            $this->info("Total thermal receipts saved in the last 5 minutes: {$savedCount}");
-        } catch (\Exception $e) {
-            $this->error("Error generating thermal receipts: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            
+            // Filter out empty blocks
+            $thermalBlocks = array_filter($thermalBlocks, function($block) {
+                return !empty($block['products']);
+            });
+            
+            if (empty($thermalBlocks)) {
+                $this->info("No products found for $restaurant, skipping");
+                continue;
+            }
+            
+            // Create receipt data
+            $receiptData = [
+                'id' => Str::uuid()->toString(),
+                'restaurant' => $restaurant,
+                'date' => Carbon::now()->format('Y-m-d H:i:s'),
+                'thermal_blocks' => array_values($thermalBlocks)
+            ];
+            
+            // Try to create the receipt with error handling for each step
+            try {
+                $this->info("Creating thermal receipt for $restaurant...");
+                
+                $receipt = new ThermalReceipt();
+                $receipt->receipt_id = $receiptData['id'];
+                $receipt->restaurant = $restaurant;
+                $receipt->data = $receiptData;
+                $receipt->printed = false;
+                $saved = $receipt->save();
+                
+                if ($saved) {
+                    $this->info("SUCCESS: Created thermal receipt for $restaurant with ID $receipt->id");
+                    $createdCount++;
+                } else {
+                    $this->error("FAILED: Could not create thermal receipt for $restaurant");
+                }
+            } catch (\Exception $e) {
+                $this->error("EXCEPTION creating thermal receipt for $restaurant: " . $e->getMessage());
+            }
         }
+        
+        $this->info("Generated $createdCount thermal receipts");
     }
 }
