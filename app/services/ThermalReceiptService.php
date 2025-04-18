@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Livraison;
+use App\Models\ThermalReceipt;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -63,7 +64,7 @@ class ThermalReceiptService
         
         // Create the final receipt data
         $receiptData = [
-            'id' => Str::uuid(),
+            'id' => Str::uuid()->toString(),
             'restaurant' => $restaurant,
             'date' => Carbon::now()->format('Y-m-d H:i:s'),
             'thermal_blocks' => array_values($thermalBlocks), // Reset array keys

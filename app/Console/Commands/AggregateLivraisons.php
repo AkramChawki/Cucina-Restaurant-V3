@@ -75,7 +75,7 @@ class AggregateLivraisons extends Command
                 $this->processAggregatedData($typeData, $startDate, $restaurant);
             }
         }
-        
+
         // Generate thermal receipts
         $this->generateThermalReceipts($startDate, $endDate);
     }
@@ -180,26 +180,32 @@ class AggregateLivraisons extends Command
         }
         return asset("storage/$directory/$file_name");
     }
-    
+
     private function generateThermalReceipts($startDate, $endDate)
     {
-        $thermalService = new ThermalReceiptService();
-        $thermalReceipts = $thermalService->generateAllThermalReceipts($startDate, $endDate);
-        
-        foreach ($thermalReceipts as $receiptData) {
-            try {
-                // Save to new ThermalReceipt model
-                ThermalReceipt::create([
-                    'receipt_id' => $receiptData['id'],
-                    'restaurant' => $receiptData['restaurant'],
-                    'data' => $receiptData,
-                    'printed' => false,
-                ]);
-                
-                $this->info("Thermal receipt generated for {$receiptData['restaurant']}");
-            } catch (\Exception $e) {
-                $this->error("Failed to create thermal receipt for {$receiptData['restaurant']}: " . $e->getMessage());
+        try {
+            $thermalService = new ThermalReceiptService();
+            $thermalReceipts = $thermalService->generateAllThermalReceipts($startDate, $endDate);
+
+            $this->info("Generated " . count($thermalReceipts) . " thermal receipts");
+
+            foreach ($thermalReceipts as $receiptData) {
+                try {
+                    // Save to new ThermalReceipt model
+                    ThermalReceipt::create([
+                        'receipt_id' => $receiptData['id'],
+                        'restaurant' => $receiptData['restaurant'],
+                        'data' => $receiptData,
+                        'printed' => false,
+                    ]);
+
+                    $this->info("Thermal receipt generated for {$receiptData['restaurant']}");
+                } catch (\Exception $e) {
+                    $this->error("Failed to create thermal receipt for {$receiptData['restaurant']}: " . $e->getMessage());
+                }
             }
+        } catch (\Exception $e) {
+            $this->error("Error generating thermal receipts: " . $e->getMessage());
         }
     }
 }
